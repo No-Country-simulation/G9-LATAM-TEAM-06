@@ -1,5 +1,14 @@
 package com.hackathon.energiai_api.Controllers;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hackathon.energiai_api.DTOs.AnalisisRequest;
 import com.hackathon.energiai_api.DTOs.AnalisisResponse;
 import com.hackathon.energiai_api.Repository.AnalisisRepository;
@@ -7,20 +16,14 @@ import com.hackathon.energiai_api.model.Analisis;
 import com.hackathon.energiai_api.service.CalculoService;
 import com.hackathon.energiai_api.service.IntegracionDsService;
 import com.hackathon.energiai_api.service.RecomendacionService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/analisis-energetico")
 @RequiredArgsConstructor
+//@CrossOrigin(origins = "http://localhost:5173") //Conexion a Frontend de manera local, aun no disponible, si habilitan, se debe agregar la dependencia.
 public class AnalisisController {
 
     private final CalculoService calculoService;
