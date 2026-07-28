@@ -6,9 +6,6 @@ services:
       - "80:80"
     networks:
       - energiai_net
-    volumes:
-      - ./energiai-frontend:/app
-      - /app/node_modules
     depends_on:
       - energiai-api
 
@@ -16,26 +13,22 @@ services:
     build: ./energiai-api
     container_name: energiai_api
     ports:
-      - 8080:8080
+      - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/energiai
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_PROFILES_ACTIVE=prod
     networks:
       - energiai_net
-    volumes:
-      #- ./energiai-api:/app
-      - ~/.m2:/root/.m2
     depends_on:
       - db
+
   db:
     image: mysql:9.7
     container_name: mysql_energiai
-    ports:
-      - "3307:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:root}
       MYSQL_DATABASE: energiai
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
@@ -46,5 +39,6 @@ services:
 
 volumes:
   mysql_data:
+
 networks:
   energiai_net:
