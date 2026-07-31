@@ -7,6 +7,7 @@ import {
   Zap,
   DollarSign,
   Lightbulb,
+  AlertTriangle,
 } from "lucide-react";
 
 function AnalisisGeneralView({ usuario }) {
@@ -16,27 +17,48 @@ function AnalisisGeneralView({ usuario }) {
     cantidad_equipos: 5,
     horas_alto_consumo: 6,
     uso_horario_pico: true,
+    dispositivos_alto: 0,
+    dispositivos_medio: 0,
+    dispositivos_bajo: 0,
   });
 
   const [resultado, setResultado] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
+  const [validacionEquipos, setValidacionEquipos] = useState({ valido: true, mensaje: "" });
+
+  const validarEquipos = (data) => {
+    const suma = (data.dispositivos_alto || 0) + (data.dispositivos_medio || 0) + (data.dispositivos_bajo || 0);
+    if (suma !== data.cantidad_equipos) {
+      return { valido: false, mensaje: `La suma (${suma}) debe igualar la cantidad de equipos (${data.cantidad_equipos})` };
+    }
+    if (data.dispositivos_alto < 0 || data.dispositivos_medio < 0 || data.dispositivos_bajo < 0) {
+      return { valido: false, mensaje: "Los valores no pueden ser negativos" };
+    }
+    return { valido: true, mensaje: "" };
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : type === "number"
-            ? Number(value)
-            : value,
-    }));
+    const newValue = type === "checkbox" ? checked : type === "number" ? Number(value) : value;
+    const newData = { ...formData, [name]: newValue };
+    setFormData(newData);
+    const validacion = validarEquipos(newData);
+    setValidacionEquipos(validacion);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const validacion = validarEquipos(formData);
+    if (!validacion.valido) {
+      setValidacionEquipos(validacion);
+      setError(validacion.mensaje);
+      return;
+    }
+    setValidacionEquipos({ valido: true, mensaje: "" });
+    setError(null);
+
     setCargando(true);
     setError(null);
 
@@ -62,7 +84,7 @@ function AnalisisGeneralView({ usuario }) {
       );
     } catch (err) {
       setError(
-        "No se pudo obtener el análisis desde el servidor de Spring Boot.",
+        "Error al cargar, intente mas tarde o verifique su conexión a internet.",
       );
     } finally {
       setCargando(false);
@@ -148,6 +170,58 @@ function AnalisisGeneralView({ usuario }) {
             </div>
           </div>
 
+          <div style={estilos.seccionEquipos}>
+            <h3 style={styles.subtituloSeccion}>Distribución de Equipos por Consumo</h3>
+            <p style={styles.ayudaTexto}>La suma debe igualar la cantidad de equipos ({formData.cantidad_equipos})</p>
+            <div style={estilos.gridEquipos}>
+              <div style={styles.grupoEquipo}>
+                <label style={estilos.labelEquipo}>Dispositivos Alto Consumo</label>
+                <input
+                  type="number"
+                  name="dispositivos_alto"
+                  value={formData.dispositivos_alto}
+                  onChange={handleChange}
+                  min="0"
+                  max={formData.cantidad_equipos}
+                  style={estilos.inputEquipo}
+                />
+                <small style={styles.ayudaEquipo}>Aire acondicionado, calefactor, secadora, etc.</small>
+              </div>
+              <div style={styles.grupoEquipo}>
+                <label style={styles.labelEquipo}>Dispositivos Medio Consumo</label>
+                <input
+                  type="number"
+                  name="dispositivos_medio"
+                  value={formData.dispositivos_medio}
+                  onChange={handleChange}
+                  min="0"
+                  max={formData.cantidad_equipos}
+                  style={estilos.inputEquipo}
+                />
+                <small style={styles.ayudaEquipo}>Lavadora, lavavajillas, plancha, microondas, etc.</small>
+              </div>
+              <div style={styles.grupoEquipo}>
+                <label style={styles.labelEquipo}>Dispositivos Bajo Consumo</label>
+                <input
+                  type="number"
+                  name="dispositivos_bajo"
+                  value={formData.dispositivos_bajo}
+                  onChange={handleChange}
+                  min="0"
+                  max={formData.cantidad_equipos}
+                  style={estilos.inputEquipo}
+                />
+                <small style={styles.ayudaEquipo}>Nevera, TV, PC, luces LED, router, cargadores, etc.</small>
+              </div>
+            </div>
+            {(!validacionEquipos.valido) && (
+              <div style={styles.errorEquipos}>
+                <AlertTriangle size={14} />
+                <span>{validacionEquipos.mensaje}</span>
+              </div>
+            )}
+          </div>
+
           <div
             style={{
               marginTop: "10px",
@@ -172,7 +246,7 @@ function AnalisisGeneralView({ usuario }) {
             </label>
           </div>
 
-          <button type="submit" disabled={cargando} style={estilos.botonSubmit}>
+          <button type="submit" disabled={cargando || !validacionEquipos.valido} style={estilos.botonSubmit}>
             <Send size={16} />
             {cargando ? "Analizando en Spring Boot..." : "Generar Análisis"}
           </button>
@@ -330,6 +404,64 @@ const estilos = {
     backgroundColor: "#fee2e2",
     padding: "12px",
     borderRadius: "8px",
+  },
+  seccionEquipos: {
+    marginTop: "16px",
+    padding: "16px",
+    backgroundColor: "#f8fafc",
+    borderRadius: "8px",
+    border: "1px solid #e2e8f0",
+  },
+  subtituloSeccion: {
+    margin: "0 0 8px 0",
+    fontSize: "15px",
+    fontWeight: 600,
+    color: "#334155",
+  },
+  ayudaTexto: {
+    margin: "0 0 12px 0",
+    fontSize: "13px",
+    color: "#64748b",
+  },
+  gridEquipos: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "16px",
+  },
+  grupoEquipo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  labelEquipo: {
+    fontSize: "13px",
+    fontWeight: 600,
+    color: "#475569",
+    marginBottom: "4px",
+  },
+  inputEquipo: {
+    padding: "8px 12px",
+    borderRadius: "6px",
+    border: "1px solid #cbd5e1",
+    fontSize: "14px",
+    outline: "none",
+    width: "100%",
+  },
+  ayudaEquipo: {
+    fontSize: "11px",
+    color: "#94a3b8",
+  },
+  errorEquipos: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    marginTop: "12px",
+    padding: "8px 12px",
+    backgroundColor: "#fef2f2",
+    border: "1px solid #fecaca",
+    borderRadius: "6px",
+    color: "#991b1c",
+    fontSize: "13px",
   },
   gridMetricas: {
     display: "grid",

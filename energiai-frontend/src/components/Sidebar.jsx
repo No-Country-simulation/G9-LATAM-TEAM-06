@@ -2,7 +2,7 @@ import React from "react";
 import {
   Home,
   BarChart2,
-  Search,
+  Microscope,
   History,
   ChevronLeft,
   ChevronRight,
@@ -22,9 +22,9 @@ function Sidebar({
     { id: "inicio", label: "Inicio", icon: <Home size={20} /> },
     { id: "general", label: "Análisis General", icon: <BarChart2 size={20} /> },
     {
-      id: "detallado",
-      label: "Análisis Detallado",
-      icon: <Search size={20} />,
+      id: "exhaustivo",
+      label: "Análisis Exhaustivo",
+      icon: <Microscope size={20} />,
     },
     { id: "historial", label: "Historial", icon: <History size={20} /> },
   ];

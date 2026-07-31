@@ -98,13 +98,13 @@
             <artifactId>flyway-mysql</artifactId>
             <version>12.4.0</version>
         </dependency>
-        <!-- springdoc-openapi comentado temporalmente por incompatibilidad con Spring Boot 4.x
+        <!-- springdoc-openapi comentado temporalmente por incompatibilidad con Spring Boot 4.x -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.2.0</version>
+            <version>2.6.0</version>
         </dependency>
-        -->
+        
     </dependencies>
 
     <build>

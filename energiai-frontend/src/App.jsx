@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import InicioView from "./components/InicioView";
 import AnalisisGeneralView from "./components/AnalisisGeneralView";
+import AnalisisExhaustivoView from "./components/AnalisisExhaustivoView";
 import HistorialView from "./components/HistorialView";
 
 function App() {
@@ -72,16 +73,8 @@ function App() {
         {/* VISTA 1: ANÁLISIS GENERAL */}
         {vistaActual === "general" && <AnalisisGeneralView usuario={usuario} />}
 
-        {/* VISTA 2: ANÁLISIS DETALLADO */}
-        {vistaActual === "detallado" && (
-          <div style={estilos.tarjeta}>
-            <h2>🔍 Análisis Detallado</h2>
-            <p style={{ color: "#64748b" }}>
-              Aquí podrás desglosar el consumo por electrodomésticos
-              individuales y hábitos de uso.
-            </p>
-          </div>
-        )}
+        {/* VISTA 2: ANÁLISIS EXHAUSTIVO */}
+        {vistaActual === "exhaustivo" && <AnalisisExhaustivoView usuario={usuario} />}
 
         {/* VISTA 3: HISTORIAL */}
         {vistaActual === "historial" && <HistorialView usuario={usuario} />}

@@ -1,6 +1,7 @@
 package com.hackathon.energiai_api.service;
 
 import com.hackathon.energiai_api.DTOs.AnalisisRequest;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -9,20 +10,20 @@ import java.util.List;
 @Service
 public class RecomendacionService {
 
-    public List<String> generarRecomendaciones(AnalisisRequest request){
-        List<String> recomendaciones = new ArrayList<>();
-
-        if (request == null){
-            return recomendaciones;
+    public List<String> generarRecomendaciones(AnalisisRequest request) {
+        if (request == null) {
+            return new ArrayList<>();
         }
 
-        //Regla 1: Uso durante hora pico
-        if (Boolean.TRUE.equals(request.uso_horario_pico())){
+        List<String> recomendaciones = new ArrayList<>();
+
+        // Regla 1: Uso durante hora pico
+        if (Boolean.TRUE.equals(request.uso_horario_pico())) {
             recomendaciones.add("Reducir el uso de equipos durante horarios pico");
         }
 
-        //Regla 2: Muchos equipos conectados
-        if (request.cantidad_equipos() != null && request.cantidad_equipos() >=10){
+        // Regla 2: Muchos equipos conectados
+        if (request.cantidad_equipos() != null && request.cantidad_equipos() >= 10) {
             recomendaciones.add("Evaluar aparatos con alto consumo electrico");
         }
 

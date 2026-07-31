@@ -1,13 +1,16 @@
 package com.hackathon.energiai_api.DTOs;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.AssertTrue;
+
+import java.util.Map;
 
 public record AnalisisRequest(
-
         @NotNull(message = "El consumo en kWh es obligatorio")
         @Min(
                 value = 1,
@@ -51,7 +54,16 @@ public record AnalisisRequest(
                 value = 24,
                 message = "Las horas de alto consumo no pueden superar las 24 horas"
         )
-        Integer horas_alto_consumo
+        Integer horas_alto_consumo,
+        String usuarioId,
+        Map<String, Integer> electrodomesticos) {
 
-) {
+    @AssertTrue(message = "La suma de electrodomésticos debe igualar la cantidad de equipos")
+    public boolean isElectrodomesticosValidos() {
+        if (electrodomesticos == null || electrodomesticos.isEmpty()) {
+            return true;
+        }
+        int suma = electrodomesticos.values().stream().mapToInt(Integer::intValue).sum();
+        return suma == cantidad_equipos;
+    }
 }
