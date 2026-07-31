@@ -56,14 +56,23 @@ public record AnalisisRequest(
         )
         Integer horas_alto_consumo,
         String usuarioId,
-        Map<String, Integer> electrodomesticos) {
+        Map<String, Integer> electrodomesticos,
+        Integer dispositivos_alto,
+        Integer dispositivos_medio,
+        Integer dispositivos_bajo) {
 
     @AssertTrue(message = "La suma de electrodomésticos debe igualar la cantidad de equipos")
     public boolean isElectrodomesticosValidos() {
-        if (electrodomesticos == null || electrodomesticos.isEmpty()) {
-            return true;
+        if (electrodomesticos != null && !electrodomesticos.isEmpty()) {
+            int suma = electrodomesticos.values().stream().mapToInt(Integer::intValue).sum();
+            return suma == cantidad_equipos;
         }
-        int suma = electrodomesticos.values().stream().mapToInt(Integer::intValue).sum();
-        return suma == cantidad_equipos;
+        if (dispositivos_alto != null || dispositivos_medio != null || dispositivos_bajo != null) {
+            int alta = dispositivos_alto != null ? dispositivos_alto : 0;
+            int media = dispositivos_medio != null ? dispositivos_medio : 0;
+            int baja = dispositivos_bajo != null ? dispositivos_bajo : 0;
+            return (alta + media + baja) == cantidad_equipos;
+        }
+        return true;
     }
 }

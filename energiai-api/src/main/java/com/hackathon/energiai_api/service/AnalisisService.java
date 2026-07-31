@@ -62,11 +62,12 @@ public class AnalisisService {
         List<String> recomendaciones
                 = recomendacionService.generarRecomendaciones(request);
 
-        // Clasificar electrodomésticos si se proporcionan
+        // Clasificar electrodomésticos si se proporcionan (mapa detallado) O usar campos manuales (General)
         Map<String, Integer> clasificacionEquipos = new LinkedHashMap<>();
         String electrodomesticosJson = null;
 
         if (request.electrodomesticos() != null && !request.electrodomesticos().isEmpty()) {
+            // Modo Exhaustivo: clasificación automática por catálogo
             Map<String, Integer> conteo = new LinkedHashMap<>();
             conteo.put("alto", 0);
             conteo.put("medio", 0);
@@ -89,6 +90,15 @@ public class AnalisisService {
             clasificacionEquipos.put("alto", conteo.getOrDefault("alto", 0));
             clasificacionEquipos.put("medio", conteo.getOrDefault("medio", 0));
             clasificacionEquipos.put("bajo", conteo.getOrDefault("bajo", 0));
+        } else if (request.dispositivos_alto() != null || request.dispositivos_medio() != null || request.dispositivos_bajo() != null) {
+            // Modo General: usar campos manuales directamente
+            int alta = request.dispositivos_alto() != null ? request.dispositivos_alto() : 0;
+            int media = request.dispositivos_medio() != null ? request.dispositivos_medio() : 0;
+            int baja = request.dispositivos_bajo() != null ? request.dispositivos_bajo() : 0;
+
+            clasificacionEquipos.put("alto", alta);
+            clasificacionEquipos.put("medio", media);
+            clasificacionEquipos.put("bajo", baja);
         }
 
         Analisis analisis = Analisis.builder()
@@ -144,6 +154,9 @@ public class AnalisisService {
                 analisis.getTipoInmueble(),
                 analisis.getHorasAltoConsumo(),
                 analisis.getUsuarioId(),
+                null,
+                null,
+                null,
                 null
         );
 
