@@ -3,9 +3,11 @@ import { obtenerAnalisisEnergetico } from "../services/api";
 import {
   Send,
   CheckCircle2,
+  AlertCircle,
   Zap,
   DollarSign,
   Lightbulb,
+  AlertTriangle,
 } from "lucide-react";
 
 function AnalisisGeneralView({ usuario }) {
@@ -214,7 +216,7 @@ function AnalisisGeneralView({ usuario }) {
             </div>
             {(!validacionEquipos.valido) && (
               <div style={styles.errorEquipos}>
-                <span style={{display:'inline-block',width:'14px',height:'14px',background:'#ef4444',borderRadius:'50%',marginRight:'6px'}}></span>
+                <AlertTriangle size={14} />
                 <span>{validacionEquipos.mensaje}</span>
               </div>
             )}
