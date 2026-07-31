@@ -2,6 +2,8 @@ package com.hackathon.energiai_api.Controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +14,7 @@ import com.hackathon.energiai_api.DTOs.AnalisisResponse;
 import com.hackathon.energiai_api.service.AnalisisService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -30,5 +33,12 @@ public class AnalisisController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AnalisisResponse> obtenerAnalisis(
+            @PathVariable @Positive Long id) {
+
+        return ResponseEntity.ok(analisisService.obtenerPorId(id));
     }
 }

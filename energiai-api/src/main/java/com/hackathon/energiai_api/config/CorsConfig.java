@@ -9,10 +9,10 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/analisis-energetico")
-                .allowedOrigins("http://localhost")
+        registry.addMapping("/analisis-energetico/**")
+                .allowedOrigins("http://localhost", "http://localhost:80", "http://localhost:8080", "http://127.0.0.1", "http://127.0.0.1:80", "http://127.0.0.1:8080")
                 .allowedMethods("GET", "POST", "OPTIONS")
-                .allowedHeaders("Content-Type", "Accept")
+                .allowedHeaders("Content-Type", "Accept", "X-API-KEY")
                 .maxAge(3600)
                 .allowCredentials(false);
     }

@@ -32,6 +32,11 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
@@ -93,6 +98,13 @@
             <artifactId>flyway-mysql</artifactId>
             <version>12.4.0</version>
         </dependency>
+        <!-- springdoc-openapi comentado temporalmente por incompatibilidad con Spring Boot 4.x
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        -->
     </dependencies>
 
     <build>

@@ -13,6 +13,10 @@ public record AnalisisRequest(
                 value = 1,
                 message = "El consumo en kWh debe ser mayor a 0"
         )
+        @Max(
+                value = 100000,
+                message = "El consumo en kWh no puede superar los 100.000"
+        )
         Integer consumo_kwh,
 
         @NotNull(
@@ -24,6 +28,10 @@ public record AnalisisRequest(
         @Min(
                 value = 1,
                 message = "La cantidad de equipos debe ser mayor a 0"
+        )
+        @Max(
+                value = 1000,
+                message = "La cantidad de equipos no puede superar los 1.000"
         )
         Integer cantidad_equipos,
 

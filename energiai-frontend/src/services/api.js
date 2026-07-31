@@ -1,10 +1,7 @@
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_KEY = import.meta.env.VITE_API_KEY || "";
 
-/**
- * Petición POST a /analisis-energetico con estructura válida para AnalisisRequest
- */
 export async function obtenerAnalisisEnergetico(datosCustom = null) {
-  // Datos de prueba por defecto si no le pasamos nada
   const payloadPorDefecto = {
     consumo_kwh: 250,
     tipo_inmueble: "Residencial",
@@ -20,6 +17,7 @@ export async function obtenerAnalisisEnergetico(datosCustom = null) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-API-KEY": API_KEY,
       },
       body: JSON.stringify(bodyAEnviar),
     });
