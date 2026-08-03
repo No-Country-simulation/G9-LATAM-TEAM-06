@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { listarAnalisisPorUsuario } from "../services/api";
 import {
   History,
   Trash2,
@@ -6,27 +7,54 @@ import {
   DollarSign,
   Activity,
   Zap,
+  RefreshCw,
 } from "lucide-react";
 
 function HistorialView({ usuario }) {
   const [historial, setHistorial] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+  const [pagina, setPagina] = useState(0);
+  const [tieneMas, setTieneMas] = useState(false);
 
-  // Cargar el historial desde localStorage al montar el componente
-  useEffect(() => {
-    cargarHistorial();
-  }, [usuario]);
+  const usuarioActual = usuario || "Invitado";
 
-  const cargarHistorial = () => {
-    const todosLosRegistros = JSON.parse(
-      localStorage.getItem("energiai_historial") || "[]",
-    );
-    // Filtrar por el usuario actual (o 'Invitado')
-    const usuarioActual = usuario || "Invitado";
-    const filtrados = todosLosRegistros.filter(
-      (reg) => reg.usuario === usuarioActual,
-    );
-    setHistorial(filtrados);
+  const cargarHistorial = async (page = 0, append = false) => {
+    setCargando(true);
+    setError(null);
+    try {
+      const data = await listarAnalisisPorUsuario(usuarioActual, null, page, 10);
+      const nuevos = data.content.map(item => ({
+        id: item.id,
+        fecha: new Date(item.creadoEn).toLocaleString(),
+        usuario: usuarioActual,
+        solicitud: {
+          consumo_kwh: item.consumoKwh,
+          tipo_inmueble: item.tipoInmueble,
+          cantidad_equipos: item.cantidadEquipos,
+          horas_alto_consumo: item.horasAltoConsumo,
+          uso_horario_pico: item.usoHorarioPico,
+        },
+        respuesta: {
+          categoria: item.categoria,
+          probabilidad: item.probabilidad,
+          costoEstimado: item.costoEstimado,
+          recomendaciones: [],
+        },
+      }));
+      setHistorial(prev => append ? [...prev, ...nuevos] : nuevos);
+      setTieneMas(!data.last);
+      setPagina(page);
+    } catch (err) {
+      setError("No se pudo cargar el historial desde el servidor.");
+    } finally {
+      setCargando(false);
+    }
   };
+
+  useEffect(() => {
+    cargarHistorial(0, false);
+  }, [usuario]);
 
   const limpiarHistorial = () => {
     if (
@@ -34,14 +62,14 @@ function HistorialView({ usuario }) {
         "¿Estás seguro de que deseas borrar tu historial de análisis?",
       )
     ) {
-      const todos = JSON.parse(
-        localStorage.getItem("energiai_historial") || "[]",
-      );
-      const usuarioActual = usuario || "Invitado";
-      // Mantener solo los de otros usuarios
-      const restantes = todos.filter((reg) => reg.usuario !== usuarioActual);
-      localStorage.setItem("energiai_historial", JSON.stringify(restantes));
       setHistorial([]);
+      // Note: Backend doesn't have delete endpoint yet
+    }
+  };
+
+  const cargarMas = () => {
+    if (!cargando && tieneMas) {
+      cargarHistorial(pagina + 1, true);
     }
   };
 
@@ -54,6 +82,8 @@ function HistorialView({ usuario }) {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            flexWrap: "wrap",
+            gap: "12px",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -63,29 +93,44 @@ function HistorialView({ usuario }) {
                 Historial de Consultas
               </h2>
               <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>
-                Registros guardados para la sesión:{" "}
-                <b style={{ color: "#0284c7" }}>{usuario || "Invitado"}</b>
+                Registros guardados para la sesión:{' '}
+                <b style={{ color: "#0284c7" }}>{usuarioActual}</b>
               </p>
             </div>
           </div>
 
-          {historial.length > 0 && (
-            <button onClick={limpiarHistorial} style={estilos.botonBorrar}>
-              <Trash2 size={16} /> Limpiar Historial
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            {historial.length > 0 && (
+              <button onClick={limpiarHistorial} style={estilos.botonBorrar}>
+                <Trash2 size={16} /> Limpiar Historial
+              </button>
+            )}
+            <button
+              onClick={() => cargarHistorial(0, false)}
+              disabled={cargando}
+              style={{ ...estilos.botonBorrar, backgroundColor: '#e0e7ff', color: '#3730a3' }}
+            >
+              <RefreshCw size={16} /> Actualizar
             </button>
-          )}
+          </div>
         </div>
       </div>
 
+      {error && (
+        <div style={estilos.badgeError}>
+          <span>{error}</span>
+        </div>
+      )}
+
       {/* Si no hay registros */}
-      {historial.length === 0 ? (
+      {historial.length === 0 && !cargando ? (
         <div style={estilos.tarjetaVacia}>
           <Zap size={40} color="#cbd5e1" />
           <h3 style={{ color: "#475569", margin: "10px 0 5px 0" }}>
             No hay análisis guardados
           </h3>
           <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>
-            Realiza tu primer cálculo en el apartado de <b>Análisis General</b>{" "}
+            Realiza tu primer cálculo en el apartado de <b>Análisis General</b>{' '}
             para que aparezca aquí.
           </p>
         </div>
@@ -150,17 +195,33 @@ function HistorialView({ usuario }) {
                         color: "#0f172a",
                       }}
                     >
-                      {item.respuesta?.costo_estimado_mensual}
+                      {item.respuesta?.costoEstimado}
                     </span>
                   </div>
                   <small style={{ color: "#64748b", fontSize: "12px" }}>
-                    Probabilidad:{" "}
+                    Probabilidad:{' '}
                     {((item.respuesta?.probabilidad || 0) * 100).toFixed(0)}%
                   </small>
                 </div>
               </div>
             </div>
           ))}
+
+          {tieneMas && (
+            <button
+              onClick={cargarMas}
+              disabled={cargando}
+              style={{
+                ...estilos.botonBorrar,
+                backgroundColor: '#f1f5f9',
+                color: '#0284c7',
+                width: '100%',
+                justifyContent: 'center',
+              }}
+            >
+              {cargando ? 'Cargando...' : 'Cargar más'}
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -231,6 +292,15 @@ const estilos = {
     letterSpacing: "0.5px",
   },
   dato: { margin: 0, fontSize: "13px", color: "#334155" },
+  badgeError: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    color: "#b91c1c",
+    backgroundColor: "#fee2e2",
+    padding: "12px",
+    borderRadius: "8px",
+  },
 };
 
 export default HistorialView;

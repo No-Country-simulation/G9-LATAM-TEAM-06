@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { obtenerAnalisisEnergetico } from "../services/api";
+import { crearAnalisisEnergetico } from "../services/api";
 import {
   Send,
   CheckCircle2,
@@ -63,7 +63,7 @@ function AnalisisGeneralView({ usuario }) {
     setError(null);
 
     try {
-      const data = await obtenerAnalisisEnergetico(formData);
+      const data = await crearAnalisisEnergetico(formData, usuario);
       setResultado(data);
 
       // Guardar en el Historial del Navegador (asociado al correo si existe)
@@ -171,10 +171,10 @@ function AnalisisGeneralView({ usuario }) {
           </div>
 
           <div style={estilos.seccionEquipos}>
-            <h3 style={styles.subtituloSeccion}>Distribución de Equipos por Consumo</h3>
-            <p style={styles.ayudaTexto}>La suma debe igualar la cantidad de equipos ({formData.cantidad_equipos})</p>
+            <h3 style={estilos.subtituloSeccion}>Distribución de Equipos por Consumo</h3>
+            <p style={estilos.ayudaTexto}>La suma debe igualar la cantidad de equipos ({formData.cantidad_equipos})</p>
             <div style={estilos.gridEquipos}>
-              <div style={styles.grupoEquipo}>
+<div style={estilos.grupoEquipo}>
                 <label style={estilos.labelEquipo}>Dispositivos Alto Consumo</label>
                 <input
                   type="number"
@@ -185,10 +185,10 @@ function AnalisisGeneralView({ usuario }) {
                   max={formData.cantidad_equipos}
                   style={estilos.inputEquipo}
                 />
-                <small style={styles.ayudaEquipo}>Aire acondicionado, calefactor, secadora, etc.</small>
+                <small style={estilos.ayudaEquipo}>Aire acondicionado, calefactor, secadora, etc.</small>
               </div>
-              <div style={styles.grupoEquipo}>
-                <label style={styles.labelEquipo}>Dispositivos Medio Consumo</label>
+              <div style={estilos.grupoEquipo}>
+                <label style={estilos.labelEquipo}>Dispositivos Medio Consumo</label>
                 <input
                   type="number"
                   name="dispositivos_medio"
@@ -198,10 +198,10 @@ function AnalisisGeneralView({ usuario }) {
                   max={formData.cantidad_equipos}
                   style={estilos.inputEquipo}
                 />
-                <small style={styles.ayudaEquipo}>Lavadora, lavavajillas, plancha, microondas, etc.</small>
+                <small style={estilos.ayudaEquipo}>Lavadora, lavavajillas, plancha, microondas, etc.</small>
               </div>
-              <div style={styles.grupoEquipo}>
-                <label style={styles.labelEquipo}>Dispositivos Bajo Consumo</label>
+              <div style={estilos.grupoEquipo}>
+                <label style={estilos.labelEquipo}>Dispositivos Bajo Consumo</label>
                 <input
                   type="number"
                   name="dispositivos_bajo"
@@ -211,11 +211,11 @@ function AnalisisGeneralView({ usuario }) {
                   max={formData.cantidad_equipos}
                   style={estilos.inputEquipo}
                 />
-                <small style={styles.ayudaEquipo}>Nevera, TV, PC, luces LED, router, cargadores, etc.</small>
+                <small style={estilos.ayudaEquipo}>Nevera, TV, PC, luces LED, router, cargadores, etc.</small>
               </div>
             </div>
             {(!validacionEquipos.valido) && (
-              <div style={styles.errorEquipos}>
+              <div style={estilos.errorEquipos}>
                 <AlertTriangle size={14} />
                 <span>{validacionEquipos.mensaje}</span>
               </div>
@@ -308,7 +308,7 @@ function AnalisisGeneralView({ usuario }) {
               >
                 <DollarSign size={28} color="#16a34a" />
                 <span style={estilos.valorMetrica}>
-                  {resultado.costo_estimado_mensual}
+                  {resultado.costoEstimado}
                 </span>
               </div>
               <small

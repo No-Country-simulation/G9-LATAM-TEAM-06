@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { obtenerAnalisisEnergetico } from '../services/api';
+import { crearAnalisisEnergetico } from '../services/api';
 import ElectrodomesticosSelector from './ElectrodomesticosSelector';
 import ResumenExhaustivo from './ResumenExhaustivo';
+import { CATALOGO, calcularTotales } from '../constants/catalogo';
 import {
   Send,
   CheckCircle2,
@@ -9,6 +10,7 @@ import {
   Zap,
   DollarSign,
   Lightbulb,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function AnalisisExhaustivoView({ usuario }) {
@@ -24,24 +26,6 @@ export default function AnalisisExhaustivoView({ usuario }) {
   const [resultado, setResultado] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
-  const [validacion, setValidacion] = useState({ valido: true, total: 0 });
-
-  const CATALOGO_ALTO = ['aire_acondicionado', 'calefactor', 'secadora', 'horno_electrico', 'ducha_electrica'];
-  const CATALOGO_MEDIO = ['lavadora', 'lavavajillas', 'plancha', 'microondas', 'bomba_agua'];
-
-  const calcularTotales = (electrodomesticos) => {
-    const totales = { ALTO: 0, MEDIO: 0, BAJO: 0 };
-    Object.entries(electrodomesticos).forEach(([id, cant]) => {
-      if (CATALOGO_ALTO.includes(id)) {
-        totales.ALTO += cant;
-      } else if (CATALOGO_MEDIO.includes(id)) {
-        totales.MEDIO += cant;
-      } else {
-        totales.BAJO += cant;
-      }
-    });
-    return totales;
-  };
 
   const totales = calcularTotales(formData.electrodomesticos);
   const totalSeleccionado = Object.values(formData.electrodomesticos).reduce((a, b) => a + b, 0);
@@ -55,22 +39,24 @@ export default function AnalisisExhaustivoView({ usuario }) {
     }));
   };
 
-  const handleElectrodomesticosChange = (nuevosElectrodomesticos) => {
-    setFormData(prev => ({ ...prev, electrodomesticos: nuevosElectrodomesticos }));
-  };
-
-  const handleValidationChange = (valido, total) => {
-    setValidacion({ valido, total });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const hayElectrodomesticos = Object.keys(formData.electrodomesticos).length > 0;
+    const sumaElectrodomesticos = Object.values(formData.electrodomesticos).reduce((a, b) => a + b, 0);
+    const validoElectrodomesticos = !hayElectrodomesticos || sumaElectrodomesticos === formData.cantidad_equipos;
+
+    if (!validoElectrodomesticos) {
+      setError(`La suma de electrodomésticos (${sumaElectrodomesticos}) debe igualar la cantidad de equipos (${formData.cantidad_equipos})`);
+      return;
+    }
+
     setCargando(true);
     setError(null);
     setResultado(null);
 
     try {
-      const data = await obtenerAnalisisEnergetico(formData);
+      const data = await crearAnalisisEnergetico(formData, usuario);
       setResultado(data);
     } catch (err) {
       setError('No se pudo obtener el análisis desde el servidor.');
@@ -79,10 +65,7 @@ export default function AnalisisExhaustivoView({ usuario }) {
     }
   };
 
-  const hayElectrodomesticos = Object.keys(formData.electrodomesticos).length > 0;
-  const sumaElectrodomesticos = Object.values(formData.electrodomesticos).reduce((a, b) => a + b, 0);
-  const validoElectrodomesticos = !hayElectrodomesticos || sumaElectrodomesticos === formData.cantidad_equipos;
-  const botonDisabled = cargando || (hayElectrodomesticos && !valido);
+  const botonDisabled = cargando || (Object.keys(formData.electrodomesticos).length > 0 && totalSeleccionado !== formData.cantidad_equipos);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -159,7 +142,7 @@ export default function AnalisisExhaustivoView({ usuario }) {
             </label>
           </div>
 
-          <button type="submit" disabled={cargando} style={styles.botonSubmit}>
+          <button type="submit" disabled={botonDisabled} style={styles.botonSubmit}>
             <Send size={16} />
             {cargando ? 'Analizando...' : 'Generar Análisis Exhaustivo'}
           </button>
@@ -188,35 +171,106 @@ export default function AnalisisExhaustivoView({ usuario }) {
           value={formData.electrodomesticos}
           onChange={(val) => setFormData(prev => ({ ...prev, electrodomesticos: val }))}
           totalEquipos={formData.cantidad_equipos}
-          onValidationChange={(valido, total) => setValidacion({ valido, total })}
         />
       </div>
 
       <ResumenExhaustivo
-        alto={Object.entries(formData.electrodomesticos)
-          .filter(([id]) => ['aire_acondicionado', 'calefactor', 'secadora', 'horno_electrico', 'ducha_electrica'].includes(id))
-          .reduce((a, [, v]) => a + v, 0)}
-        medio={Object.entries(formData.electrodomesticos)
-          .filter(([id]) => ['lavadora', 'lavavajillas', 'plancha', 'microondas', 'bomba_agua'].includes(id))
-          .reduce((a, [, v]) => a + v, 0)}
-        bajo={Object.entries(formData.electrodomesticos)
-          .filter(([id]) => !['aire_acondicionado', 'calefactor', 'secadora', 'horno_electrico', 'ducha_electrica',
-            'lavadora', 'lavavajillas', 'plancha', 'microondas', 'bomba_agua'].includes(id))
-          .reduce((a, [, v]) => a + v, 0)}
-        total={Object.values(formData.electrodomesticos).reduce((a, b) => a + b, 0)}
+        alto={totales.ALTO}
+        medio={totales.MEDIO}
+        bajo={totales.BAJO}
+        total={totalSeleccionado}
         esperado={formData.cantidad_equipos}
-        valido={Object.values(formData.electrodomesticos).reduce((a, b) => a + b, 0) === formData.cantidad_equipos}
+        valido={valido}
       />
 
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={cargando || (Object.keys(formData.electrodomesticos).length > 0 && Object.values(formData.electrodomesticos).reduce((a, b) => a + b, 0) !== formData.cantidad_equipos)}
-        style={styles.botonSubmit}
-      >
-        <Send size={16} />
-        {cargando ? 'Analizando...' : 'Generar Análisis Exhaustivo'}
-      </button>
+      {resultado && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#15803d',
+              fontWeight: 'bold',
+            }}
+          >
+            <CheckCircle2 size={20} />
+            <span>Resultado Generado con Éxito</span>
+          </div>
+
+          <div style={styles.gridMetricas}>
+            <div style={styles.tarjetaMetrica}>
+              <span style={styles.tituloMetrica}>Categoría de Consumo</span>
+              <div style={{ marginTop: '10px' }}>
+                <span style={styles.badgeCategoria}>
+                  {resultado.categoria}
+                </span>
+              </div>
+              <small
+                style={{
+                  color: '#64748b',
+                  marginTop: '10px',
+                  display: 'block',
+                }}
+              >
+                Probabilidad: {(resultado.probabilidad * 100).toFixed(0)}%
+              </small>
+            </div>
+
+            <div style={styles.tarjetaMetrica}>
+              <span style={styles.tituloMetrica}>Costo Estimado Mensual</span>
+              <div
+                style={{
+                  marginTop: '10px',
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: '4px',
+                }}
+              >
+                <DollarSign size={28} color="#16a34a" />
+                <span style={styles.valorMetrica}>
+                  {resultado.costoEstimado}
+                </span>
+              </div>
+              <small
+                style={{
+                  color: '#64748b',
+                  marginTop: '10px',
+                  display: 'block',
+                }}
+              >
+                Estimación en divisa base
+              </small>
+            </div>
+          </div>
+
+          <div style={styles.tarjeta}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                marginBottom: '14px',
+              }}
+            >
+              <Lightbulb color="#eab308" size={22} />
+              <h3 style={{ margin: 0, color: '#0f172a', fontSize: '18px' }}>
+                Recomendaciones
+              </h3>
+            </div>
+            <ul style={styles.listaRecomendaciones}>
+              {resultado.recomendaciones?.map((rec, index) => (
+                <li key={index} style={styles.itemRecomendacion}>
+                  <span style={{ color: '#eab308', fontWeight: 'bold' }}>
+                    •
+                  </span>
+                  <span>{rec}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -282,5 +336,50 @@ const styles = {
     backgroundColor: '#fee2e2',
     padding: '12px',
     borderRadius: '8px',
+  },
+  gridMetricas: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '16px',
+  },
+  tarjetaMetrica: {
+    backgroundColor: '#ffffff',
+    padding: '20px',
+    borderRadius: '12px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    borderLeft: '4px solid #0284c7',
+  },
+  tituloMetrica: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#64748b',
+    textTransform: 'uppercase',
+  },
+  valorMetrica: { fontSize: '28px', fontWeight: 'bold', color: '#0f172a' },
+  badgeCategoria: {
+    backgroundColor: '#fef3c7',
+    color: '#d97706',
+    padding: '4px 12px',
+    borderRadius: '16px',
+    fontWeight: 'bold',
+    fontSize: '16px',
+  },
+  listaRecomendaciones: {
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+  itemRecomendacion: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px',
+    backgroundColor: '#f8fafc',
+    padding: '10px 14px',
+    borderRadius: '8px',
+    color: '#334155',
+    fontSize: '14px',
   },
 };
