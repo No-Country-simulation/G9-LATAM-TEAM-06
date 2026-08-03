@@ -1,6 +1,5 @@
 package com.hackathon.energiai_api.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hackathon.energiai_api.DTOs.AnalisisRequest;
 import com.hackathon.energiai_api.DTOs.AnalisisResponse;
 import com.hackathon.energiai_api.exception.ServicioAnalisisException;
@@ -56,7 +56,7 @@ public class AnalisisService {
         IntegracionDsService.PrediccionDs prediccion
                 = integracionDsService.obtenerPrediccionDs(request);
 
-        BigDecimal costoEstimado
+        BigDecimal costo_estimado_mensual
                 = calculoService.calcularCostoMensual(request.consumo_kwh());
 
         List<String> recomendaciones
@@ -110,7 +110,7 @@ public class AnalisisService {
                 .horasAltoConsumo(request.horas_alto_consumo())
                 .categoria(prediccion.categoria())
                 .probabilidad(prediccion.probabilidad())
-                .costoEstimado(costoEstimado)
+                .costo_estimado_mensual(costo_estimado_mensual)
                 .electrodomesticosDetalle(electrodomesticosJson)
                 .build();
 
@@ -120,7 +120,7 @@ public class AnalisisService {
                 prediccion.categoria(),
                 prediccion.probabilidad(),
                 recomendaciones,
-                costoEstimado,
+                costo_estimado_mensual,
                 clasificacionEquipos
         );
     }
@@ -179,7 +179,7 @@ public class AnalisisService {
                 analisis.getCategoria(),
                 analisis.getProbabilidad(),
                 recomendaciones,
-                analisis.getCostoEstimado(),
+                analisis.getCosto_estimado_mensual(),
                 clasificacionEquipos
         );
     }

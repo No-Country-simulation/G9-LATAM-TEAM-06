@@ -54,7 +54,7 @@ public class Analisis {
     private BigDecimal probabilidad;
 
     @Column(name = "costo_estimado", nullable = false, precision = 10, scale = 2)
-    private BigDecimal costoEstimado;
+    private BigDecimal costo_estimado_mensual;
 
     @Column(name = "electrodomesticos_detalle", columnDefinition = "JSON")
     private String electrodomesticosDetalle;

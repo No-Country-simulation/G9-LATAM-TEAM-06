@@ -229,7 +229,7 @@ export default function AnalisisExhaustivoView({ usuario }) {
               >
                 <DollarSign size={28} color="#16a34a" />
                 <span style={styles.valorMetrica}>
-                  {resultado.costoEstimado}
+                  {resultado.costo_estimado_mensual}
                 </span>
               </div>
               <small

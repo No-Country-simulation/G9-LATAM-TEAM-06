@@ -308,7 +308,7 @@ function AnalisisGeneralView({ usuario }) {
               >
                 <DollarSign size={28} color="#16a34a" />
                 <span style={estilos.valorMetrica}>
-                  {resultado.costoEstimado}
+                  {resultado.costo_estimado_mensual}
                 </span>
               </div>
               <small

@@ -23,8 +23,13 @@ function HistorialView({ usuario }) {
     setCargando(true);
     setError(null);
     try {
-      const data = await listarAnalisisPorUsuario(usuarioActual, null, page, 10);
-      const nuevos = data.content.map(item => ({
+      const data = await listarAnalisisPorUsuario(
+        usuarioActual,
+        null,
+        page,
+        10,
+      );
+      const nuevos = data.content.map((item) => ({
         id: item.id,
         fecha: new Date(item.creadoEn).toLocaleString(),
         usuario: usuarioActual,
@@ -38,11 +43,11 @@ function HistorialView({ usuario }) {
         respuesta: {
           categoria: item.categoria,
           probabilidad: item.probabilidad,
-          costoEstimado: item.costoEstimado,
+          costo_estimado_mensual: item.costo_estimado_mensual,
           recomendaciones: [],
         },
       }));
-      setHistorial(prev => append ? [...prev, ...nuevos] : nuevos);
+      setHistorial((prev) => (append ? [...prev, ...nuevos] : nuevos));
       setTieneMas(!data.last);
       setPagina(page);
     } catch (err) {
@@ -93,7 +98,7 @@ function HistorialView({ usuario }) {
                 Historial de Consultas
               </h2>
               <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>
-                Registros guardados para la sesión:{' '}
+                Registros guardados para la sesión:{" "}
                 <b style={{ color: "#0284c7" }}>{usuarioActual}</b>
               </p>
             </div>
@@ -108,7 +113,11 @@ function HistorialView({ usuario }) {
             <button
               onClick={() => cargarHistorial(0, false)}
               disabled={cargando}
-              style={{ ...estilos.botonBorrar, backgroundColor: '#e0e7ff', color: '#3730a3' }}
+              style={{
+                ...estilos.botonBorrar,
+                backgroundColor: "#e0e7ff",
+                color: "#3730a3",
+              }}
             >
               <RefreshCw size={16} /> Actualizar
             </button>
@@ -130,7 +139,7 @@ function HistorialView({ usuario }) {
             No hay análisis guardados
           </h3>
           <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>
-            Realiza tu primer cálculo en el apartado de <b>Análisis General</b>{' '}
+            Realiza tu primer cálculo en el apartado de <b>Análisis General</b>{" "}
             para que aparezca aquí.
           </p>
         </div>
@@ -195,11 +204,11 @@ function HistorialView({ usuario }) {
                         color: "#0f172a",
                       }}
                     >
-                      {item.respuesta?.costoEstimado}
+                      {item.respuesta?.costo_estimado_mensual}
                     </span>
                   </div>
                   <small style={{ color: "#64748b", fontSize: "12px" }}>
-                    Probabilidad:{' '}
+                    Probabilidad:{" "}
                     {((item.respuesta?.probabilidad || 0) * 100).toFixed(0)}%
                   </small>
                 </div>
@@ -213,13 +222,13 @@ function HistorialView({ usuario }) {
               disabled={cargando}
               style={{
                 ...estilos.botonBorrar,
-                backgroundColor: '#f1f5f9',
-                color: '#0284c7',
-                width: '100%',
-                justifyContent: 'center',
+                backgroundColor: "#f1f5f9",
+                color: "#0284c7",
+                width: "100%",
+                justifyContent: "center",
               }}
             >
-              {cargando ? 'Cargando...' : 'Cargar más'}
+              {cargando ? "Cargando..." : "Cargar más"}
             </button>
           )}
         </div>
