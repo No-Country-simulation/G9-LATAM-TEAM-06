@@ -1,42 +1,70 @@
 package com.hackathon.energiai_api.service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import com.hackathon.energiai_api.DTOs.AnalisisRequest;
+import com.hackathon.energiai_api.exception.ServicioAnalisisException;
 
 @Service
 public class IntegracionDsService {
 
-    public record PrediccionDs(String categoria, BigDecimal probabilidad) {
+    private final RestClient restClient;
+
+    public IntegracionDsService(
+            @Value("${modelo.api.url}") String modeloApiUrl
+    ) {
+        SimpleClientHttpRequestFactory requestFactory =
+                new SimpleClientHttpRequestFactory();
+
+        this.restClient = RestClient.builder()
+                .baseUrl(modeloApiUrl)
+                .requestFactory(requestFactory)
+                .build();
     }
 
-    private static final int UMBRAL_CONSUMO_INEFICIENTE = 350;
-    private static final int UMBRAL_HORAS_ALTO_CONSUMO = 8;
-    private static final int UMBRAL_CONSUMO_EFICIENTE = 150;
+    public record PrediccionDs(
+            String categoria,
+            BigDecimal probabilidad
+    ) {
+    }
 
-
-    public PrediccionDs obtenerPrediccionDs(AnalisisRequest request){
-        if (request == null){
-            return new PrediccionDs("Moderado", BigDecimal.valueOf(0.50));
+    public PrediccionDs obtenerPrediccionDs(AnalisisRequest request) {
+        if (request == null) {
+            throw new ServicioAnalisisException(
+                    "Los datos para realizar la predicción son obligatorios"
+            );
         }
-        String categoria;
-        double probabilidadSimulada;
-        
-        if (request.consumo_kwh() > UMBRAL_CONSUMO_INEFICIENTE ||(request.horas_alto_consumo() >= UMBRAL_HORAS_ALTO_CONSUMO && Boolean.TRUE.equals(request.uso_horario_pico()))) {
-            categoria = "Ineficiente";
-            probabilidadSimulada = 0.75 + (Math.random() * 0.20);
-        } else if (request.consumo_kwh() < UMBRAL_CONSUMO_EFICIENTE && Boolean.FALSE.equals(request.uso_horario_pico())) {
-            categoria = "Eficiente";
-            probabilidadSimulada = 0.80 + (Math.random() * 0.15);
-        }else {
-            categoria = "Moderado";
-            probabilidadSimulada = 0.60 + (Math.random() * 0.20);
-        }
-        BigDecimal probabilidad = BigDecimal.valueOf(probabilidadSimulada).setScale(2, RoundingMode.HALF_UP);
 
-        return new PrediccionDs(categoria, probabilidad);
+        try {
+            PrediccionDs prediccion = restClient
+                    .post()
+                    .uri("/predict")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(request)
+                    .retrieve()
+                    .body(PrediccionDs.class);
+
+            if (prediccion == null) {
+                throw new ServicioAnalisisException(
+                        "La API del modelo devolvió una respuesta vacía"
+                );
+            }
+
+            return prediccion;
+
+        } catch (RestClientException exception) {
+            throw new ServicioAnalisisException(
+                    "No fue posible comunicarse con la API del modelo",
+                    exception
+            );
+        }
     }
 }
