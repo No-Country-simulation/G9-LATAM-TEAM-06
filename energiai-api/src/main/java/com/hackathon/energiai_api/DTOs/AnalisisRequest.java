@@ -16,6 +16,10 @@ public record AnalisisRequest(
                 value = 1,
                 message = "El consumo en kWh debe ser mayor a 0"
         )
+        @Max(
+                value = 5000,
+                message = "El consumo en kWh no puede superar los 5000 kWh mensuales"
+        )
         Integer consumo_kwh,
 
         @NotNull(
@@ -48,24 +52,20 @@ public record AnalisisRequest(
         )
         Integer horas_alto_consumo,
 
-        @NotNull(message = "La cantidad de personas es obligatoria")
         @Min(
                 value = 1,
                 message = "La cantidad de personas debe ser mayor a 0"
         )
         Integer cantidad_personas,
 
-        @NotNull(message = "El área del inmueble es obligatoria")
         @Positive(message = "El área del inmueble debe ser mayor a 0")
         Double area_m2,
 
-        @NotNull(message = "La cantidad de equipos de alto consumo es obligatoria")
         @PositiveOrZero(
                 message = "La cantidad de equipos de alto consumo no puede ser negativa"
         )
         Integer equipos_alto_consumo,
 
-        @NotNull(message = "Las horas de aire acondicionado son obligatorias")
         @PositiveOrZero(
                 message = "Las horas de aire acondicionado no pueden ser negativas"
         )
@@ -75,13 +75,11 @@ public record AnalisisRequest(
         )
         Double horas_aire_acondicionado,
 
-        @NotNull(message = "El consumo del mes anterior es obligatorio")
         @Positive(
                 message = "El consumo del mes anterior debe ser mayor a 0"
         )
         Double consumo_mes_anterior_kwh,
 
-        @NotNull(message = "Los días facturados son obligatorios")
         @Min(
                 value = 1,
                 message = "Los días facturados deben ser mayores a 0"

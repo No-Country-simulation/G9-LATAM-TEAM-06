@@ -26,8 +26,8 @@ services:
       - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/energiai
-      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:?DB_USERNAME_required}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:?DB_PASSWORD_required}
       - MODELO_API_URL=http://modelo-api:8000
     networks:
       - energiai_net
@@ -46,10 +46,10 @@ services:
     ports:
       - "3307:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD_required}
       MYSQL_DATABASE: energiai
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME:?DB_USERNAME_required}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD_required}
     volumes:
       - mysql_data:/var/lib/mysql
     networks:

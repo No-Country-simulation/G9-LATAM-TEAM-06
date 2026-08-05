@@ -1,6 +1,7 @@
 package com.hackathon.energiai_api.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -31,7 +32,17 @@ public class IntegracionDsService {
 
     public record PrediccionDs(
             String categoria,
-            BigDecimal probabilidad
+            BigDecimal probabilidad,
+            String nivel_analisis,
+            List<String> campos_imputados,
+            List<RecomendacionDs> recomendaciones
+    ) {
+    }
+
+    public record RecomendacionDs(
+            String codigo,
+            String texto,
+            BigDecimal confianza
     ) {
     }
 

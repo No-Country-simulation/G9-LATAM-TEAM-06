@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 public class AnalisisService {
 
     private final CalculoService calculoService;
-    private final RecomendacionService recomendacionService;
     private final IntegracionDsService integracionDsService;
     private final AnalisisRepository analisisRepository;
 
@@ -31,8 +30,10 @@ public class AnalisisService {
         BigDecimal costoEstimado =
                 calculoService.calcularCostoMensual(request.consumo_kwh());
 
-        List<String> recomendaciones =
-                recomendacionService.generarRecomendaciones(request);
+        List<String> recomendaciones = prediccion.recomendaciones()
+                .stream()
+                .map(IntegracionDsService.RecomendacionDs::texto)
+                .toList();
 
         Analisis analisis = Analisis.builder()
                 .consumoKwh(request.consumo_kwh())
@@ -51,7 +52,9 @@ public class AnalisisService {
                 prediccion.categoria(),
                 prediccion.probabilidad(),
                 recomendaciones,
-                costoEstimado
+                costoEstimado,
+                prediccion.nivel_analisis(),
+                prediccion.campos_imputados()
         );
     }
 }

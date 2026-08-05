@@ -7,6 +7,8 @@ public record AnalisisResponse(
         String categoria,
         BigDecimal probabilidad,
         List<String> recomendaciones,
-        BigDecimal costo_estimado_mensual
+        BigDecimal costo_estimado_mensual,
+        String nivel_analisis,
+        List<String> campos_imputados
 ) {
 }
