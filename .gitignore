@@ -115,11 +115,3 @@ temp/
 *.sqlite
 *.sqlite3
 mysql_data/
-
-# =============================================================
-# Artefactos generados para compartir
-# =============================================================
-/Notebook-Hackathon-Colab.zip
-
-# Los CSV, notebooks, metadatos JSON y modelos .joblib del proyecto
-# se versionan intencionalmente porque son entregables del hackathon.
