@@ -96,20 +96,20 @@ public class IntegracionDsService {
             return fallbackPrediccion();
         }
         String categoria;
-        double probabilidadSimulada;
+        double probabilidadFija;
 
         if (request.consumo_kwh() > UMBRAL_CONSUMO_INEFICIENTE
                 || (request.horas_alto_consumo() >= UMBRAL_HORAS_ALTO_CONSUMO && Boolean.TRUE.equals(request.uso_horario_pico()))) {
             categoria = "Ineficiente";
-            probabilidadSimulada = 0.75 + (Math.random() * 0.20);
+            probabilidadFija = 0.80;
         } else if (request.consumo_kwh() < UMBRAL_CONSUMO_EFICIENTE && Boolean.FALSE.equals(request.uso_horario_pico())) {
             categoria = "Eficiente";
-            probabilidadSimulada = 0.80 + (Math.random() * 0.15);
+            probabilidadFija = 0.85;
         } else {
             categoria = "Moderado";
-            probabilidadSimulada = 0.60 + (Math.random() * 0.20);
+            probabilidadFija = 0.65;
         }
-        BigDecimal probabilidad = BigDecimal.valueOf(probabilidadSimulada).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal probabilidad = BigDecimal.valueOf(probabilidadFija).setScale(2, RoundingMode.HALF_UP);
         return new PrediccionDs(categoria, probabilidad);
     }
 }

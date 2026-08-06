@@ -1,5 +1,5 @@
 services:
-  
+
   energiai-frontend:
     build: ./energiai-frontend
     container_name: energiai_frontend
@@ -51,18 +51,19 @@ services:
       #- ./energiai-api:/app
       - ~/.m2:/root/.m2
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     secrets:
       - api_key_secret
       - db_password
-  
+
   db:
     image: mysql:9.7
     container_name: mysql_energiai
     ports:
       - "3307:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: energiai
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD_FILE: /run/secrets/db_password
@@ -72,6 +73,22 @@ services:
       - energiai_net
     secrets:
       - db_password
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${DB_ROOT_PASSWORD}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 volumes:
   mysql_data:
