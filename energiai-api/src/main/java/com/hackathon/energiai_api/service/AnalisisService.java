@@ -201,6 +201,7 @@ public class AnalisisService {
         return new HistorialResponse(
                 analisis.getId(),
                 analisis.getCreadoEn(),
+                analisis.getUsuarioId(),
                 analisis.getConsumoKwh(),
                 analisis.getTipoInmueble(),
                 analisis.getCantidadEquipos(),

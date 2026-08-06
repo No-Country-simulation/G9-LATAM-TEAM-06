@@ -8,6 +8,7 @@ import java.util.Map;
 public record HistorialResponse(
         Long id,
         LocalDateTime creadoEn,
+        String usuario,
         Integer consumoKwh,
         String tipoInmueble,
         Integer cantidadEquipos,
