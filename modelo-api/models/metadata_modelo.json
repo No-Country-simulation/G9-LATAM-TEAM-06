@@ -1,0 +1,51 @@
+{
+  "nombre": "clasificador-energia",
+  "version": "1.1.0",
+  "modelo_seleccionado": "regresion_logistica",
+  "metricas": {
+    "accuracy": 0.75,
+    "f1_macro": 0.7534760352391089
+  },
+  "metricas_basicas": {
+    "accuracy": 0.6625,
+    "f1_macro": 0.6682461677752564
+  },
+  "f1_promedio": 0.7108611015071826,
+  "columnas_entrada": [
+    "consumo_kwh",
+    "uso_horario_pico",
+    "cantidad_equipos",
+    "tipo_inmueble",
+    "horas_alto_consumo",
+    "cantidad_personas",
+    "area_m2",
+    "equipos_alto_consumo",
+    "horas_aire_acondicionado",
+    "dias_facturados",
+    "consumo_por_persona",
+    "consumo_por_m2",
+    "variacion_mensual",
+    "proporcion_equipos_alto_consumo"
+  ],
+  "categorias": [
+    0,
+    1,
+    2
+  ],
+  "mapeo_categorias": {
+    "0": "Ineficiente",
+    "1": "Moderado",
+    "2": "Eficiente"
+  },
+  "rango_consumo_kwh_entrenamiento": {
+    "minimo": 118.39,
+    "maximo": 5000.0
+  },
+  "limites_api_consumo_kwh": {
+    "minimo_exclusivo": 0,
+    "maximo": 5000
+  },
+  "entrenado_para_nivel_basico": true,
+  "tarifa_kwh": 0.75,
+  "moneda": "BRL"
+}
