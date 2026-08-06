@@ -48,6 +48,13 @@ public class AnalisisController {
         return ResponseEntity.ok(analisisService.obtenerPorId(id));
     }
 
+    @GetMapping("/historial/{id}")
+    public ResponseEntity<HistorialResponse> obtenerHistorialPorId(
+            @PathVariable @Positive Long id) {
+
+        return ResponseEntity.ok(analisisService.obtenerHistorialPorId(id));
+    }
+
     @GetMapping
     public ResponseEntity<Page<HistorialResponse>> listarAnalisis(
             @RequestParam String usuarioId,

@@ -151,6 +151,14 @@ public class AnalisisService {
     }
 
     @Transactional(readOnly = true)
+    public HistorialResponse obtenerHistorialPorId(Long id) {
+        Analisis analisis = analisisRepository.findById(id)
+                .orElseThrow(() -> new ServicioAnalisisException("Análisis no encontrado con ID: " + id));
+
+        return mapToHistorialResponse(analisis);
+    }
+
+    @Transactional(readOnly = true)
     public Page<HistorialResponse> listarPorUsuario(String usuarioId, String categoria, Pageable pageable) {
         Page<Analisis> resultados;
 
