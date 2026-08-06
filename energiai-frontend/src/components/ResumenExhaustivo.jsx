@@ -1,5 +1,3 @@
-import React from 'react';
-
 const colores = {
   ALTO: { backgroundColor: '#fef2f2', borderColor: '#fecaca', color: '#991b1b' },
   MEDIO: { backgroundColor: '#fffbeb', borderColor: '#fde68a', color: '#92400e' },
@@ -53,7 +51,7 @@ const styles = {
   },
 };
 
-export default function ResumenExhaustivo({ alto = 0, medio = 0, bajo = 0, total = 0, esperado = 0, valido = true }) {
+export default function ResumenExhaustivo({ alto = 0, medio = 0, bajo = 0, total = 0, esperado = 0 }) {
   return (
     <div style={styles.container}>
       <h3 style={styles.titulo}>Clasificación Automática de Equipos</h3>

@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { listarAnalisisPorUsuario } from "../services/api";
 import {
   History,
   Trash2,
   Calendar,
   DollarSign,
-  Activity,
   Zap,
   RefreshCw,
 } from "lucide-react";
@@ -16,10 +15,11 @@ function HistorialView({ usuario }) {
   const [error, setError] = useState(null);
   const [pagina, setPagina] = useState(0);
   const [tieneMas, setTieneMas] = useState(false);
+  const inicializado = useRef(false);
 
   const usuarioActual = usuario || "Invitado";
 
-  const cargarHistorial = async (page = 0, append = false) => {
+  const cargarHistorial = useCallback(async (page = 0, append = false) => {
     setCargando(true);
     setError(null);
     try {
@@ -50,16 +50,19 @@ function HistorialView({ usuario }) {
       setHistorial((prev) => (append ? [...prev, ...nuevos] : nuevos));
       setTieneMas(!data.last);
       setPagina(page);
-    } catch (err) {
+    } catch {
       setError("No se pudo cargar el historial desde el servidor.");
     } finally {
       setCargando(false);
     }
-  };
+  }, [usuarioActual]);
 
   useEffect(() => {
-    cargarHistorial(0, false);
-  }, [usuario]);
+    if (!inicializado.current) {
+      inicializado.current = true;
+      cargarHistorial(0, false);
+    }
+  }, [cargarHistorial]);
 
   const limpiarHistorial = () => {
     if (

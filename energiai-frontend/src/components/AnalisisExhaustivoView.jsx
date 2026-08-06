@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { crearAnalisisEnergetico } from '../services/api';
 import ElectrodomesticosSelector from './ElectrodomesticosSelector';
 import ResumenExhaustivo from './ResumenExhaustivo';
-import { CATALOGO, calcularTotales } from '../constants/catalogo';
+import { calcularTotales } from '../constants/catalogo';
 import {
   Send,
   CheckCircle2,
@@ -10,7 +10,6 @@ import {
   Zap,
   DollarSign,
   Lightbulb,
-  AlertTriangle,
   Settings,
   ChevronDown,
 } from 'lucide-react';
@@ -67,7 +66,7 @@ export default function AnalisisExhaustivoView({ usuario }) {
     try {
       const data = await crearAnalisisEnergetico(formData, usuario);
       setResultado(data);
-    } catch (err) {
+    } catch {
       setError('No se pudo obtener el análisis desde el servidor.');
     } finally {
       setCargando(false);

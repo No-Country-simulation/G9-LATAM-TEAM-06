@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import InicioView from "./components/InicioView";
 import AnalisisGeneralView from "./components/AnalisisGeneralView";
@@ -86,14 +86,5 @@ function App() {
     </div>
   );
 }
-
-const estilos = {
-  tarjeta: {
-    backgroundColor: "#ffffff",
-    padding: "24px",
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-  },
-};
 
 export default App;

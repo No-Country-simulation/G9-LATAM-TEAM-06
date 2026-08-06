@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { crearAnalisisEnergetico } from "../services/api";
 import {
   Send,
@@ -91,7 +91,7 @@ function AnalisisGeneralView({ usuario }) {
         "energiai_historial",
         JSON.stringify([nuevoRegistro, ...historialPrevio]),
       );
-    } catch (err) {
+    } catch {
       setError(
         "Error al cargar, intente mas tarde o verifique su conexión a internet.",
       );

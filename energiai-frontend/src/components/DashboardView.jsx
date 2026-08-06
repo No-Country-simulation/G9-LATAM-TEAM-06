@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { obtenerAnalisisEnergetico } from "../services/api";
 import {
   RefreshCw,
@@ -11,27 +11,29 @@ import {
 
 function DashboardView({ datosExternos }) {
   const [datos, setDatos] = useState(datosExternos || null);
-  const [cargando, setCargando] = useState(!datosExternos);
+  const [cargando, setCargando] = useState(() => !datosExternos);
   const [error, setError] = useState(null);
+  const inicializado = useRef(false);
 
-  const cargarDatos = async () => {
+  const cargarDatos = useCallback(async () => {
     setCargando(true);
     setError(null);
     try {
       const respuesta = await obtenerAnalisisEnergetico();
       setDatos(respuesta);
-    } catch (err) {
+    } catch {
       setError("No se pudo conectar con la API de Energiai");
     } finally {
       setCargando(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (!datosExternos) {
+    if (!datosExternos && !inicializado.current) {
+      inicializado.current = true;
       cargarDatos();
     }
-  }, [datosExternos]);
+  }, [datosExternos, cargarDatos]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>

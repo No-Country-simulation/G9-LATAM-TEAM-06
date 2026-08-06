@@ -1,5 +1,5 @@
 import React from 'react';
-import { CATALOGO, CATEGORIA_COLORS, getCategoriaById, calcularTotales } from '../constants/catalogo';
+import { CATALOGO, CATEGORIA_COLORS, calcularTotales } from '../constants/catalogo';
 
 export default function ElectrodomesticosSelector({
   value,
@@ -72,19 +72,18 @@ export default function ElectrodomesticosSelector({
             <div style={styles.grid}>
               {CATALOGO[cat].map(item => {
                 const cantidad = electrodomesticos[item.id] || 0;
-                const checked = cantidad > 0;
                 return (
                   <div key={item.id} style={styles.item}>
                     <label style={styles.label}>
                       <input
                         type="checkbox"
-                        checked={electrodomesticos[item.id] > 0}
+                        checked={cantidad > 0}
                         onChange={e => handleToggle(item.id, e.target.checked)}
                         style={styles.checkbox}
                       />
                       <span style={styles.nombre}>{item.label}</span>
                     </label>
-                    {electrodomesticos[item.id] > 0 && (
+                    {cantidad > 0 && (
                       <input
                         type="number"
                         min="1"
