@@ -9,6 +9,26 @@ services:
     depends_on:
       - energiai-api
 
+  modelo-api:
+    build: ./modelo-api
+    container_name: modelo_energia_api
+    ports:
+      - "8000:8000"
+    networks:
+      - energiai_net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   energiai-api:
     build: ./energiai-api
     container_name: energiai_api
@@ -17,12 +37,21 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/energiai
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_PROFILES_ACTIVE=prod
+      - MODELO_API_URL=http://modelo-api:8000
+      - MODELO_API_FALLBACK_ENABLED=true
+      - API_KEY_SECRET_FILE=/run/secrets/api_key_secret
+      - DB_PASSWORD_FILE=/run/secrets/db_password
+      - CORS_ALLOWED_ORIGINS=https://tudominio.com,https://www.tudominio.com
     networks:
       - energiai_net
     depends_on:
       - db
+      - modelo-api:
+          condition: service_healthy
+    secrets:
+      - api_key_secret
+      - db_password
 
   db:
     image: mysql:9.7
@@ -31,14 +60,21 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:root}
       MYSQL_DATABASE: energiai
       MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - energiai_net
+    secrets:
+      - db_password
 
 volumes:
   mysql_data:
-
 networks:
   energiai_net:
+
+secrets:
+  api_key_secret:
+    file: ./secrets/api_key_secret_prod.txt
+  db_password:
+    file: ./secrets/db_password_prod.txt

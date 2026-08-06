@@ -47,6 +47,24 @@ public class Analisis {
     @Column(name = "horas_alto_consumo", nullable = false)
     private Integer horasAltoConsumo;
 
+    @Column(name = "cantidad_personas", nullable = true)
+    private Integer cantidadPersonas;
+
+    @Column(name = "area_m2", nullable = true)
+    private Float areaM2;
+
+    @Column(name = "equipos_alto_consumo", nullable = true)
+    private Integer equiposAltoConsumo;
+
+    @Column(name = "horas_aire_acondicionado", nullable = true)
+    private Float horasAireAcondicionado;
+
+    @Column(name = "consumo_mes_anterior_kwh", nullable = true)
+    private Float consumoMesAnteriorKwh;
+
+    @Column(name = "dias_facturados", nullable = true)
+    private Integer diasFacturados;
+
     @Column(nullable = false, length = 30)
     private String categoria;
 

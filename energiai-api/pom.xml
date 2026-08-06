@@ -51,6 +51,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -98,11 +102,11 @@
             <artifactId>flyway-mysql</artifactId>
             <version>12.4.0</version>
         </dependency>
-        <!-- springdoc-openapi comentado temporalmente por incompatibilidad con Spring Boot 4.x -->
+        <!-- springdoc-openapi compatible con Spring Boot 4.x -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.6.0</version>
+            <version>3.1.0</version>
         </dependency>
         
     </dependencies>

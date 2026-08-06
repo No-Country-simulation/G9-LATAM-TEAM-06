@@ -8,6 +8,8 @@ import {
   DollarSign,
   Lightbulb,
   AlertTriangle,
+  Settings,
+  ChevronDown,
 } from "lucide-react";
 
 function AnalisisGeneralView({ usuario }) {
@@ -20,12 +22,19 @@ function AnalisisGeneralView({ usuario }) {
     dispositivos_alto: 0,
     dispositivos_medio: 0,
     dispositivos_bajo: 0,
+    cantidad_personas: null,
+    area_m2: null,
+    equipos_alto_consumo: null,
+    horas_aire_acondicionado: null,
+    consumo_mes_anterior_kwh: null,
+    dias_facturados: null,
   });
 
   const [resultado, setResultado] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
   const [validacionEquipos, setValidacionEquipos] = useState({ valido: true, mensaje: "" });
+  const [avanzadoAbierto, setAvanzadoAbierto] = useState(false);
 
   const validarEquipos = (data) => {
     const suma = (data.dispositivos_alto || 0) + (data.dispositivos_medio || 0) + (data.dispositivos_bajo || 0);
@@ -218,6 +227,110 @@ function AnalisisGeneralView({ usuario }) {
               <div style={estilos.errorEquipos}>
                 <AlertTriangle size={14} />
                 <span>{validacionEquipos.mensaje}</span>
+              </div>
+            )}
+          </div>
+
+          {/* SECCIÓN DATOS AVANZADOS (OPCIONAL) - COLAPSABLE */}
+          <div style={estilos.seccionAvanzado}>
+            <button
+              type="button"
+              onClick={() => setAvanzadoAbierto(!avanzadoAbierto)}
+              style={estilos.botonAvanzado}
+              aria-expanded={avanzadoAbierto}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Settings size={18} />
+                Datos Avanzados (Opcional)
+                <ChevronDown size={18} style={{ transform: avanzadoAbierto ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+              </span>
+            </button>
+            {avanzadoAbierto && (
+              <div style={estilos.gridAvanzado}>
+                <div style={estilos.grupoInput}>
+                  <label style={estilos.label}>Personas en el Inmueble:</label>
+                  <input
+                    type="number"
+                    name="cantidad_personas"
+                    value={formData.cantidad_personas || ""}
+                    onChange={handleChange}
+                    min="1"
+                    placeholder="Ej: 4"
+                    style={estilos.input}
+                  />
+                </div>
+
+                <div style={estilos.grupoInput}>
+                  <label style={estilos.label}>Área (m²):</label>
+                  <input
+                    type="number"
+                    name="area_m2"
+                    value={formData.area_m2 || ""}
+                    onChange={handleChange}
+                    min="0.1"
+                    step="0.1"
+                    placeholder="Ej: 85.5"
+                    style={estilos.input}
+                  />
+                </div>
+
+                <div style={estilos.grupoInput}>
+                  <label style={estilos.label}>Equipos Alto Consumo:</label>
+                  <input
+                    type="number"
+                    name="equipos_alto_consumo"
+                    value={formData.equipos_alto_consumo || ""}
+                    onChange={handleChange}
+                    min="0"
+                    max={formData.cantidad_equipos}
+                    placeholder="Ej: 2"
+                    style={estilos.input}
+                  />
+                  <small style={estilos.ayudaEquipo}>No puede superar cantidad de equipos ({formData.cantidad_equipos})</small>
+                </div>
+
+                <div style={estilos.grupoInput}>
+                  <label style={estilos.label}>Horas Aire Acondicionado / día:</label>
+                  <input
+                    type="number"
+                    name="horas_aire_acondicionado"
+                    value={formData.horas_aire_acondicionado || ""}
+                    onChange={handleChange}
+                    min="0"
+                    max="24"
+                    step="0.5"
+                    placeholder="Ej: 6"
+                    style={estilos.input}
+                  />
+                </div>
+
+                <div style={estilos.grupoInput}>
+                  <label style={estilos.label}>Consumo Mes Anterior (kWh):</label>
+                  <input
+                    type="number"
+                    name="consumo_mes_anterior_kwh"
+                    value={formData.consumo_mes_anterior_kwh || ""}
+                    onChange={handleChange}
+                    min="0.1"
+                    step="0.1"
+                    placeholder="Ej: 230"
+                    style={estilos.input}
+                  />
+                </div>
+
+                <div style={estilos.grupoInput}>
+                  <label style={estilos.label}>Días Facturados:</label>
+                  <input
+                    type="number"
+                    name="dias_facturados"
+                    value={formData.dias_facturados || ""}
+                    onChange={handleChange}
+                    min="1"
+                    max="60"
+                    placeholder="Ej: 30"
+                    style={estilos.input}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -462,6 +575,35 @@ const estilos = {
     borderRadius: "6px",
     color: "#991b1c",
     fontSize: "13px",
+  },
+  seccionAvanzado: {
+    marginTop: "16px",
+    border: "1px solid #e2e8f0",
+    borderRadius: "8px",
+    overflow: "hidden",
+  },
+  botonAvanzado: {
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "12px 16px",
+    backgroundColor: "#f8fafc",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "14px",
+    fontWeight: 600,
+    color: "#334155",
+    cursor: "pointer",
+    transition: "background-color 0.2s",
+  },
+  gridAvanzado: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "16px",
+    padding: "16px",
+    backgroundColor: "#f8fafc",
+    borderTop: "1px solid #e2e8f0",
   },
   gridMetricas: {
     display: "grid",

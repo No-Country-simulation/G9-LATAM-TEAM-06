@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hackathon.energiai_api.DTOs.AnalisisRequest;
 import com.hackathon.energiai_api.DTOs.AnalisisResponse;
+import com.hackathon.energiai_api.DTOs.HistorialResponse;
 import com.hackathon.energiai_api.service.AnalisisService;
 
 import jakarta.validation.Valid;
@@ -48,12 +49,12 @@ public class AnalisisController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<AnalisisResponse>> listarAnalisis(
+    public ResponseEntity<Page<HistorialResponse>> listarAnalisis(
             @RequestParam String usuarioId,
             @RequestParam(required = false) String categoria,
             @PageableDefault(size = 10, sort = "creadoEn", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        Page<AnalisisResponse> pagina = analisisService.listarPorUsuario(usuarioId, categoria, pageable);
+        Page<HistorialResponse> pagina = analisisService.listarPorUsuario(usuarioId, categoria, pageable);
         return ResponseEntity.ok(pagina);
     }
 }

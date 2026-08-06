@@ -11,6 +11,8 @@ import {
   DollarSign,
   Lightbulb,
   AlertTriangle,
+  Settings,
+  ChevronDown,
 } from 'lucide-react';
 
 export default function AnalisisExhaustivoView({ usuario }) {
@@ -21,11 +23,18 @@ export default function AnalisisExhaustivoView({ usuario }) {
     horas_alto_consumo: 6,
     uso_horario_pico: true,
     electrodomesticos: {},
+    cantidad_personas: null,
+    area_m2: null,
+    equipos_alto_consumo: null,
+    horas_aire_acondicionado: null,
+    consumo_mes_anterior_kwh: null,
+    dias_facturados: null,
   });
 
   const [resultado, setResultado] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
+  const [avanzadoAbierto, setAvanzadoAbierto] = useState(false);
 
   const totales = calcularTotales(formData.electrodomesticos);
   const totalSeleccionado = Object.values(formData.electrodomesticos).reduce((a, b) => a + b, 0);
@@ -140,6 +149,110 @@ export default function AnalisisExhaustivoView({ usuario }) {
             <label htmlFor="uso_horario_pico" style={{ color: '#334155', cursor: 'pointer', fontSize: '14px' }}>
               ¿Uso frecuente en horario pico?
             </label>
+          </div>
+
+          {/* SECCIÓN DATOS AVANZADOS (OPCIONAL) - COLAPSABLE */}
+          <div style={styles.seccionAvanzado}>
+            <button
+              type="button"
+              onClick={() => setAvanzadoAbierto(!avanzadoAbierto)}
+              style={styles.botonAvanzado}
+              aria-expanded={avanzadoAbierto}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Settings size={18} />
+                Datos Avanzados (Opcional)
+                <ChevronDown size={18} style={{ transform: avanzadoAbierto ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </span>
+            </button>
+            {avanzadoAbierto && (
+              <div style={styles.gridAvanzado}>
+                <div style={styles.grupoInput}>
+                  <label style={styles.label}>Personas en el Inmueble:</label>
+                  <input
+                    type="number"
+                    name="cantidad_personas"
+                    value={formData.cantidad_personas || ''}
+                    onChange={handleChange}
+                    min="1"
+                    placeholder="Ej: 4"
+                    style={styles.input}
+                  />
+                </div>
+
+                <div style={styles.grupoInput}>
+                  <label style={styles.label}>Área (m²):</label>
+                  <input
+                    type="number"
+                    name="area_m2"
+                    value={formData.area_m2 || ''}
+                    onChange={handleChange}
+                    min="0.1"
+                    step="0.1"
+                    placeholder="Ej: 85.5"
+                    style={styles.input}
+                  />
+                </div>
+
+                <div style={styles.grupoInput}>
+                  <label style={styles.label}>Equipos Alto Consumo:</label>
+                  <input
+                    type="number"
+                    name="equipos_alto_consumo"
+                    value={formData.equipos_alto_consumo || ''}
+                    onChange={handleChange}
+                    min="0"
+                    max={formData.cantidad_equipos}
+                    placeholder="Ej: 2"
+                    style={styles.input}
+                  />
+                  <small style={styles.ayudaEquipo}>No puede superar cantidad de equipos ({formData.cantidad_equipos})</small>
+                </div>
+
+                <div style={styles.grupoInput}>
+                  <label style={styles.label}>Horas Aire Acondicionado / día:</label>
+                  <input
+                    type="number"
+                    name="horas_aire_acondicionado"
+                    value={formData.horas_aire_acondicionado || ''}
+                    onChange={handleChange}
+                    min="0"
+                    max="24"
+                    step="0.5"
+                    placeholder="Ej: 6"
+                    style={styles.input}
+                  />
+                </div>
+
+                <div style={styles.grupoInput}>
+                  <label style={styles.label}>Consumo Mes Anterior (kWh):</label>
+                  <input
+                    type="number"
+                    name="consumo_mes_anterior_kwh"
+                    value={formData.consumo_mes_anterior_kwh || ''}
+                    onChange={handleChange}
+                    min="0.1"
+                    step="0.1"
+                    placeholder="Ej: 230"
+                    style={styles.input}
+                  />
+                </div>
+
+                <div style={styles.grupoInput}>
+                  <label style={styles.label}>Días Facturados:</label>
+                  <input
+                    type="number"
+                    name="dias_facturados"
+                    value={formData.dias_facturados || ''}
+                    onChange={handleChange}
+                    min="1"
+                    max="60"
+                    placeholder="Ej: 30"
+                    style={styles.input}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <button type="submit" disabled={botonDisabled} style={styles.botonSubmit}>
@@ -336,6 +449,39 @@ const styles = {
     backgroundColor: '#fee2e2',
     padding: '12px',
     borderRadius: '8px',
+  },
+  seccionAvanzado: {
+    marginTop: '16px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    overflow: 'hidden',
+  },
+  botonAvanzado: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+    backgroundColor: '#f8fafc',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#334155',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+  },
+  gridAvanzado: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: '16px',
+    padding: '16px',
+    backgroundColor: '#f8fafc',
+    borderTop: '1px solid #e2e8f0',
+  },
+  ayudaEquipo: {
+    fontSize: '11px',
+    color: '#94a3b8',
   },
   gridMetricas: {
     display: 'grid',

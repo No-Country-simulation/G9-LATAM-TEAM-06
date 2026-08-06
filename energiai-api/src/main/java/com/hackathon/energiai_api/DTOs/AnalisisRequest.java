@@ -55,6 +55,51 @@ public record AnalisisRequest(
                 message = "Las horas de alto consumo no pueden superar las 24 horas"
         )
         Integer horas_alto_consumo,
+
+        @Min(
+                value = 1,
+                message = "La cantidad de personas debe ser mayor a 0"
+        )
+        Integer cantidad_personas,
+
+        @Min(
+                value = 1,
+                message = "El área debe ser mayor a 0"
+        )
+        Float area_m2,
+
+        @Min(
+                value = 0,
+                message = "Los equipos de alto consumo no pueden ser negativos"
+        )
+        Integer equipos_alto_consumo,
+
+        @Min(
+                value = 0,
+                message = "Las horas de aire acondicionado no pueden ser negativas"
+        )
+        @Max(
+                value = 24,
+                message = "Las horas de aire acondicionado no pueden superar las 24 horas"
+        )
+        Float horas_aire_acondicionado,
+
+        @Min(
+                value = 1,
+                message = "El consumo del mes anterior debe ser mayor a 0"
+        )
+        Float consumo_mes_anterior_kwh,
+
+        @Min(
+                value = 1,
+                message = "Los días facturados deben ser mayor a 0"
+        )
+        @Max(
+                value = 60,
+                message = "Los días facturados no pueden superar los 60"
+        )
+        Integer dias_facturados,
+
         String usuarioId,
         Map<String, Integer> electrodomesticos,
         Integer dispositivos_alto,
@@ -72,6 +117,14 @@ public record AnalisisRequest(
             int media = dispositivos_medio != null ? dispositivos_medio : 0;
             int baja = dispositivos_bajo != null ? dispositivos_bajo : 0;
             return (alta + media + baja) == cantidad_equipos;
+        }
+        return true;
+    }
+
+    @AssertTrue(message = "Los equipos de alto consumo no pueden superar la cantidad total de equipos")
+    public boolean isEquiposAltoConsumoValido() {
+        if (equipos_alto_consumo != null && cantidad_equipos != null) {
+            return equipos_alto_consumo <= cantidad_equipos;
         }
         return true;
     }

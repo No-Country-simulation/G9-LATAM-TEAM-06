@@ -16,6 +16,8 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Component
@@ -27,6 +29,9 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
     @Value("${api.key.secret}")
     private String apiKeySecret;
+
+    @Value("${api.key.secret.file:}")
+    private String apiKeySecretFile;
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -48,11 +53,13 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
         String apiKey = request.getHeader(API_KEY_HEADER);
         
+        String effectiveApiKeySecret = resolveApiKeySecret();
+
         logger.debug("Request URI: {}", requestURI);
         logger.debug("API Key header received: {}", apiKey != null ? "present" : "missing");
-        logger.debug("Expected API key: {}", apiKeySecret != null ? "present" : "missing");
+        logger.debug("Effective API key: {}", effectiveApiKeySecret != null ? "present" : "missing");
 
-        if (apiKey == null || !apiKeySecret.equals(apiKey)) {
+        if (apiKey == null || !effectiveApiKeySecret.equals(apiKey)) {
             logger.warn("API Key validation failed for URI: {}", requestURI);
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write("API Key inválido");
@@ -66,5 +73,29 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);
+    }
+
+    private String resolveApiKeySecret() {
+        // Prioridad 1: Leer desde archivo (Docker Secrets)
+        if (apiKeySecretFile != null && !apiKeySecretFile.isBlank()) {
+            try {
+                String secretFromFile = Files.readString(Paths.get(apiKeySecretFile)).trim();
+                if (!secretFromFile.isEmpty()) {
+                    logger.info("API Key cargada desde archivo: {}", apiKeySecretFile);
+                    return secretFromFile;
+                }
+            } catch (IOException e) {
+                logger.warn("No se pudo leer API Key desde archivo {}: {}", apiKeySecretFile, e.getMessage());
+            }
+        }
+        
+        // Prioridad 2: Valor directo desde property/env (fallback para desarrollo sin secrets)
+        if (apiKeySecret != null && !apiKeySecret.isBlank()) {
+            logger.info("API Key cargada desde property/env");
+            return apiKeySecret;
+        }
+        
+        logger.error("API Key no configurada (ni archivo ni property)");
+        return null;
     }
 }

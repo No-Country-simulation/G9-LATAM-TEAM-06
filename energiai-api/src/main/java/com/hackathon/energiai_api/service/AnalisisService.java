@@ -1,6 +1,7 @@
 package com.hackathon.energiai_api.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hackathon.energiai_api.DTOs.AnalisisRequest;
 import com.hackathon.energiai_api.DTOs.AnalisisResponse;
+import com.hackathon.energiai_api.DTOs.HistorialResponse;
+import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
 import com.hackathon.energiai_api.exception.ServicioAnalisisException;
 import com.hackathon.energiai_api.model.Analisis;
 import com.hackathon.energiai_api.repository.AnalisisRepository;
@@ -53,14 +56,22 @@ public class AnalisisService {
     @Transactional
     public AnalisisResponse analizar(AnalisisRequest request) {
 
-        IntegracionDsService.PrediccionDs prediccion
-                = integracionDsService.obtenerPrediccionDs(request);
+        ModeloApiResponse modeloResponse = integracionDsService.obtenerRespuestaCompleta(request);
+
+        IntegracionDsService.PrediccionDs prediccion;
+        if (modeloResponse != null && modeloResponse.categoria() != null) {
+            BigDecimal probabilidad = BigDecimal.valueOf(modeloResponse.probabilidad() != null ? modeloResponse.probabilidad() : 0.5)
+                    .setScale(2, RoundingMode.HALF_UP);
+            prediccion = new IntegracionDsService.PrediccionDs(modeloResponse.categoria(), probabilidad);
+        } else {
+            prediccion = integracionDsService.obtenerPrediccionDs(request);
+        }
 
         BigDecimal costo_estimado_mensual
                 = calculoService.calcularCostoMensual(request.consumo_kwh());
 
         List<String> recomendaciones
-                = recomendacionService.generarRecomendaciones(request);
+                = recomendacionService.generarRecomendaciones(request, modeloResponse);
 
         // Clasificar electrodomésticos si se proporcionan (mapa detallado) O usar campos manuales (General)
         Map<String, Integer> clasificacionEquipos = new LinkedHashMap<>();
@@ -108,6 +119,12 @@ public class AnalisisService {
                 .cantidadEquipos(request.cantidad_equipos())
                 .tipoInmueble(request.tipo_inmueble().trim())
                 .horasAltoConsumo(request.horas_alto_consumo())
+                .cantidadPersonas(request.cantidad_personas())
+                .areaM2(request.area_m2())
+                .equiposAltoConsumo(request.equipos_alto_consumo())
+                .horasAireAcondicionado(request.horas_aire_acondicionado())
+                .consumoMesAnteriorKwh(request.consumo_mes_anterior_kwh())
+                .diasFacturados(request.dias_facturados())
                 .categoria(prediccion.categoria())
                 .probabilidad(prediccion.probabilidad())
                 .costo_estimado_mensual(costo_estimado_mensual)
@@ -134,7 +151,7 @@ public class AnalisisService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AnalisisResponse> listarPorUsuario(String usuarioId, String categoria, Pageable pageable) {
+    public Page<HistorialResponse> listarPorUsuario(String usuarioId, String categoria, Pageable pageable) {
         Page<Analisis> resultados;
 
         if (categoria != null && !categoria.isBlank()) {
@@ -143,7 +160,58 @@ public class AnalisisService {
             resultados = analisisRepository.findByUsuarioId(usuarioId, pageable);
         }
 
-        return resultados.map(this::mapToResponseDTO);
+        return resultados.map(this::mapToHistorialResponse);
+    }
+
+    private HistorialResponse mapToHistorialResponse(Analisis analisis) {
+        // Deserializar clasificación si existe
+        Map<String, Integer> clasificacionEquipos = null;
+        if (analisis.getElectrodomesticosDetalle() != null) {
+            try {
+                clasificacionEquipos = objectMapper.readValue(
+                    analisis.getElectrodomesticosDetalle(),
+                    new com.fasterxml.jackson.core.type.TypeReference<Map<String, Integer>>() {}
+                );
+            } catch (Exception e) {
+                clasificacionEquipos = null;
+            }
+        }
+
+        AnalisisRequest requestTemporal = new AnalisisRequest(
+                analisis.getConsumoKwh(),
+                analisis.getUsoHorarioPico(),
+                analisis.getCantidadEquipos(),
+                analisis.getTipoInmueble(),
+                analisis.getHorasAltoConsumo(),
+                analisis.getCantidadPersonas(),
+                analisis.getAreaM2(),
+                analisis.getEquiposAltoConsumo(),
+                analisis.getHorasAireAcondicionado(),
+                analisis.getConsumoMesAnteriorKwh(),
+                analisis.getDiasFacturados(),
+                analisis.getUsuarioId(),
+                null,
+                null,
+                null,
+                null
+        );
+
+        List<String> recomendaciones = recomendacionService.generarRecomendaciones(requestTemporal);
+
+        return new HistorialResponse(
+                analisis.getId(),
+                analisis.getCreadoEn(),
+                analisis.getConsumoKwh(),
+                analisis.getTipoInmueble(),
+                analisis.getCantidadEquipos(),
+                analisis.getHorasAltoConsumo(),
+                analisis.getUsoHorarioPico(),
+                analisis.getCategoria(),
+                analisis.getProbabilidad(),
+                analisis.getCosto_estimado_mensual(),
+                recomendaciones,
+                clasificacionEquipos
+        );
     }
 
     private AnalisisResponse mapToResponseDTO(Analisis analisis) {
@@ -153,6 +221,12 @@ public class AnalisisService {
                 analisis.getCantidadEquipos(),
                 analisis.getTipoInmueble(),
                 analisis.getHorasAltoConsumo(),
+                analisis.getCantidadPersonas(),
+                analisis.getAreaM2(),
+                analisis.getEquiposAltoConsumo(),
+                analisis.getHorasAireAcondicionado(),
+                analisis.getConsumoMesAnteriorKwh(),
+                analisis.getDiasFacturados(),
                 analisis.getUsuarioId(),
                 null,
                 null,
