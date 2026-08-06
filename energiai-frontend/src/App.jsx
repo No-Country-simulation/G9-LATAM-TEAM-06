@@ -4,7 +4,6 @@ import InicioView from "./components/InicioView";
 import AnalisisGeneralView from "./components/AnalisisGeneralView";
 import AnalisisExhaustivoView from "./components/AnalisisExhaustivoView";
 import HistorialView from "./components/HistorialView";
-import DashboardView from "./components/DashboardView";
 
 function App() {
   // Estado inicial en 'inicio'
@@ -71,16 +70,13 @@ function App() {
           <InicioView onIrAAnalisis={() => setVistaActual("general")} />
         )}
 
-        {/* VISTA 1: DASHBOARD */}
-        {vistaActual === "dashboard" && <DashboardView usuario={usuario} />}
-
-        {/* VISTA 2: ANÁLISIS GENERAL */}
+        {/* VISTA 1: ANÁLISIS GENERAL */}
         {vistaActual === "general" && <AnalisisGeneralView usuario={usuario} />}
 
-        {/* VISTA 3: ANÁLISIS EXHAUSTIVO */}
+        {/* VISTA 2: ANÁLISIS EXHAUSTIVO */}
         {vistaActual === "exhaustivo" && <AnalisisExhaustivoView usuario={usuario} />}
 
-        {/* VISTA 4: HISTORIAL */}
+        {/* VISTA 3: HISTORIAL */}
         {vistaActual === "historial" && <HistorialView usuario={usuario} />}
       </main>
     </div>

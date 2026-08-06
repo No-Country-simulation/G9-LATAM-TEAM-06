@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Zap,
   UserCheck,
-  LayoutDashboard,
 } from "lucide-react";
 
 function Sidebar({
@@ -20,7 +19,6 @@ function Sidebar({
 }) {
   const menuItems = [
     { id: "inicio", label: "Inicio", icon: <Home size={20} /> },
-    { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
     { id: "general", label: "Análisis General", icon: <BarChart2 size={20} /> },
     {
       id: "exhaustivo",
