@@ -59,6 +59,13 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         logger.debug("API Key header received: {}", apiKey != null ? "present" : "missing");
         logger.debug("Effective API key: {}", effectiveApiKeySecret != null ? "present" : "missing");
 
+        if (effectiveApiKeySecret == null) {
+            logger.error("API Key no configurada en el servidor para URI: {}", requestURI);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.getWriter().write("API Key no configurada en el servidor");
+            return;
+        }
+
         if (apiKey == null || !effectiveApiKeySecret.equals(apiKey)) {
             logger.warn("API Key validation failed for URI: {}", requestURI);
             response.setStatus(HttpStatus.UNAUTHORIZED.value());

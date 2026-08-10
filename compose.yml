@@ -7,9 +7,6 @@ services:
       - "80:80"
     networks:
       - energiai_net
-    volumes:
-      - ./energiai-frontend:/app
-      - /app/node_modules
     depends_on:
       - energiai-api
 
@@ -17,7 +14,7 @@ services:
     build: ./modelo-api
     container_name: modelo_energia_api
     ports:
-      - "8000:8000"
+      - "8080:8000"
     networks:
       - energiai_net
     healthcheck:
@@ -37,7 +34,7 @@ services:
     build: ./energiai-api
     container_name: energiai_api
     ports:
-      - "8080:8080"
+      - "8090:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/energiai
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
@@ -47,9 +44,6 @@ services:
       - CORS_ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://localhost:8080,http://127.0.0.1,http://127.0.0.1:80,http://127.0.0.1:8080
     networks:
       - energiai_net
-    volumes:
-      #- ./energiai-api:/app
-      - ~/.m2:/root/.m2
     depends_on:
       db:
         condition: service_healthy

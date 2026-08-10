@@ -90,7 +90,7 @@ public class IntegracionDsService {
         return new PrediccionDs("Moderado", BigDecimal.valueOf(0.50));
     }
 
-    private PrediccionDs fallbackPrediccion(AnalisisRequest request) {
+    public PrediccionDs fallbackPrediccion(AnalisisRequest request) {
         if (request == null) {
             return fallbackPrediccion();
         }

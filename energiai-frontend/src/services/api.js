@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 const API_KEY = import.meta.env.VITE_API_KEY || "";
 
 function getHeaders() {
@@ -65,17 +65,4 @@ export async function listarAnalisisPorUsuario(usuarioId, categoria = null, page
     console.error("Error al listar análisis:", error);
     throw error;
   }
-}
-
-export async function obtenerAnalisisEnergetico(datosCustom = null, usuarioId = "invitado") {
-  const payloadPorDefecto = {
-    consumo_kwh: 250,
-    tipo_inmueble: "Residencial",
-    cantidad_equipos: 5,
-    horas_alto_consumo: 6,
-    uso_horario_pico: true,
-  };
-
-  const bodyAEnviar = datosCustom || payloadPorDefecto;
-  return crearAnalisisEnergetico(bodyAEnviar, usuarioId);
 }

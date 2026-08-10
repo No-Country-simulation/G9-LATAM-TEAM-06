@@ -64,7 +64,7 @@ public class AnalisisService {
                     .setScale(2, RoundingMode.HALF_UP);
             prediccion = new IntegracionDsService.PrediccionDs(modeloResponse.categoria(), probabilidad);
         } else {
-            prediccion = integracionDsService.obtenerPrediccionDs(request);
+            prediccion = integracionDsService.fallbackPrediccion(request);
         }
 
         BigDecimal costo_estimado_mensual

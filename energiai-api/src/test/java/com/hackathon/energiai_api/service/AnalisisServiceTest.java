@@ -57,7 +57,7 @@ class AnalisisServiceTest {
         );
 
         when(integracionDsService.obtenerRespuestaCompleta(any())).thenReturn(null);
-        when(integracionDsService.obtenerPrediccionDs(any())).thenReturn(
+        when(integracionDsService.fallbackPrediccion(any())).thenReturn(
                 new IntegracionDsService.PrediccionDs("Moderado", BigDecimal.valueOf(0.60))
         );
         when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));

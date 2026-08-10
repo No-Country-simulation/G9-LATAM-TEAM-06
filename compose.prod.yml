@@ -39,16 +39,17 @@ services:
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_PROFILES_ACTIVE=prod
       - MODELO_API_URL=http://modelo-api:8000
-      - MODELO_API_FALLBACK_ENABLED=true
+      - MODELO_API_FALLBACK_ENABLED=false
       - API_KEY_SECRET_FILE=/run/secrets/api_key_secret
       - DB_PASSWORD_FILE=/run/secrets/db_password
       - CORS_ALLOWED_ORIGINS=https://tudominio.com,https://www.tudominio.com
     networks:
       - energiai_net
     depends_on:
-      - db
-      - modelo-api:
-          condition: service_healthy
+      db:
+        condition: service_started
+      modelo-api:
+        condition: service_healthy
     secrets:
       - api_key_secret
       - db_password
@@ -57,7 +58,7 @@ services:
     image: mysql:9.7
     container_name: mysql_energiai
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:root}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: energiai
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD_FILE: /run/secrets/db_password
