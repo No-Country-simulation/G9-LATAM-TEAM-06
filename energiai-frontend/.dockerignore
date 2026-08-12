@@ -1,0 +1,8 @@
+node_modules
+node_modules_root_backup
+package-lock.json.root
+dist
+dist-ssr
+.git
+.gitignore
+*.log

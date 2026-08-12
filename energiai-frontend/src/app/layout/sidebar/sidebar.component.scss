@@ -1,0 +1,17 @@
+.logo-full {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  .fas {
+    font-size: 16px;
+    position: relative;
+    top: -1px;
+  }
+}
+
+.logo-collapsed {
+  .fas {
+    font-size: 18px;
+  }
+}

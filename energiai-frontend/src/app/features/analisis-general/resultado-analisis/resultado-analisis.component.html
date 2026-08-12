@@ -1,0 +1,56 @@
+<div class="main-card mb-3 card">
+  <div class="card-header card-header-title d-flex align-items-center gap-2">
+    <i class="header-icon pe-7s-check text-success"></i>
+    <h5 class="mb-0">Resultado Generado con Éxito</h5>
+  </div>
+  <div class="card-body">
+    <div class="g-0 row">
+      <div class="col-md-6">
+        <div class="card no-shadow rm-border bg-transparent widget-chart text-start">
+          <div class="widget-chart-content">
+            <div class="widget-subheading">Categoría de Consumo</div>
+            <div class="widget-numbers">
+              <span
+                class="badge rounded-pill {{ claseCategoria() }}"
+              >
+                {{ resultado().categoria }}
+              </span>
+            </div>
+            <div class="widget-description opacity-8">
+              Probabilidad: {{ formatearProbabilidad(resultado().probabilidad) }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card no-shadow rm-border bg-transparent widget-chart text-start">
+          <div class="widget-chart-content">
+            <div class="widget-subheading">Costo Estimado Mensual</div>
+            <div class="widget-numbers text-success">
+              <i class="pe-7s-cash pe-1 text-success"></i>
+              {{ formatearCosto(resultado().costo_estimado_mensual) }}
+            </div>
+            <div class="widget-description opacity-8">Estimación en divisa base</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main-card mb-3 card">
+  <div class="card-header card-header-title d-flex align-items-center gap-2">
+    <i class="header-icon pe-7s-light text-warning"></i>
+    <h5 class="mb-0">Recomendaciones</h5>
+  </div>
+  <div class="card-body">
+    <ul class="list-unstyled mb-0 lista-recomendaciones">
+      @for (recomendacion of resultado().recomendaciones; track $index) {
+        <li class="d-flex align-items-start gap-2">
+          <i class="pe-7s-angle-right-circle text-warning"></i>
+          <span>{{ recomendacion }}</span>
+        </li>
+      }
+    </ul>
+  </div>
+</div>

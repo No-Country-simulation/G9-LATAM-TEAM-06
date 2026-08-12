@@ -1,0 +1,104 @@
+<div class="seccion-avanzado">
+  <button
+    type="button"
+    class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-2"
+    (click)="alternar.emit()"
+    [attr.aria-expanded]="abierto()"
+  >
+    <span class="rotulo fw-semibold">
+      <i class="pe-7s-config me-1"></i>
+      Datos Avanzados (Opcional)
+      <i class="pe-7s-angle-down flecha ms-1" [class.rotada]="abierto()"></i>
+    </span>
+  </button>
+
+  @if (abierto()) {
+    <div class="grid-avanzado mt-3" [formGroup]="formulario()">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label" for="cantidad_personas">Personas en el Inmueble:</label>
+          <input
+            id="cantidad_personas"
+            type="number"
+            class="form-control"
+            formControlName="cantidad_personas"
+            min="1"
+            placeholder="Ej: 4"
+          />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="area_m2">Área (m²):</label>
+          <input
+            id="area_m2"
+            type="number"
+            class="form-control"
+            formControlName="area_m2"
+            min="0.1"
+            step="0.1"
+            placeholder="Ej: 85.5"
+          />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="equipos_alto_consumo">Equipos Alto Consumo:</label>
+          <input
+            id="equipos_alto_consumo"
+            type="number"
+            class="form-control"
+            formControlName="equipos_alto_consumo"
+            min="0"
+            placeholder="Ej: 2"
+          />
+          <div class="form-text">
+            No puede superar cantidad de equipos ({{
+              formulario().get('cantidad_equipos')?.value
+            }})
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="horas_aire_acondicionado">
+            Horas Aire Acondicionado / día:
+          </label>
+          <input
+            id="horas_aire_acondicionado"
+            type="number"
+            class="form-control"
+            formControlName="horas_aire_acondicionado"
+            min="0"
+            max="24"
+            step="0.5"
+            placeholder="Ej: 6"
+          />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="consumo_mes_anterior_kwh">Consumo Mes Anterior (kWh):</label>
+          <input
+            id="consumo_mes_anterior_kwh"
+            type="number"
+            class="form-control"
+            formControlName="consumo_mes_anterior_kwh"
+            min="0.1"
+            step="0.1"
+            placeholder="Ej: 230"
+          />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="dias_facturados">Días Facturados:</label>
+          <input
+            id="dias_facturados"
+            type="number"
+            class="form-control"
+            formControlName="dias_facturados"
+            min="1"
+            max="60"
+            placeholder="Ej: 30"
+          />
+        </div>
+      </div>
+    </div>
+  }
+</div>

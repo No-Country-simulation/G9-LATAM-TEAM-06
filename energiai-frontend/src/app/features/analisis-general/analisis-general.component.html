@@ -1,0 +1,152 @@
+<app-page-title
+  heading="Análisis General"
+  subheading="Completa los datos para consultar la estimación energética"
+  icon="pe-7s-display1"
+></app-page-title>
+
+<div class="main-card mb-3 card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <i class="header-icon pe-7s-edit me-2"></i>
+      Parámetros del Análisis
+    </h5>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="formulario" (ngSubmit)="enviar()">
+      <div class="row g-3">
+        <div class="col-md-6 col-xl-3">
+          <label class="form-label" for="consumo_kwh">Consumo Mensual (kWh):</label>
+          <input
+            id="consumo_kwh"
+            type="number"
+            class="form-control"
+            formControlName="consumo_kwh"
+            min="1"
+            required
+          />
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+          <label class="form-label" for="tipo_inmueble">Tipo de Inmueble:</label>
+          <select id="tipo_inmueble" class="form-select" formControlName="tipo_inmueble">
+            <option value="Residencial">Residencial</option>
+            <option value="Comercial">Comercial</option>
+          </select>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+          <label class="form-label" for="cantidad_equipos">Cantidad de Equipos:</label>
+          <input
+            id="cantidad_equipos"
+            type="number"
+            class="form-control"
+            formControlName="cantidad_equipos"
+            min="1"
+            required
+          />
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+          <label class="form-label" for="horas_alto_consumo">Horas Alto Consumo / día:</label>
+          <input
+            id="horas_alto_consumo"
+            type="number"
+            class="form-control"
+            formControlName="horas_alto_consumo"
+            min="0"
+            max="24"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="seccion-equipos mt-4">
+        <h6 class="fw-bold">Distribución de Equipos por Consumo</h6>
+        <p class="ayuda text-muted">
+          La suma debe igualar la cantidad de equipos ({{
+            formulario.get('cantidad_equipos')?.value
+          }})
+        </p>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label" for="dispositivos_alto">Dispositivos Alto Consumo</label>
+            <input
+              id="dispositivos_alto"
+              type="number"
+              class="form-control"
+              formControlName="dispositivos_alto"
+              min="0"
+            />
+            <div class="form-text">Aire acondicionado, calefactor, secadora, etc.</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="dispositivos_medio">Dispositivos Medio Consumo</label>
+            <input
+              id="dispositivos_medio"
+              type="number"
+              class="form-control"
+              formControlName="dispositivos_medio"
+              min="0"
+            />
+            <div class="form-text">Lavadora, lavavajillas, plancha, microondas, etc.</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="dispositivos_bajo">Dispositivos Bajo Consumo</label>
+            <input
+              id="dispositivos_bajo"
+              type="number"
+              class="form-control"
+              formControlName="dispositivos_bajo"
+              min="0"
+            />
+            <div class="form-text">Nevera, TV, PC, luces LED, router, cargadores, etc.</div>
+          </div>
+        </div>
+        @if (mensajeSumaEquipos) {
+          <div class="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0">
+            <i class="pe-7s-close-circle"></i>
+            <span>{{ mensajeSumaEquipos }}</span>
+          </div>
+        }
+      </div>
+
+      <app-datos-avanzados
+        [formulario]="formulario"
+        [abierto]="avanzadoAbierto()"
+        (alternar)="alternarAvanzado()"
+      ></app-datos-avanzados>
+
+      <div class="form-check mt-3">
+        <input
+          id="uso_horario_pico"
+          type="checkbox"
+          class="form-check-input"
+          formControlName="uso_horario_pico"
+        />
+        <label class="form-check-label" for="uso_horario_pico">
+          ¿Uso frecuente en horario pico?
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary btn-lg mt-4"
+        [disabled]="cargando() || !!mensajeSumaEquipos"
+      >
+        <i class="pe-7s-paper-plane me-2"></i>
+        {{ cargando() ? 'Analizando en Spring Boot...' : 'Generar Análisis' }}
+      </button>
+    </form>
+  </div>
+</div>
+
+@if (errorSignal()) {
+  <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+    <i class="pe-7s-close-circle"></i>
+    <span>{{ errorSignal() }}</span>
+  </div>
+}
+
+@if (resultado()) {
+  <app-resultado-analisis [resultado]="resultado()!"></app-resultado-analisis>
+}

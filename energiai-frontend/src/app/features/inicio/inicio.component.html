@@ -1,0 +1,44 @@
+<section class="hero-inicio">
+  <div class="d-flex align-items-center gap-2 text-white mb-3">
+    <i class="fas fa-bolt"></i>
+    <span class="text-uppercase fw-semibold ls-1" style="letter-spacing: 1px">
+      Optimizador energético con IA
+    </span>
+  </div>
+  <h1>Toma el control del consumo eléctrico en tu hogar o negocio</h1>
+  <p>
+    <b>Energi AI</b> analiza tu historial y hábitos de uso de
+    electrodomésticos para ofrecerte estimaciones de costo, niveles de
+    eficiencia y recomendaciones inteligentes en tiempo real.
+  </p>
+  <button
+    type="button"
+    class="btn btn-lg btn-light btn-shadow"
+    (click)="irAAnalisisGeneral()"
+  >
+    <i class="fas fa-rocket me-2"></i>
+    Iniciar Análisis General
+  </button>
+</section>
+
+<section class="mt-4 mb-3">
+  <div class="row">
+    @for (tarjeta of tarjetas; track tarjeta.titulo) {
+      <div class="col-md-6 col-xl-4 mb-3">
+        <div class="main-card mb-0 card">
+          <div class="card-body">
+            <div
+              class="icon-wrapper rounded-circle mb-3 {{ tarjeta.fondo }}"
+            >
+              <i class="{{ tarjeta.icono }} text-white"></i>
+            </div>
+            <div class="widget-chart-content">
+              <div class="widget-heading fw-bold mb-1">{{ tarjeta.titulo }}</div>
+              <div class="widget-description text-muted">{{ tarjeta.descripcion }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</section>

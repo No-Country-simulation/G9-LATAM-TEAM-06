@@ -1,0 +1,41 @@
+<div
+  class="app-sidebar sidebar-shadow"
+  (mouseenter)="alEntrar()"
+  (mouseleave)="alSalir()"
+>
+  <div class="app-header__logo">
+    <div class="logo-src">
+      <span class="logo-text">
+        <span class="logo-full"><i class="fas fa-bolt"></i> Energi AI</span>
+        <span class="logo-collapsed"><i class="fas fa-bolt"></i></span>
+      </span>
+    </div>
+  </div>
+  <div class="app-sidebar-content">
+    <div class="app-sidebar-scroll">
+      <div class="sidebar-scrollbar">
+        <div class="v-sidebar-menu vsm-default">
+          <div class="vsm-list">
+            <div class="vsm-header">Navegación</div>
+
+            @for (item of items; track item.ruta) {
+              <div class="vsm-item">
+                <a
+                  class="vsm-link"
+                  [routerLink]="item.ruta"
+                  routerLinkActive="active-item"
+                  [routerLinkActiveOptions]="{ exact: item.ruta === '/' }"
+                  (click)="alNavegar()"
+                  [title]="item.etiqueta"
+                >
+                  <i class="vsm-icon {{ item.icono }}"></i>
+                  <span class="vsm-title">{{ item.etiqueta }}</span>
+                </a>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

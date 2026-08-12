@@ -1,0 +1,22 @@
+.card-header-title {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lista-recomendaciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lista-recomendaciones li {
+  background-color: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #334155;
+  font-size: 15px;
+}
+
+.lista-recomendaciones .pe-7s-angle-right-circle {
+  font-size: 18px;
+}

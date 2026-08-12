@@ -1,6 +1,9 @@
 services:
   energiai-frontend:
-    build: ./energiai-frontend
+    build:
+      context: ./energiai-frontend
+      args:
+        API_KEY_SECRET: ${API_KEY_SECRET_PROD}
     container_name: energiai_frontend
     ports:
       - "80:80"

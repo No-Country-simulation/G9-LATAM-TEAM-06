@@ -1,0 +1,31 @@
+@use "assets/architectui/base";
+
+// Ajustes globales EnergiAI sobre el theme
+
+.app-page-title {
+  margin-bottom: 1.5rem;
+}
+
+.tabla-energiai {
+  thead th {
+    white-space: nowrap;
+  }
+
+  td,
+  th {
+    vertical-align: middle;
+  }
+}
+
+.paginacion-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.altura-paginacion {
+  min-height: 60px;
+}

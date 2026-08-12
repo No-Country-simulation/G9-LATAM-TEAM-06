@@ -1,0 +1,22 @@
+.tabla-historial-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767.98px) {
+  .tabla-historial-scroll {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
+
+.tabla-energiai {
+  td,
+  th {
+    white-space: nowrap;
+  }
+
+  td:last-child {
+    white-space: normal;
+  }
+}

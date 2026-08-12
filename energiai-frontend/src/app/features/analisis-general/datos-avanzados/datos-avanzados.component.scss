@@ -1,0 +1,11 @@
+.seccion-avanzado {
+  margin-top: 16px;
+}
+
+.flecha {
+  transition: transform 0.2s;
+}
+
+.flecha.rotada {
+  transform: rotate(180deg);
+}
