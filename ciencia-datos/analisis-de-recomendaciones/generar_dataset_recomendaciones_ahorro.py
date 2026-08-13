@@ -1,3 +1,9 @@
+"""Genera un dataset sintético para entrenar recomendaciones energéticas.
+
+Las recomendaciones son etiquetas multiclase binarias (multietiqueta): una
+misma observación puede activar varias acciones. Los criterios son simulados y
+deben documentarse como reglas de negocio del MVP, no como asesoría oficial.
+"""
 
 from __future__ import annotations
 
