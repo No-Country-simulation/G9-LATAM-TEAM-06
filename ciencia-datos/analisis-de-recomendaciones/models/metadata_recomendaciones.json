@@ -1,7 +1,7 @@
 {
   "nombre": "recomendador-energia-multietiqueta",
-  "version": "1.1.0",
-  "modelo_seleccionado": "regresion_logistica",
+  "version": "1.3.0",
+  "modelo_seleccionado": "regresion_logistica_y_estimador_ahorro",
   "columnas_entrada": [
     "consumo_kwh",
     "uso_horario_pico",
@@ -29,30 +29,53 @@
     "rec_mejorar_eficiencia_inmueble",
     "rec_mantener_habitos"
   ],
-  "umbral": 0.44999999999999996,
-  "metricas_validacion": {
-    "precision_micro": 0.5297478991596639,
-    "recall_micro": 0.7591522157996147,
-    "f1_micro": 0.6240348445852306,
-    "f1_macro": 0.6079375262613816,
-    "hamming_loss": 0.30142857142857143,
-    "umbral": 0.44999999999999996
-  },
-  "metricas_prueba": {
-    "precision_micro": 0.5289976533690915,
-    "recall_micro": 0.7539417104634496,
-    "f1_micro": 0.6217494089834515,
-    "f1_macro": 0.6029692354590871,
-    "hamming_loss": 0.3047619047619048
+  "columnas_ahorro": [
+    "rec_reducir_horario_pico_ahorro",
+    "rec_revisar_equipos_alto_consumo_ahorro",
+    "rec_optimizar_aire_acondicionado_ahorro",
+    "rec_reducir_consumo_por_persona_ahorro",
+    "rec_monitorear_incremento_mensual_ahorro",
+    "rec_mejorar_eficiencia_inmueble_ahorro",
+    "rec_mantener_habitos_ahorro"
+  ],
+  "umbrales_por_etiqueta": {
+    "rec_reducir_horario_pico": 0.48,
+    "rec_revisar_equipos_alto_consumo": 0.52,
+    "rec_optimizar_aire_acondicionado": 0.41,
+    "rec_reducir_consumo_por_persona": 0.55,
+    "rec_monitorear_incremento_mensual": 0.45,
+    "rec_mejorar_eficiencia_inmueble": 0.50,
+    "rec_mantener_habitos": 0.60
   },
   "catalogo_recomendaciones": {
-    "rec_reducir_horario_pico": "Distribuir, cuando sea posible, el consumo fuera de los horarios de mayor demanda",
-    "rec_revisar_equipos_alto_consumo": "Identificar las principales fuentes de consumo y priorizar acciones de eficiencia energética",
-    "rec_optimizar_aire_acondicionado": "Reducir consumos innecesarios y ajustar la duración de las actividades de mayor demanda",
-    "rec_reducir_consumo_por_persona": "Promover hábitos de ahorro y dar seguimiento continuo al consumo",
-    "rec_monitorear_incremento_mensual": "Comparar periódicamente el consumo para detectar cambios y oportunidades de ahorro",
-    "rec_mejorar_eficiencia_inmueble": "Aplicar mejoras graduales que aumenten la eficiencia energética general",
-    "rec_mantener_habitos": "Mantener los buenos hábitos y monitorear el consumo periódicamente"
+    "rec_reducir_horario_pico": {
+      "texto": "Desplaza el uso de electrodomésticos de alto consumo fuera de las horas pico de demanda eléctrica.",
+      "columna_ahorro": "rec_reducir_horario_pico_ahorro"
+    },
+    "rec_revisar_equipos_alto_consumo": {
+      "texto": "Audita y da mantenimiento a tus equipos de alto consumo o considera reemplazarlos por tecnologías eficientes.",
+      "columna_ahorro": "rec_revisar_equipos_alto_consumo_ahorro"
+    },
+    "rec_optimizar_aire_acondicionado": {
+      "texto": "Ajusta la temperatura del aire acondicionado (recomendado 24°C) y reduce sus horas de uso diario.",
+      "columna_ahorro": "rec_optimizar_aire_acondicionado_ahorro"
+    },
+    "rec_reducir_consumo_por_persona": {
+      "texto": "Implementa hábitos de ahorro en el hogar para reducir el promedio por habitante.",
+      "columna_ahorro": "rec_reducir_consumo_por_persona_ahorro"
+    },
+    "rec_monitorear_incremento_mensual": {
+      "texto": "Detectamos una variación al alza respecto al mes anterior; revisa posibles fugas eléctricas o sobreuso.",
+      "columna_ahorro": "rec_monitorear_incremento_mensual_ahorro"
+    },
+    "rec_mejorar_eficiencia_inmueble": {
+      "texto": "Aplica mejoras en el aislamiento o distribución del inmueble para optimizar el consumo de energía por m².",
+      "columna_ahorro": "rec_mejorar_eficiencia_inmueble_ahorro"
+    },
+    "rec_mantener_habitos": {
+      "texto": "Tu consumo es eficiente y estable. Mantén los buenos hábitos actuales y monitorea tus facturas.",
+      "columna_ahorro": "rec_mantener_habitos_ahorro"
+    }
   },
   "dataset_simulado": true
 }
