@@ -87,21 +87,21 @@ services:
       retries: 10
       start_period: 30s
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflared
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      - TUNNEL_TOKEN_FILE=/run/secrets/tunnel_token
-    networks:
-      - energiai_net
-    secrets:
-      - tunnel_token
+   #cloudflared:
+    #image: cloudflare/cloudflared:latest
+    #container_name: cloudflared
+    #restart: unless-stopped
+    #command: tunnel --no-autoupdate run
+    #environment:
+     # - TUNNEL_TOKEN_FILE=/run/secrets/tunnel_token
+    #networks:
+     # - energiai_net
+    #secrets:
+     # - tunnel_token
 
 secrets:
-  tunnel_token:
-    file: ./secrets/tunnel_token.txt
+  #tunnel_token:
+    #file: ./secrets/tunnel_token.txt
   api_key_secret:
     file: ./secrets/api_key_secret.txt
   db_password:

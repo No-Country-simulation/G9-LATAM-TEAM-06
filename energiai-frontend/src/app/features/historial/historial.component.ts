@@ -110,10 +110,11 @@ export class HistorialComponent implements OnInit, OnDestroy {
   }
 
   formatearCosto(costo: number): string {
-    return Number(costo).toLocaleString('es-PE', {
+    const monto = Number(costo).toLocaleString('es-PE', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
+    return `R$ ${monto}`;
   }
 
   claseCategoria(categoria: string): string {

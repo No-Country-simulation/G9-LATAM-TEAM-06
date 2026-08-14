@@ -12,6 +12,7 @@ import { FooterComponent } from './footer/footer.component';
   template: `
     <div
       class="app-container app-theme-white"
+      [class.app-theme-dark]="globals.modoOscuro()"
       [class.closed-sidebar]="globals.toggleSidebar()"
       [class.closed-sidebar-md]="globals.toggleSidebarMobile()"
       [class.closed-sidebar-open]="globals.sidebarHover() || globals.toggleSidebarMobile()"

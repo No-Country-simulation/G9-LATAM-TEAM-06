@@ -29,3 +29,145 @@
 .altura-paginacion {
   min-height: 60px;
 }
+
+// Dropdown del usuario: espaciado compacto
+.dropdown-menu {
+  .dropdown-header {
+    padding: 0.5rem 1.25rem;
+  }
+
+  .dropdown-item {
+    padding: 0.5rem 1.25rem;
+  }
+
+  .dropdown-divider {
+    margin: 0.25rem 0;
+  }
+}
+
+// Modo oscuro: overrides del theme ArchitectUI (colores hardcodeados)
+.app-theme-dark.app-container {
+  background: #141619;
+}
+
+.app-theme-dark {
+  .app-sidebar {
+    .app-sidebar-content {
+      background: #1e2226;
+    }
+
+    .app-header__logo {
+      background: #1a1d21;
+    }
+  }
+
+  .app-page-title {
+    background: rgba(255, 255, 255, 0.04);
+
+    .page-title-icon {
+      background: #1e2226;
+    }
+  }
+
+  .card-header {
+    background-color: #1e2226;
+    color: #e9ecef;
+  }
+
+  .card-footer {
+    background-color: #1e2226;
+    color: #e9ecef;
+  }
+
+  .app-inner-layout__wrapper {
+    border-bottom: #343a40 solid 1px;
+  }
+
+  .app-header,
+  .app-footer .app-footer__inner {
+    background: #1a1d21;
+  }
+
+  .hamburger-inner,
+  .hamburger-inner::before,
+  .hamburger-inner::after {
+    background-color: #adb5bd;
+  }
+
+  .v-sidebar-menu {
+    .vsm-header {
+      color: #6c757d;
+    }
+
+    .vsm-link {
+      color: #cbd5e1;
+
+      &:hover,
+      &.active-item {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+      }
+    }
+
+    .vsm-icon,
+    .vsm-arrow {
+      color: #94a3b8;
+    }
+  }
+
+  .dropdown-menu-lg,
+  .dropdown-menu-sm {
+    border-color: #343a40;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .dropdown-header {
+    background-color: #2b3035;
+    border-bottom-color: #343a40;
+
+    h6 {
+      color: #e9ecef;
+    }
+  }
+
+  .dropdown-item {
+    color: #dee2e6;
+
+    &:hover {
+      background-color: #343a40;
+    }
+
+    &:active {
+      background-color: #495057;
+    }
+
+    i {
+      color: #adb5bd;
+    }
+  }
+
+  .widget-heading {
+    color: #e9ecef;
+  }
+
+  .widget-subheading,
+  .text-gray-500 {
+    color: #adb5bd !important;
+  }
+
+  .app-main__inner {
+    .seccion-equipos,
+    .card-header-title {
+      background-color: #1e293b;
+      border-color: #334155;
+    }
+  }
+
+  // Especificidad alta para vencer al estilo scoped del componente
+  // (.lista-recomendaciones[_ngcontent] li[_ngcontent])
+  .app-main__outer .app-main__inner .lista-recomendaciones li {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+  }
+}

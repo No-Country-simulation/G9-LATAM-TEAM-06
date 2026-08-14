@@ -133,8 +133,12 @@
         class="btn btn-primary btn-lg mt-4"
         [disabled]="cargando() || !!mensajeSumaEquipos"
       >
-        <i class="pe-7s-paper-plane me-2"></i>
-        {{ cargando() ? 'Analizando en Spring Boot...' : 'Generar Análisis' }}
+        @if (cargando()) {
+          <i class="fa-solid fa-microchip fa-fade" aria-hidden="true"></i>
+        } @else {
+          <i class="pe-7s-paper-plane me-2"></i>
+          Generar Análisis
+        }
       </button>
     </form>
   </div>
