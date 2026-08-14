@@ -377,6 +377,22 @@ def generar_dataset(
     recomendaciones = _generar_recomendaciones(datos_completos, rng, ruido)
     datos_disponibles = _simular_disponibilidad(datos_completos, rng)
 
+    # No se entrena una acción que el servicio descartaría por falta del dato
+    # que la hace aplicable. Esto evita enseñar objetivos imposibles al nivel
+    # básico o a registros parciales.
+    requisitos = {
+        "rec_optimizar_aire_acondicionado": "horas_aire_acondicionado",
+        "rec_reducir_consumo_por_persona": "cantidad_personas",
+        "rec_monitorear_incremento_mensual": "consumo_mes_anterior_kwh",
+    }
+    for codigo, campo in requisitos.items():
+        recomendaciones.loc[datos_disponibles[campo].isna(), codigo] = 0
+    acciones = recomendaciones.drop(columns=["rec_mantener_habitos"]).sum(axis=1)
+    eficiente = datos_completos["categoria"].eq("Eficiente")
+    recomendaciones["rec_mantener_habitos"] = (
+        (acciones == 0) | (eficiente & (acciones <= 1))
+    ).astype(int)
+
     dataset = pd.concat([datos_disponibles, recomendaciones], axis=1)
     dataset.insert(0, "id_registro", np.arange(1, filas + 1))
     return dataset

@@ -17,6 +17,70 @@
   font-size: 15px;
 }
 
+.recomendacion-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+.recomendacion-contenido,
+.recomendacion-cabecera {
+  min-width: 0;
+}
+
+.recomendacion-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  font-weight: 650;
+}
+
+.confianza {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.factores-clave {
+  margin: 7px 0 0;
+  padding-left: 18px;
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.trazabilidad-modelo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+}
+
+:host-context(.app-theme-dark) {
+  .lista-recomendaciones li,
+  .card-header-title {
+    border-color: #334155;
+    background: #1e293b;
+    color: #e2e8f0;
+  }
+
+  .factores-clave {
+    color: #a8b4c5;
+  }
+
+  .confianza {
+    background: #14532d;
+    color: #dcfce7;
+  }
+}
+
 .lista-recomendaciones .pe-7s-angle-right-circle {
   font-size: 18px;
 }

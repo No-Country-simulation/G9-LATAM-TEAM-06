@@ -18,6 +18,10 @@ public record HistorialResponse(
         BigDecimal probabilidad,
         BigDecimal costo_estimado_mensual,
         List<String> recomendaciones,
-        Map<String, Integer> clasificacion_equipos
+        Map<String, Integer> clasificacion_equipos,
+        List<RecomendacionModelo> recomendaciones_detalle,
+        String origen_prediccion,
+        String modelo_version,
+        List<String> advertencias
 ) {
 }

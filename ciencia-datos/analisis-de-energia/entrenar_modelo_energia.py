@@ -1,6 +1,7 @@
 """Entrena clasificadores energéticos separados para análisis básico, parcial y avanzado."""
 
 import json
+import hashlib
 from pathlib import Path
 
 import joblib
@@ -10,7 +11,7 @@ from sklearn.base import clone
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -108,6 +109,72 @@ def evaluar_nivel(df, y, train, test, columnas, candidatos):
     return mejor, pipelines[mejor], resultados
 
 
+def metricas_clasificacion(y_real, predicciones):
+    precision, recall, f1, soporte = precision_recall_fscore_support(
+        y_real,
+        predicciones,
+        labels=sorted(MAPEO_CATEGORIAS_INVERSO),
+        zero_division=0,
+    )
+    return {
+        "accuracy": float(accuracy_score(y_real, predicciones)),
+        "f1_macro": float(f1_score(y_real, predicciones, average="macro")),
+        "por_categoria": {
+            MAPEO_CATEGORIAS_INVERSO[codigo]: {
+                "precision": float(precision[posicion]),
+                "recall": float(recall[posicion]),
+                "f1": float(f1[posicion]),
+                "soporte": int(soporte[posicion]),
+            }
+            for posicion, codigo in enumerate(sorted(MAPEO_CATEGORIAS_INVERSO))
+        },
+    }
+
+
+def metricas_segmentadas(df, indices, y_real, predicciones):
+    base = df.loc[indices].reset_index(drop=True).copy()
+    y_serie = y_real.reset_index(drop=True)
+    pred_serie = pd.Series(predicciones).reset_index(drop=True)
+    base["rango_consumo"] = pd.cut(
+        base["consumo_kwh"],
+        bins=[39, 300, 800, 5000],
+        labels=["40-300", "301-800", "801-5000"],
+    )
+    resultado = {}
+    for columna in ("tipo_inmueble", "rango_consumo"):
+        resultado[columna] = {}
+        for valor, posiciones in base.groupby(columna, observed=True).groups.items():
+            posiciones = list(posiciones)
+            if len(posiciones) < 20:
+                continue
+            resultado[columna][str(valor)] = {
+                "registros": len(posiciones),
+                **metricas_clasificacion(
+                    y_serie.iloc[posiciones], pred_serie.iloc[posiciones]
+                ),
+            }
+    return resultado
+
+
+def evaluar_estabilidad(df, y, columnas, modelo, semillas=(17, 42, 73)):
+    resultados = []
+    for semilla in semillas:
+        train, test = train_test_split(
+            df.index, test_size=0.20, random_state=semilla, stratify=y
+        )
+        pipeline = crear_pipeline(modelo, columnas)
+        pipeline.fit(df.loc[train, columnas], y.loc[train])
+        predicciones = pipeline.predict(df.loc[test, columnas])
+        resultados.append(metricas_clasificacion(y.loc[test], predicciones))
+    return {
+        "semillas": list(semillas),
+        "accuracy_media": float(np.mean([r["accuracy"] for r in resultados])),
+        "accuracy_desviacion": float(np.std([r["accuracy"] for r in resultados])),
+        "f1_macro_media": float(np.mean([r["f1_macro"] for r in resultados])),
+        "f1_macro_desviacion": float(np.std([r["f1_macro"] for r in resultados])),
+    }
+
+
 def crear_datos_parciales(df, y, indices, repeticiones, semilla):
     """Oculta de uno a cuatro grupos avanzados sin inventar reemplazos."""
     rng = np.random.default_rng(semilla)
@@ -154,10 +221,7 @@ def entrenar_parcial(df, y, train, test):
     )
     pipeline.fit(X_train, y_train)
     predicciones = pipeline.predict(X_test)
-    metricas = {
-        "accuracy": float(accuracy_score(y_test, predicciones)),
-        "f1_macro": float(f1_score(y_test, predicciones, average="macro")),
-    }
+    metricas = metricas_clasificacion(y_test, predicciones)
     return pipeline, metricas
 
 
@@ -166,6 +230,14 @@ def guardar_atomico(modelo, ruta):
     temporal = ruta.with_suffix(".tmp.joblib")
     joblib.dump(modelo, temporal)
     temporal.replace(ruta)
+
+
+def sha256(ruta):
+    digest = hashlib.sha256()
+    with ruta.open("rb") as archivo:
+        for bloque in iter(lambda: archivo.read(1024 * 1024), b""):
+            digest.update(bloque)
+    return digest.hexdigest()
 
 
 def main():
@@ -222,12 +294,20 @@ def main():
             df, y, train, test, columnas, candidatos
         )
         guardar_atomico(pipeline, MODEL_PATHS[nivel])
+        predicciones = pipeline.predict(df.loc[test, columnas])
         niveles[nivel] = {
             "archivo": MODEL_PATHS[nivel].name,
             "columnas_entrada": columnas,
             "modelo_seleccionado": mejor,
-            "metricas": resultados[mejor],
+            "metricas": metricas_clasificacion(y.loc[test], predicciones),
             "resultados_candidatos": resultados,
+            "metricas_segmentadas_prueba": metricas_segmentadas(
+                df, test, y.loc[test], predicciones
+            ),
+            "estabilidad_multisemilla": evaluar_estabilidad(
+                df, y, columnas, candidatos[mejor]
+            ),
+            "sha256_artefacto": sha256(MODEL_PATHS[nivel]),
         }
 
     pipeline_parcial, metricas_parciales = entrenar_parcial(
@@ -240,11 +320,12 @@ def main():
         "modelo_seleccionado": "hist_gradient_boosting",
         "metricas": metricas_parciales,
         "manejo_ausentes": "nativo_sin_imputacion",
+        "sha256_artefacto": sha256(MODEL_PATHS["parcial"]),
     }
 
     metadata = {
         "nombre": "clasificador-energia-tres-niveles",
-        "version": "2.1.0",
+        "version": "3.0.0",
         "sin_imputacion": True,
         "regla_enrutamiento": (
             "usar avanzado solo cuando los cinco campos avanzados estén "
@@ -262,6 +343,11 @@ def main():
         "tarifa_kwh": 0.75,
         "moneda": "BRL",
         "dataset_simulado": True,
+        "sha256_dataset": sha256(DATASET_PATH),
+        "metodologia_validacion": (
+            "holdout estratificado 80/20, metricas por categoria y segmento; "
+            "estabilidad de niveles basico y avanzado medida con semillas 17, 42 y 73"
+        ),
     }
     METADATA_PATH.write_text(
         json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8"

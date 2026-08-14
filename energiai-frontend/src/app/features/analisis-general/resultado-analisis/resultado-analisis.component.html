@@ -75,6 +75,12 @@
   <i class="pe-7s-info mt-1"></i>
   <div>
     <strong>Nivel de análisis: {{ etiquetaNivel() }}.</strong>
+    <div class="trazabilidad-modelo">
+      <span class="badge text-bg-light">{{ etiquetaOrigen() }}</span>
+      @if (resultado().modelo_version) {
+        <span>Versión {{ resultado().modelo_version }}</span>
+      }
+    </div>
     @if (resultado().nivel_analisis === 'avanzado') {
       <div>
         Se utilizaron todos los datos básicos y avanzados proporcionados.
@@ -102,10 +108,26 @@
   </div>
   <div class="card-body">
     <ul class="list-unstyled mb-0 lista-recomendaciones">
-      @for (recomendacion of resultado().recomendaciones; track $index) {
-        <li class="d-flex align-items-start gap-2">
+      @for (recomendacion of recomendacionesDetalle(); track recomendacion.codigo) {
+        <li class="recomendacion-item">
           <i class="pe-7s-angle-right-circle text-warning"></i>
-          <span>{{ recomendacion }}</span>
+          <div class="recomendacion-contenido">
+            <div class="recomendacion-cabecera">
+              <span>{{ recomendacion.texto }}</span>
+              @if (recomendacion.confianza !== null) {
+                <span class="confianza" title="Confianza estimada del recomendador">
+                  {{ formatearProbabilidad(recomendacion.confianza) }} confianza
+                </span>
+              }
+            </div>
+            @if (recomendacion.factores_clave.length) {
+              <ul class="factores-clave" aria-label="Factores clave">
+                @for (factor of recomendacion.factores_clave; track factor) {
+                  <li>{{ factor }}</li>
+                }
+              </ul>
+            }
+          </div>
         </li>
       }
     </ul>

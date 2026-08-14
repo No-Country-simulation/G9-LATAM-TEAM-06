@@ -1,6 +1,6 @@
 {
   "nombre": "clasificador-energia-tres-niveles",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "sin_imputacion": true,
   "regla_enrutamiento": "usar avanzado solo cuando los cinco campos avanzados estén completos; usar parcial con uno a cuatro; usar básico con cero",
   "campos_avanzados_requeridos": [
@@ -23,7 +23,27 @@
       "modelo_seleccionado": "regresion_logistica",
       "metricas": {
         "accuracy": 0.81375,
-        "f1_macro": 0.8182092630256447
+        "f1_macro": 0.8182092630256447,
+        "por_categoria": {
+          "Ineficiente": {
+            "precision": 0.8731808731808732,
+            "recall": 0.875,
+            "f1": 0.8740894901144641,
+            "soporte": 480
+          },
+          "Moderado": {
+            "precision": 0.7483108108108109,
+            "recall": 0.7483108108108109,
+            "f1": 0.7483108108108109,
+            "soporte": 592
+          },
+          "Eficiente": {
+            "precision": 0.8330170777988615,
+            "recall": 0.8314393939393939,
+            "f1": 0.8322274881516588,
+            "soporte": 528
+          }
+        }
       },
       "resultados_candidatos": {
         "regresion_logistica": {
@@ -38,7 +58,200 @@
           "accuracy": 0.800625,
           "f1_macro": 0.8054853010661566
         }
-      }
+      },
+      "metricas_segmentadas_prueba": {
+        "tipo_inmueble": {
+          "Apartamento": {
+            "registros": 533,
+            "accuracy": 0.7879924953095685,
+            "f1_macro": 0.790669306610888,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.8114754098360656,
+                "recall": 0.8319327731092437,
+                "f1": 0.8215767634854771,
+                "soporte": 119
+              },
+              "Moderado": {
+                "precision": 0.7291666666666666,
+                "recall": 0.6965174129353234,
+                "f1": 0.712468193384224,
+                "soporte": 201
+              },
+              "Eficiente": {
+                "precision": 0.8264840182648402,
+                "recall": 0.8497652582159625,
+                "f1": 0.8379629629629629,
+                "soporte": 213
+              }
+            }
+          },
+          "Casa": {
+            "registros": 663,
+            "accuracy": 0.8280542986425339,
+            "f1_macro": 0.8335127110471743,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.875,
+                "recall": 0.8797814207650273,
+                "f1": 0.8773841961852861,
+                "soporte": 183
+              },
+              "Moderado": {
+                "precision": 0.7751937984496124,
+                "recall": 0.78125,
+                "f1": 0.7782101167315175,
+                "soporte": 256
+              },
+              "Eficiente": {
+                "precision": 0.8506787330316742,
+                "recall": 0.8392857142857143,
+                "f1": 0.8449438202247191,
+                "soporte": 224
+              }
+            }
+          },
+          "Comercio": {
+            "registros": 210,
+            "accuracy": 0.8142857142857143,
+            "f1_macro": 0.8029703855982122,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.8947368421052632,
+                "recall": 0.8854166666666666,
+                "f1": 0.8900523560209425,
+                "soporte": 96
+              },
+              "Moderado": {
+                "precision": 0.7083333333333334,
+                "recall": 0.7391304347826086,
+                "f1": 0.723404255319149,
+                "soporte": 69
+              },
+              "Eficiente": {
+                "precision": 0.813953488372093,
+                "recall": 0.7777777777777778,
+                "f1": 0.7954545454545454,
+                "soporte": 45
+              }
+            }
+          },
+          "Oficina": {
+            "registros": 194,
+            "accuracy": 0.8350515463917526,
+            "f1_macro": 0.8228031953522149,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.9375,
+                "recall": 0.9146341463414634,
+                "f1": 0.9259259259259259,
+                "soporte": 82
+              },
+              "Moderado": {
+                "precision": 0.7428571428571429,
+                "recall": 0.7878787878787878,
+                "f1": 0.7647058823529411,
+                "soporte": 66
+              },
+              "Eficiente": {
+                "precision": 0.7954545454545454,
+                "recall": 0.7608695652173914,
+                "f1": 0.7777777777777778,
+                "soporte": 46
+              }
+            }
+          }
+        },
+        "rango_consumo": {
+          "40-300": {
+            "registros": 84,
+            "accuracy": 0.8690476190476191,
+            "f1_macro": 0.5545136284071018,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "soporte": 0
+              },
+              "Moderado": {
+                "precision": 0.8421052631578947,
+                "recall": 0.6666666666666666,
+                "f1": 0.7441860465116279,
+                "soporte": 24
+              },
+              "Eficiente": {
+                "precision": 0.890625,
+                "recall": 0.95,
+                "f1": 0.9193548387096774,
+                "soporte": 60
+              }
+            }
+          },
+          "301-800": {
+            "registros": 790,
+            "accuracy": 0.7886075949367088,
+            "f1_macro": 0.7601543386756555,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.6708860759493671,
+                "recall": 0.7066666666666667,
+                "f1": 0.6883116883116883,
+                "soporte": 75
+              },
+              "Moderado": {
+                "precision": 0.7560975609756098,
+                "recall": 0.7402985074626866,
+                "f1": 0.7481146304675717,
+                "soporte": 335
+              },
+              "Eficiente": {
+                "precision": 0.8407310704960835,
+                "recall": 0.8473684210526315,
+                "f1": 0.8440366972477065,
+                "soporte": 380
+              }
+            }
+          },
+          "801-5000": {
+            "registros": 726,
+            "accuracy": 0.8347107438016529,
+            "f1_macro": 0.7913032214557387,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.9152119700748129,
+                "recall": 0.9061728395061729,
+                "f1": 0.9106699751861043,
+                "soporte": 405
+              },
+              "Moderado": {
+                "precision": 0.7306122448979592,
+                "recall": 0.7682403433476395,
+                "f1": 0.7489539748953975,
+                "soporte": 233
+              },
+              "Eficiente": {
+                "precision": 0.75,
+                "recall": 0.6818181818181818,
+                "f1": 0.7142857142857143,
+                "soporte": 88
+              }
+            }
+          }
+        }
+      },
+      "estabilidad_multisemilla": {
+        "semillas": [
+          17,
+          42,
+          73
+        ],
+        "accuracy_media": 0.8156249999999999,
+        "accuracy_desviacion": 0.007517341063611993,
+        "f1_macro_media": 0.8196299940543478,
+        "f1_macro_desviacion": 0.0075122740333739635
+      },
+      "sha256_artefacto": "1a3153034bb57b44d4b9f06f4f562afe463f9ee01f103ee59178236ed2c03067"
     },
     "avanzado": {
       "archivo": "modelo_energia_avanzado.joblib",
@@ -60,7 +273,27 @@
       "modelo_seleccionado": "regresion_logistica",
       "metricas": {
         "accuracy": 0.82125,
-        "f1_macro": 0.8252830776194506
+        "f1_macro": 0.8252830776194506,
+        "por_categoria": {
+          "Ineficiente": {
+            "precision": 0.871578947368421,
+            "recall": 0.8625,
+            "f1": 0.8670157068062827,
+            "soporte": 480
+          },
+          "Moderado": {
+            "precision": 0.7567114093959731,
+            "recall": 0.7618243243243243,
+            "f1": 0.7592592592592593,
+            "soporte": 592
+          },
+          "Eficiente": {
+            "precision": 0.8487712665406427,
+            "recall": 0.8503787878787878,
+            "f1": 0.8495742667928098,
+            "soporte": 528
+          }
+        }
       },
       "resultados_candidatos": {
         "regresion_logistica": {
@@ -75,7 +308,200 @@
           "accuracy": 0.81,
           "f1_macro": 0.8152133511479261
         }
-      }
+      },
+      "metricas_segmentadas_prueba": {
+        "tipo_inmueble": {
+          "Apartamento": {
+            "registros": 533,
+            "accuracy": 0.7954971857410882,
+            "f1_macro": 0.7968544940829804,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.8245614035087719,
+                "recall": 0.7899159663865546,
+                "f1": 0.8068669527896996,
+                "soporte": 119
+              },
+              "Moderado": {
+                "precision": 0.7169811320754716,
+                "recall": 0.7562189054726368,
+                "f1": 0.7360774818401937,
+                "soporte": 201
+              },
+              "Eficiente": {
+                "precision": 0.8599033816425121,
+                "recall": 0.8356807511737089,
+                "f1": 0.8476190476190476,
+                "soporte": 213
+              }
+            }
+          },
+          "Casa": {
+            "registros": 663,
+            "accuracy": 0.8190045248868778,
+            "f1_macro": 0.8235894056558335,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.8457446808510638,
+                "recall": 0.8688524590163934,
+                "f1": 0.8571428571428571,
+                "soporte": 183
+              },
+              "Moderado": {
+                "precision": 0.772,
+                "recall": 0.75390625,
+                "f1": 0.7628458498023716,
+                "soporte": 256
+              },
+              "Eficiente": {
+                "precision": 0.8488888888888889,
+                "recall": 0.8526785714285714,
+                "f1": 0.8507795100222717,
+                "soporte": 224
+              }
+            }
+          },
+          "Comercio": {
+            "registros": 210,
+            "accuracy": 0.8523809523809524,
+            "f1_macro": 0.8449524714252062,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.9247311827956989,
+                "recall": 0.8958333333333334,
+                "f1": 0.91005291005291,
+                "soporte": 96
+              },
+              "Moderado": {
+                "precision": 0.7714285714285715,
+                "recall": 0.782608695652174,
+                "f1": 0.7769784172661871,
+                "soporte": 69
+              },
+              "Eficiente": {
+                "precision": 0.8297872340425532,
+                "recall": 0.8666666666666667,
+                "f1": 0.8478260869565217,
+                "soporte": 45
+              }
+            }
+          },
+          "Oficina": {
+            "registros": 194,
+            "accuracy": 0.865979381443299,
+            "f1_macro": 0.8600308641975308,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.9375,
+                "recall": 0.9146341463414634,
+                "f1": 0.9259259259259259,
+                "soporte": 82
+              },
+              "Moderado": {
+                "precision": 0.8125,
+                "recall": 0.7878787878787878,
+                "f1": 0.8,
+                "soporte": 66
+              },
+              "Eficiente": {
+                "precision": 0.82,
+                "recall": 0.8913043478260869,
+                "f1": 0.8541666666666666,
+                "soporte": 46
+              }
+            }
+          }
+        },
+        "rango_consumo": {
+          "40-300": {
+            "registros": 84,
+            "accuracy": 0.9047619047619048,
+            "f1_macro": 0.5870455709165386,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "soporte": 0
+              },
+              "Moderado": {
+                "precision": 0.9444444444444444,
+                "recall": 0.7083333333333334,
+                "f1": 0.8095238095238095,
+                "soporte": 24
+              },
+              "Eficiente": {
+                "precision": 0.921875,
+                "recall": 0.9833333333333333,
+                "f1": 0.9516129032258065,
+                "soporte": 60
+              }
+            }
+          },
+          "301-800": {
+            "registros": 790,
+            "accuracy": 0.7860759493670886,
+            "f1_macro": 0.7351399042720294,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.6323529411764706,
+                "recall": 0.5733333333333334,
+                "f1": 0.6013986013986014,
+                "soporte": 75
+              },
+              "Moderado": {
+                "precision": 0.7385057471264368,
+                "recall": 0.7671641791044777,
+                "f1": 0.7525622254758418,
+                "soporte": 335
+              },
+              "Eficiente": {
+                "precision": 0.8582887700534759,
+                "recall": 0.8447368421052631,
+                "f1": 0.8514588859416445,
+                "soporte": 380
+              }
+            }
+          },
+          "801-5000": {
+            "registros": 726,
+            "accuracy": 0.849862258953168,
+            "f1_macro": 0.8171926456932482,
+            "por_categoria": {
+              "Ineficiente": {
+                "precision": 0.9160493827160494,
+                "recall": 0.9160493827160494,
+                "f1": 0.9160493827160494,
+                "soporte": 405
+              },
+              "Moderado": {
+                "precision": 0.7695652173913043,
+                "recall": 0.759656652360515,
+                "f1": 0.7645788336933045,
+                "soporte": 233
+              },
+              "Eficiente": {
+                "precision": 0.7582417582417582,
+                "recall": 0.7840909090909091,
+                "f1": 0.770949720670391,
+                "soporte": 88
+              }
+            }
+          }
+        }
+      },
+      "estabilidad_multisemilla": {
+        "semillas": [
+          17,
+          42,
+          73
+        ],
+        "accuracy_media": 0.8268749999999999,
+        "accuracy_desviacion": 0.004592793267718452,
+        "f1_macro_media": 0.8307270349854504,
+        "f1_macro_desviacion": 0.004479105888482565
+      },
+      "sha256_artefacto": "3f540274491ffc0184a9b0cd1b7308a022a7f0f28f80571fe180ebc73002fea6"
     },
     "parcial": {
       "archivo": "modelo_energia_parcial.joblib",
@@ -97,9 +523,30 @@
       "modelo_seleccionado": "hist_gradient_boosting",
       "metricas": {
         "accuracy": 0.789375,
-        "f1_macro": 0.7948261489496117
+        "f1_macro": 0.7948261489496117,
+        "por_categoria": {
+          "Ineficiente": {
+            "precision": 0.8614072494669509,
+            "recall": 0.8416666666666667,
+            "f1": 0.8514225500526871,
+            "soporte": 480
+          },
+          "Moderado": {
+            "precision": 0.7073170731707317,
+            "recall": 0.7347972972972973,
+            "f1": 0.7207953603976802,
+            "soporte": 592
+          },
+          "Eficiente": {
+            "precision": 0.8217054263565892,
+            "recall": 0.803030303030303,
+            "f1": 0.8122605363984674,
+            "soporte": 528
+          }
+        }
       },
-      "manejo_ausentes": "nativo_sin_imputacion"
+      "manejo_ausentes": "nativo_sin_imputacion",
+      "sha256_artefacto": "30dced160d39523c74994d0ad85a50cdb9fe980a94f2308f6edfc8a617e3ce6a"
     }
   },
   "mapeo_categorias": {
@@ -123,5 +570,7 @@
   },
   "tarifa_kwh": 0.75,
   "moneda": "BRL",
-  "dataset_simulado": true
+  "dataset_simulado": true,
+  "sha256_dataset": "d8f40b65a7f3b4f94e5783db6eb152ebb958687346f13fc8f98382939caaca33",
+  "metodologia_validacion": "holdout estratificado 80/20, metricas por categoria y segmento; estabilidad de niveles basico y avanzado medida con semillas 17, 42 y 73"
 }

@@ -86,6 +86,18 @@ public class Analisis {
     @Column(name = "campos_imputados_json", columnDefinition = "JSON")
     private String camposImputadosJson;
 
+    @Column(name = "recomendaciones_detalle_json", columnDefinition = "JSON")
+    private String recomendacionesDetalleJson;
+
+    @Column(name = "origen_prediccion", length = 30)
+    private String origenPrediccion;
+
+    @Column(name = "modelo_version", length = 100)
+    private String modeloVersion;
+
+    @Column(name = "advertencias_json", columnDefinition = "JSON")
+    private String advertenciasJson;
+
     @Column(name = "creado_en", insertable = false, updatable = false)
     private LocalDateTime creadoEn;
 }

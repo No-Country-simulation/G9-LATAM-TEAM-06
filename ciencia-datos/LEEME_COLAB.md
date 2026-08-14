@@ -1,69 +1,68 @@
-# Paquete de Ciencia de Datos para Google Colab
+# Ciencia de Datos en Google Colab
 
-## Estructura que debe conservarse
+## Estructura recomendada
 
 ```text
 Notebook Hackathon/
 ├── analisis-de-energia/
 │   ├── analisis_energia_ml.ipynb
 │   ├── generar_dataset_energia.py
+│   ├── entrenar_modelo_energia.py
 │   ├── data/raw/consumo_energetico.csv
 │   └── models/
 └── analisis-de-recomendaciones/
     ├── analisis_recomendaciones_ml.ipynb
     ├── generar_dataset_recomendaciones.py
+    ├── entrenar_modelo_recomendaciones.py
     ├── data/raw/recomendaciones_energia.csv
     └── models/
 ```
 
-## Cómo subirlo
+Los notebooks sirven como evidencia de EDA, patrones, transformación,
+entrenamiento y evaluación. Los scripts `entrenar_modelo_*.py` constituyen el
+pipeline oficial reproducible que genera los artefactos v3 utilizados por la
+aplicación.
 
-1. Descarga `Notebook-Hackathon-Colab.zip`.
-2. Descomprime el ZIP en tu computadora.
-3. En Google Drive crea, si no existe, la carpeta `Notebook Hackathon`.
-4. Sube dentro de ella las carpetas completas `analisis-de-energia` y
-   `analisis-de-recomendaciones`.
-5. No subas los archivos por separado ni cambies los nombres de las carpetas.
+## Ejecución en Colab
 
-La ubicación recomendada es:
+1. Conserva la estructura anterior dentro de Google Drive.
+2. Abre cada notebook y ejecuta sus celdas de exploración.
+3. Instala las versiones indicadas en `modelo-api/requirements.txt`.
+4. Ejecuta los generadores y entrenadores desde la carpeta correspondiente.
 
-```text
-Mi unidad/Notebook Hackathon/
+```python
+!python generar_dataset_energia.py
+!python entrenar_modelo_energia.py
 ```
 
-Los notebooks también detectan estas ubicaciones:
-
-```text
-Mi unidad/ciencia-datos/
-Mi unidad/
+```python
+!python generar_dataset_recomendaciones.py
+!python entrenar_modelo_recomendaciones.py
 ```
 
-## Ejecución
+## Artefactos vigentes
 
-1. Abre el notebook desde Google Drive con Google Colab.
-2. Selecciona `Entorno de ejecución > Ejecutar todas`.
-3. Autoriza el montaje de Google Drive cuando Colab lo solicite.
-4. Comprueba que aparezca `Generador encontrado: True`.
-
-Los notebooks instalan las mismas versiones de `pandas`, `scikit-learn` y
-`joblib` utilizadas por `modelo-api`, evitando incompatibilidades al cargar los
-archivos `.joblib` en Docker.
-
-El notebook de energía conserva y lee el CSV cuando ya existe. Solo crea
-`data/raw` y ejecuta el generador cuando falta el dataset. Después exporta:
+Clasificación:
 
 ```text
-analisis-de-energia/models/modelo_energia.joblib
+analisis-de-energia/models/modelo_energia_basico.joblib
+analisis-de-energia/models/modelo_energia_parcial.joblib
+analisis-de-energia/models/modelo_energia_avanzado.joblib
 analisis-de-energia/models/metadata_modelo.json
 ```
 
-El notebook de recomendaciones exporta:
+Recomendaciones:
 
 ```text
-analisis-de-recomendaciones/models/modelo_recomendaciones.joblib
+analisis-de-recomendaciones/models/modelo_recomendaciones_basico.joblib
+analisis-de-recomendaciones/models/modelo_recomendaciones_parcial.joblib
+analisis-de-recomendaciones/models/modelo_recomendaciones_avanzado.joblib
 analisis-de-recomendaciones/models/metadata_recomendaciones.json
 ```
 
-Los resultados se guardan directamente en Google Drive. Después de entrenar,
-descarga los dos archivos de cada carpeta `models/` y reemplaza sus copias en
-`modelo-api/models/` para desplegarlos con FastAPI.
+Para publicar manualmente, copia estos ocho archivos a `modelo-api/models/`.
+Desde el repositorio completo se recomienda usar `reentrenar_todo.py`, que
+genera, valida y publica los artefactos automáticamente.
+
+Los archivos legacy `modelo_energia.joblib` y
+`modelo_recomendaciones.joblib` ya no forman parte del contrato v3.

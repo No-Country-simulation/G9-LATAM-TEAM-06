@@ -1,58 +1,11 @@
-# G9-LATAM-TEAM-06 — Documentación Completa del Proyecto
+# Documentación de EnergiAI
 
-> Vault de Obsidian para documentar cada componente, decisión y flujo del sistema EnergIA.
+Esta documentación describe el sistema que realmente está en el repositorio y sirve como evidencia técnica para el hackathon.
 
----
+- [Arquitectura y flujo](arquitectura.md)
+- [Modelo de clasificación energética](model-card-clasificacion.md)
+- [Modelo de recomendaciones](model-card-recomendaciones.md)
+- [Validación, riesgos y limitaciones](validacion-y-limitaciones.md)
+- [Generación, entrenamiento y publicación](reentrenamiento.md)
 
-## 📁 Estructura del Monorepo
-
-```
-G9-LATAM-TEAM-06/
-├── compose.yml                 # Orquestación Docker (frontend + api + db)
-├── energiai-frontend/          # React + Vite (UI)
-├── energiai-api/               # Spring Boot 4 (Backend principal)
-├── energiai-fastapi/           # FastAPI (Microservicio ML/Data Science)
-└── docs/                       # ← ESTA VAULT (Obsidian)
-```
-
----
-
-## 🔗 Navegación Rápida
-
-### Arquitectura General
-- [[arquitectura-general]]
-- [[flujo-de-datos]]
-- [[decisiones-tecnicas]]
-
-### Frontend (React)
-- [[frontend-estructura]]
-- [[frontend-componentes]]
-- [[frontend-servicios-api]]
-- [[frontend-estados-y-formularios]]
-
-### Backend Spring Boot (energiai-api)
-- [[spring-estructura]]
-- [[spring-controladores]]
-- [[spring-servicios]]
-- [[spring-dtos-y-modelos]]
-- [[spring-repositorios]]
-- [[spring-seguridad-y-config]]
-
-### Microservicio FastAPI (energiai-fastapi)
-- [[fastapi-estructura]]
-- [[fastapi-endpoints]]
-- [[fastapi-modelos-ml]]
-- [[fastapi-integracion-spring]]
-
-### Base de Datos & Migraciones
-- [[bd-esquema]]
-- [[bd-migraciones-flyway]]
-
-### Despliegue & DevOps
-- [[docker-compose]]
-- [[variables-entorno]]
-- [[ci-cd]]
-
-### Historial & Reuniones
-- [[reuniones/index]]
-- [[changelog]]
+Los metadatos ejecutables y las métricas completas están en `modelo-api/models/metadata_modelo.json` y `modelo-api/models/metadata_recomendaciones.json`.

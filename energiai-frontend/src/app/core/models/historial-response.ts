@@ -1,3 +1,5 @@
+import { RecomendacionDetalle } from './analisis-response';
+
 export interface HistorialResponse {
   id: number;
   creadoEn: string;
@@ -12,4 +14,8 @@ export interface HistorialResponse {
   costo_estimado_mensual: number;
   recomendaciones: string[];
   clasificacion_equipos?: Record<string, number>;
+  recomendaciones_detalle?: RecomendacionDetalle[];
+  origen_prediccion?: string;
+  modelo_version?: string;
+  advertencias?: string[];
 }

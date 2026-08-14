@@ -1,6 +1,7 @@
 import json
+import hashlib
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import joblib
 import numpy as np
@@ -16,7 +17,7 @@ RECOMMENDATION_METADATA_PATH = MODELS_DIR / "metadata_recomendaciones.json"
 
 app = FastAPI(
     title="API de análisis y recomendaciones de energía",
-    version="2.1.0",
+    version="3.0.0",
 )
 
 
@@ -119,6 +120,7 @@ class RecomendacionResponse(BaseModel):
     codigo: str
     texto: str
     confianza: float
+    factores_clave: list[str] = Field(default_factory=list)
 
 
 class PrediccionResponse(BaseModel):
@@ -127,6 +129,48 @@ class PrediccionResponse(BaseModel):
     nivel_analisis: Literal["basico", "parcial", "avanzado"]
     campos_imputados: list[str]
     recomendaciones: list[RecomendacionResponse]
+    origen_prediccion: Literal["modelo_ml"] = "modelo_ml"
+    modelo_version: str
+    advertencias: list[str] = Field(default_factory=list)
+
+
+def validar_configuracion_modelos(
+    metadata: dict[str, Any], models_dir: Path, tipo: str
+) -> None:
+    """Falla temprano si metadatos y artefactos no cumplen el contrato."""
+    requeridos = {"nombre", "version", "niveles"}
+    faltantes = sorted(requeridos - set(metadata))
+    if faltantes:
+        raise RuntimeError(f"Metadatos de {tipo} incompletos: {faltantes}")
+    niveles = set(metadata["niveles"])
+    if niveles != {"basico", "parcial", "avanzado"}:
+        raise RuntimeError(
+            f"Niveles de {tipo} inválidos: {sorted(niveles)}"
+        )
+    for nivel, configuracion in metadata["niveles"].items():
+        for campo in ("archivo", "columnas_entrada"):
+            if not configuracion.get(campo):
+                raise RuntimeError(
+                    f"Falta {campo} en {tipo}.{nivel}"
+                )
+        ruta = models_dir / configuracion["archivo"]
+        if not ruta.is_file():
+            raise RuntimeError(f"Artefacto no encontrado: {ruta}")
+        esperado = configuracion.get("sha256_artefacto")
+        if esperado:
+            digest = hashlib.sha256()
+            with ruta.open("rb") as archivo:
+                for bloque in iter(lambda: archivo.read(1024 * 1024), b""):
+                    digest.update(bloque)
+            if digest.hexdigest() != esperado:
+                raise RuntimeError(f"Hash SHA-256 inválido: {ruta}")
+    if tipo == "recomendaciones":
+        objetivos = metadata.get("columnas_objetivo", [])
+        catalogo = metadata.get("catalogo_recomendaciones", {})
+        if not objetivos or any(codigo not in catalogo for codigo in objetivos):
+            raise RuntimeError(
+                "El catálogo de recomendaciones no cubre todos los objetivos"
+            )
 
 
 def _cargar_niveles(metadata):
@@ -143,6 +187,13 @@ def cargar_modelos():
     with open(RECOMMENDATION_METADATA_PATH, encoding="utf-8") as archivo:
         app.state.metadata_recomendaciones = json.load(archivo)
 
+    validar_configuracion_modelos(
+        app.state.metadata_energia, MODELS_DIR, "energia"
+    )
+    validar_configuracion_modelos(
+        app.state.metadata_recomendaciones, MODELS_DIR, "recomendaciones"
+    )
+
     app.state.modelos_energia = _cargar_niveles(app.state.metadata_energia)
     app.state.modelos_recomendaciones = _cargar_niveles(
         app.state.metadata_recomendaciones
@@ -156,6 +207,7 @@ def health():
         "status": "ok",
         "service": "modelo-energia-y-recomendaciones",
         "sin_imputacion": True,
+        "contrato_validado": True,
         "models": {
             "energia": {
                 "nombre": app.state.metadata_energia["nombre"],
@@ -230,6 +282,45 @@ def _crear_entrada(datos, columnas):
     )
 
 
+def _umbral_para(codigo, configuracion):
+    umbrales = configuracion.get("umbrales", {})
+    return float(umbrales.get(codigo, configuracion.get("umbral", 0.5)))
+
+
+def _factores_clave(codigo, request, datos):
+    """Explicaciones controladas basadas en los valores realmente usados."""
+    factores = {
+        "rec_reducir_horario_pico": [
+            "Se reportó uso de energía en horario pico."
+        ],
+        "rec_revisar_equipos_alto_consumo": [
+            f"{request.equipos_alto_consumo} de {request.cantidad_equipos} equipos son de alto consumo."
+        ],
+        "rec_optimizar_equipos_medio_consumo": [
+            f"{request.equipos_medio_consumo} equipos pertenecen al grupo de consumo medio."
+        ],
+        "rec_reducir_consumo_en_espera": [
+            f"{request.equipos_bajo_consumo} equipos pueden acumular consumo en espera."
+        ],
+        "rec_optimizar_aire_acondicionado": [
+            f"El aire acondicionado se usa {request.horas_aire_acondicionado} horas al día."
+        ],
+        "rec_reducir_consumo_por_persona": [
+            f"El consumo estimado es {datos.get('consumo_por_persona', 0):.1f} kWh por persona."
+        ],
+        "rec_monitorear_incremento_mensual": [
+            f"La variación frente al mes anterior es {datos.get('variacion_mensual', 0) * 100:.1f}%."
+        ],
+        "rec_mejorar_eficiencia_inmueble": [
+            f"El perfil corresponde a un inmueble de tipo {request.tipo_inmueble}."
+        ],
+        "rec_mantener_habitos": [
+            "No se detectó una acción correctiva con confianza suficiente."
+        ],
+    }
+    return factores.get(codigo, ["Recomendación priorizada por el modelo."])
+
+
 @app.post("/predict", response_model=PrediccionResponse)
 def predict(request: PrediccionRequest):
     nivel = _nivel_para(request)
@@ -260,7 +351,6 @@ def predict(request: PrediccionRequest):
         entrada_recomendaciones
     )[0]
     codigos = metadata_recomendaciones["columnas_objetivo"]
-    umbral = float(metadata_recomendaciones_nivel["umbral"])
 
     requisitos = {
         "rec_revisar_equipos_alto_consumo": request.equipos_alto_consumo > 0,
@@ -284,7 +374,9 @@ def predict(request: PrediccionRequest):
     seleccionados = [
         indice
         for indice, confianza in enumerate(probabilidades_recomendaciones)
-        if float(confianza) >= umbral and aplicable(codigos[indice])
+        if float(confianza) >= _umbral_para(
+            codigos[indice], metadata_recomendaciones_nivel
+        ) and aplicable(codigos[indice])
     ]
     if not seleccionados:
         aplicables = [
@@ -306,6 +398,9 @@ def predict(request: PrediccionRequest):
                     codigos[indice]
                 ],
                 confianza=round(float(probabilidades_recomendaciones[indice]), 4),
+                factores_clave=_factores_clave(
+                    codigos[indice], request, datos
+                ),
             )
             for indice in seleccionados
         ],
@@ -313,10 +408,19 @@ def predict(request: PrediccionRequest):
         reverse=True,
     )
 
+    version_energia = app.state.metadata_energia["version"]
+    version_recomendaciones = metadata_recomendaciones["version"]
+    version = (
+        version_energia
+        if version_energia == version_recomendaciones
+        else f"energia:{version_energia};recomendaciones:{version_recomendaciones}"
+    )
     return PrediccionResponse(
         categoria=categoria_nombre,
         probabilidad=round(probabilidad, 4),
         nivel_analisis=nivel,
         campos_imputados=[],
         recomendaciones=recomendaciones,
+        modelo_version=version,
+        advertencias=[],
     )

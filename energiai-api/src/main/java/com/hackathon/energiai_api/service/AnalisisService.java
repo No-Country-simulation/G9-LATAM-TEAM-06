@@ -3,6 +3,7 @@ package com.hackathon.energiai_api.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import com.hackathon.energiai_api.DTOs.AnalisisRequest;
 import com.hackathon.energiai_api.DTOs.AnalisisResponse;
 import com.hackathon.energiai_api.DTOs.HistorialResponse;
 import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
+import com.hackathon.energiai_api.DTOs.RecomendacionModelo;
 import com.hackathon.energiai_api.exception.ServicioAnalisisException;
 import com.hackathon.energiai_api.model.Analisis;
 import com.hackathon.energiai_api.repository.AnalisisRepository;
@@ -77,12 +79,34 @@ public class AnalisisService {
 
         List<String> recomendaciones
                 = recomendacionService.generarRecomendaciones(request, modeloResponse);
+        List<RecomendacionModelo> recomendacionesDetalle
+                = recomendacionService.generarRecomendacionesDetalle(request, modeloResponse);
+        if ((recomendacionesDetalle == null || recomendacionesDetalle.isEmpty())
+                && recomendaciones != null && !recomendaciones.isEmpty()) {
+            recomendacionesDetalle = new ArrayList<>();
+            for (int indice = 0; indice < recomendaciones.size(); indice++) {
+                recomendacionesDetalle.add(new RecomendacionModelo(
+                        "legacy_" + (indice + 1), recomendaciones.get(indice), null, List.of()));
+            }
+        }
+        if (recomendaciones == null) {
+            recomendaciones = List.of();
+        }
         String nivelAnalisis = modeloResponse != null && modeloResponse.nivelAnalisis() != null
                 ? modeloResponse.nivelAnalisis()
                 : determinarNivelAnalisis(request);
         List<String> camposImputados = modeloResponse != null && modeloResponse.camposImputados() != null
                 ? modeloResponse.camposImputados()
                 : determinarCamposImputados(request);
+        String origenPrediccion = modeloResponse != null
+                ? valorO(modeloResponse.origenPrediccion(), "modelo_ml")
+                : "fallback_reglas";
+        String modeloVersion = modeloResponse != null
+                ? valorO(modeloResponse.modeloVersion(), "no_reportada")
+                : "reglas-backend-1.0.0";
+        List<String> advertencias = modeloResponse != null && modeloResponse.advertencias() != null
+                ? modeloResponse.advertencias()
+                : List.of("El servicio de modelos no estuvo disponible; se aplicaron reglas de respaldo.");
 
         // Clasificar electrodomésticos si se proporcionan (mapa detallado) O usar campos manuales (General)
         Map<String, Integer> clasificacionEquipos = new LinkedHashMap<>();
@@ -142,8 +166,12 @@ public class AnalisisService {
                 .costo_estimado_mensual(costo_estimado_mensual)
                 .electrodomesticosDetalle(electrodomesticosJson)
                 .recomendacionesJson(serializar(recomendaciones))
+                .recomendacionesDetalleJson(serializar(recomendacionesDetalle))
                 .nivelAnalisis(nivelAnalisis)
                 .camposImputadosJson(serializar(camposImputados))
+                .origenPrediccion(origenPrediccion)
+                .modeloVersion(modeloVersion)
+                .advertenciasJson(serializar(advertencias))
                 .build();
 
         analisisRepository.save(analisis);
@@ -155,7 +183,11 @@ public class AnalisisService {
                 costo_estimado_mensual,
                 clasificacionEquipos,
                 nivelAnalisis,
-                camposImputados
+                camposImputados,
+                recomendacionesDetalle,
+                origenPrediccion,
+                modeloVersion,
+                advertencias
         );
     }
 
@@ -223,6 +255,7 @@ public class AnalisisService {
         );
 
         List<String> recomendaciones = obtenerRecomendacionesGuardadas(analisis, requestTemporal);
+        List<RecomendacionModelo> detalles = obtenerDetallesGuardados(analisis, recomendaciones);
 
         return new HistorialResponse(
                 analisis.getId(),
@@ -237,7 +270,11 @@ public class AnalisisService {
                 analisis.getProbabilidad(),
                 analisis.getCosto_estimado_mensual(),
                 recomendaciones,
-                clasificacionEquipos
+                clasificacionEquipos,
+                detalles,
+                valorO(analisis.getOrigenPrediccion(), "registro_legacy"),
+                valorO(analisis.getModeloVersion(), "no_reportada"),
+                deserializarLista(analisis.getAdvertenciasJson(), List.of())
         );
     }
 
@@ -275,6 +312,7 @@ public class AnalisisService {
         }
 
         List<String> recomendaciones = obtenerRecomendacionesGuardadas(analisis, requestTemporal);
+        List<RecomendacionModelo> detalles = obtenerDetallesGuardados(analisis, recomendaciones);
 
         return new AnalisisResponse(
                 analisis.getCategoria(),
@@ -283,7 +321,11 @@ public class AnalisisService {
                 analisis.getCosto_estimado_mensual(),
                 clasificacionEquipos,
                 analisis.getNivelAnalisis() != null ? analisis.getNivelAnalisis() : determinarNivelAnalisis(requestTemporal),
-                deserializarLista(analisis.getCamposImputadosJson(), determinarCamposImputados(requestTemporal))
+                deserializarLista(analisis.getCamposImputadosJson(), determinarCamposImputados(requestTemporal)),
+                detalles,
+                valorO(analisis.getOrigenPrediccion(), "registro_legacy"),
+                valorO(analisis.getModeloVersion(), "no_reportada"),
+                deserializarLista(analisis.getAdvertenciasJson(), List.of())
         );
     }
 
@@ -297,6 +339,26 @@ public class AnalisisService {
                 analisis.getRecomendacionesJson(),
                 recomendacionService.generarRecomendaciones(request)
         );
+    }
+
+    private List<RecomendacionModelo> obtenerDetallesGuardados(
+            Analisis analisis, List<String> recomendaciones) {
+        String json = analisis.getRecomendacionesDetalleJson();
+        if (json != null && !json.isBlank()) {
+            try {
+                return objectMapper.readValue(
+                        json,
+                        new com.fasterxml.jackson.core.type.TypeReference<List<RecomendacionModelo>>() {});
+            } catch (Exception ignored) {
+                // Los registros anteriores continúan siendo legibles.
+            }
+        }
+        List<RecomendacionModelo> detalles = new ArrayList<>();
+        for (int indice = 0; indice < recomendaciones.size(); indice++) {
+            detalles.add(new RecomendacionModelo(
+                    "legacy_" + (indice + 1), recomendaciones.get(indice), null, List.of()));
+        }
+        return detalles;
     }
 
     private String serializar(Object valor) {
@@ -326,6 +388,10 @@ public class AnalisisService {
             return "invitado";
         }
         return usuarioId.trim().toLowerCase();
+    }
+
+    private String valorO(String valor, String alternativo) {
+        return valor == null || valor.isBlank() ? alternativo : valor;
     }
 
     private String determinarNivelAnalisis(AnalisisRequest request) {

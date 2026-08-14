@@ -50,7 +50,7 @@ class RecomendacionServiceTest {
         assertThat(resultado).contains(
                 "Priorizar el uso eficiente y mantenimiento de los equipos de mayor demanda",
                 "Programar y agrupar el uso de los equipos de consumo medio para evitar funcionamiento innecesario",
-                "Desconectar o suspender los equipos de bajo consumo cuando no esten en uso para reducir consumos acumulados"
+                "Desconectar o suspender los equipos de bajo consumo cuando no estén en uso para reducir consumos acumulados"
         );
     }
 

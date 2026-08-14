@@ -1,6 +1,7 @@
 """Entrena recomendadores separados para análisis básico, parcial y avanzado."""
 
 import json
+import hashlib
 from pathlib import Path
 
 import joblib
@@ -63,49 +64,115 @@ DERIVED_ADVANCED_FEATURES = [
     "consumo_por_m2",
     "variacion_mensual",
 ]
-BASIC_FEATURES = BASIC_CLASSIFIER_FEATURES + EQUIPMENT_FEATURES + ["categoria"]
+BASIC_FEATURES = BASIC_CLASSIFIER_FEATURES + EQUIPMENT_FEATURES
 ADVANCED_FEATURES = (
     BASIC_CLASSIFIER_FEATURES
     + ADVANCED_USER_FIELDS
     + EQUIPMENT_FEATURES
     + DERIVED_ADVANCED_FEATURES
-    + ["categoria"]
 )
 TARGET_COLUMNS = list(RECOMENDACIONES)
-CATEGORICAL_FEATURES = ["tipo_inmueble", "categoria"]
+TARGETS_BASICOS = [
+    codigo for codigo in TARGET_COLUMNS
+    if codigo not in {
+        "rec_optimizar_aire_acondicionado",
+        "rec_reducir_consumo_por_persona",
+        "rec_monitorear_incremento_mensual",
+    }
+]
+CATEGORICAL_FEATURES = ["tipo_inmueble"]
 
 
-def metricas(y_real, probabilidades, umbral):
-    predicciones = (probabilidades >= umbral).astype(int)
+def _vector_umbrales(umbrales):
+    if isinstance(umbrales, dict):
+        return np.array([umbrales[codigo] for codigo in TARGET_COLUMNS])
+    return np.full(len(TARGET_COLUMNS), float(umbrales))
+
+
+def metricas(y_real, probabilidades, umbrales, codigos_evaluados=None):
+    predicciones = (probabilidades >= _vector_umbrales(umbrales)).astype(int)
+    codigos_evaluados = codigos_evaluados or TARGET_COLUMNS
+    indices_evaluados = [TARGET_COLUMNS.index(codigo) for codigo in codigos_evaluados]
+    y_agregado = y_real.iloc[:, indices_evaluados]
+    pred_agregado = predicciones[:, indices_evaluados]
+    por_recomendacion = {}
+    for indice, codigo in enumerate(TARGET_COLUMNS):
+        por_recomendacion[codigo] = {
+            "precision": float(precision_score(
+                y_real.iloc[:, indice], predicciones[:, indice], zero_division=0
+            )),
+            "recall": float(recall_score(
+                y_real.iloc[:, indice], predicciones[:, indice], zero_division=0
+            )),
+            "f1": float(f1_score(
+                y_real.iloc[:, indice], predicciones[:, indice], zero_division=0
+            )),
+            "soporte_positivo": int(y_real.iloc[:, indice].sum()),
+        }
     return {
         "precision_micro": float(
             precision_score(
-                y_real, predicciones, average="micro", zero_division=0
+                y_agregado, pred_agregado, average="micro", zero_division=0
             )
         ),
         "recall_micro": float(
-            recall_score(y_real, predicciones, average="micro", zero_division=0)
+            recall_score(y_agregado, pred_agregado, average="micro", zero_division=0)
         ),
         "f1_micro": float(
-            f1_score(y_real, predicciones, average="micro", zero_division=0)
+            f1_score(y_agregado, pred_agregado, average="micro", zero_division=0)
         ),
         "f1_macro": float(
-            f1_score(y_real, predicciones, average="macro", zero_division=0)
+            f1_score(y_agregado, pred_agregado, average="macro", zero_division=0)
         ),
-        "hamming_loss": float(hamming_loss(y_real, predicciones)),
+        "hamming_loss": float(hamming_loss(y_agregado, pred_agregado)),
+        "recomendaciones_evaluadas": codigos_evaluados,
+        "por_recomendacion": por_recomendacion,
     }
 
 
-def buscar_umbral(y_real, probabilidades):
-    return float(max(
-        np.arange(0.30, 0.71, 0.05),
-        key=lambda umbral: f1_score(
-            y_real,
-            (probabilidades >= umbral).astype(int),
-            average="macro",
-            zero_division=0,
-        ),
-    ))
+def buscar_umbrales(y_real, probabilidades):
+    candidatos = np.arange(0.20, 0.81, 0.05)
+    return {
+        codigo: float(max(
+            candidatos,
+            key=lambda umbral: f1_score(
+                y_real.iloc[:, indice],
+                (probabilidades[:, indice] >= umbral).astype(int),
+                zero_division=0,
+            ),
+        ))
+        for indice, codigo in enumerate(TARGET_COLUMNS)
+    }
+
+
+def metricas_segmentadas(
+    datos, indices, y_real, probabilidades, umbrales, codigos_evaluados=None
+):
+    segmentos = {}
+    base = datos.loc[indices].reset_index(drop=True).copy()
+    base["rango_consumo"] = pd.cut(
+        base["consumo_kwh"],
+        bins=[39, 300, 800, 5000],
+        labels=["40-300", "301-800", "801-5000"],
+    )
+    for columna in ("tipo_inmueble", "categoria", "rango_consumo"):
+        segmentos[columna] = {}
+        for valor, posiciones in base.groupby(columna, observed=True).groups.items():
+            posiciones = list(posiciones)
+            if len(posiciones) < 20:
+                continue
+            resultado = metricas(
+                y_real.iloc[posiciones].reset_index(drop=True),
+                probabilidades[posiciones],
+                umbrales,
+                codigos_evaluados,
+            )
+            segmentos[columna][str(valor)] = {
+                "registros": len(posiciones),
+                "f1_macro": resultado["f1_macro"],
+                "hamming_loss": resultado["hamming_loss"],
+            }
+    return segmentos
 
 
 def crear_preprocessor(columnas):
@@ -127,8 +194,10 @@ def crear_preprocessor(columnas):
     ], sparse_threshold=0)
 
 
-def entrenar_nivel(df, columnas):
+def entrenar_nivel(df, columnas, nivel):
     disponibles = df.dropna(subset=columnas + TARGET_COLUMNS).copy()
+    if nivel == "basico":
+        disponibles = disponibles[disponibles["nivel_datos"] == "basico"]
     if disponibles.empty:
         raise ValueError("No hay registros completos para entrenar este nivel")
     X = disponibles[columnas]
@@ -173,20 +242,27 @@ def entrenar_nivel(df, columnas):
         ])
         pipeline.fit(X.loc[train], y.loc[train])
         probabilidades = pipeline.predict_proba(X.loc[validacion])
-        umbral = buscar_umbral(y.loc[validacion], probabilidades)
+        umbrales = buscar_umbrales(y.loc[validacion], probabilidades)
         resultados[nombre] = metricas(
-            y.loc[validacion], probabilidades, umbral
+            y.loc[validacion], probabilidades, umbrales,
+            TARGETS_BASICOS if nivel == "basico" else TARGET_COLUMNS,
         )
-        resultados[nombre]["umbral"] = umbral
+        resultados[nombre]["umbrales"] = umbrales
         pipelines[nombre] = pipeline
 
     mejor = max(resultados, key=lambda nombre: resultados[nombre]["f1_macro"])
     pipeline = pipelines[mejor]
-    umbral = resultados[mejor]["umbral"]
+    umbrales = resultados[mejor]["umbrales"]
+    probabilidades_test = pipeline.predict_proba(X.loc[test])
     metricas_test = metricas(
-        y.loc[test], pipeline.predict_proba(X.loc[test]), umbral
+        y.loc[test], probabilidades_test, umbrales,
+        TARGETS_BASICOS if nivel == "basico" else TARGET_COLUMNS,
     )
-    return mejor, pipeline, umbral, resultados[mejor], metricas_test, len(disponibles)
+    segmentos = metricas_segmentadas(
+        disponibles, test, y.loc[test], probabilidades_test, umbrales,
+        TARGETS_BASICOS if nivel == "basico" else TARGET_COLUMNS,
+    )
+    return mejor, pipeline, umbrales, resultados[mejor], metricas_test, segmentos, len(disponibles)
 
 
 def entrenar_parcial(df):
@@ -223,21 +299,34 @@ def entrenar_parcial(df):
     ])
     pipeline.fit(X.loc[train], y.loc[train])
     probabilidades = pipeline.predict_proba(X.loc[validacion])
-    umbral = buscar_umbral(y.loc[validacion], probabilidades)
+    umbrales = buscar_umbrales(y.loc[validacion], probabilidades)
     validacion_metricas = metricas(
-        y.loc[validacion], probabilidades, umbral
+        y.loc[validacion], probabilidades, umbrales
     )
-    validacion_metricas["umbral"] = umbral
+    validacion_metricas["umbrales"] = umbrales
+    probabilidades_test = pipeline.predict_proba(X.loc[test])
     prueba_metricas = metricas(
-        y.loc[test], pipeline.predict_proba(X.loc[test]), umbral
+        y.loc[test], probabilidades_test, umbrales
+    )
+    segmentos = metricas_segmentadas(
+        disponibles, test, y.loc[test], probabilidades_test, umbrales
     )
     return (
         pipeline,
-        umbral,
+        umbrales,
         validacion_metricas,
         prueba_metricas,
+        segmentos,
         len(disponibles),
     )
+
+
+def sha256(ruta):
+    digest = hashlib.sha256()
+    with ruta.open("rb") as archivo:
+        for bloque in iter(lambda: archivo.read(1024 * 1024), b""):
+            digest.update(bloque)
+    return digest.hexdigest()
 
 
 def guardar_atomico(modelo, ruta):
@@ -266,36 +355,40 @@ def main():
         "basico": BASIC_FEATURES,
         "avanzado": ADVANCED_FEATURES,
     }.items():
-        mejor, pipeline, umbral, validacion, prueba, registros = entrenar_nivel(
-            df, columnas
+        mejor, pipeline, umbrales, validacion, prueba, segmentos, registros = entrenar_nivel(
+            df, columnas, nivel
         )
         guardar_atomico(pipeline, MODEL_PATHS[nivel])
         niveles[nivel] = {
             "archivo": MODEL_PATHS[nivel].name,
             "columnas_entrada": columnas,
             "modelo_seleccionado": mejor,
-            "umbral": umbral,
+            "umbrales": umbrales,
             "metricas_validacion": validacion,
             "metricas_prueba": prueba,
+            "metricas_segmentadas_prueba": segmentos,
             "registros_entrenamiento_disponibles": registros,
+            "sha256_artefacto": sha256(MODEL_PATHS[nivel]),
         }
 
-    pipeline, umbral, validacion, prueba, registros = entrenar_parcial(df)
+    pipeline, umbrales, validacion, prueba, segmentos, registros = entrenar_parcial(df)
     guardar_atomico(pipeline, MODEL_PATHS["parcial"])
     niveles["parcial"] = {
         "archivo": MODEL_PATHS["parcial"].name,
         "columnas_entrada": ADVANCED_FEATURES,
         "modelo_seleccionado": "hist_gradient_boosting",
-        "umbral": umbral,
+        "umbrales": umbrales,
         "metricas_validacion": validacion,
         "metricas_prueba": prueba,
+        "metricas_segmentadas_prueba": segmentos,
         "registros_entrenamiento_disponibles": registros,
         "manejo_ausentes": "nativo_sin_imputacion",
+        "sha256_artefacto": sha256(MODEL_PATHS["parcial"]),
     }
 
     metadata = {
         "nombre": "recomendador-energia-tres-niveles",
-        "version": "2.1.0",
+        "version": "3.0.0",
         "sin_imputacion": True,
         "regla_enrutamiento": (
             "usar el mismo nivel elegido por el clasificador de energía"
@@ -303,9 +396,18 @@ def main():
         "campos_avanzados_requeridos": ADVANCED_USER_FIELDS,
         "niveles": niveles,
         "columnas_objetivo": TARGET_COLUMNS,
+        "columnas_objetivo_basico": TARGETS_BASICOS,
         "catalogo_recomendaciones": RECOMENDACIONES,
         "tipos_inmueble": ["Casa", "Apartamento", "Comercio", "Oficina"],
         "dataset_simulado": True,
+        "sha256_dataset": sha256(DATASET_PATH),
+        "prevencion_fuga_datos": (
+            "categoria no se usa como entrada: evita fuga y diferencia entre "
+            "categoria real de entrenamiento y categoria predicha en produccion"
+        ),
+        "metodologia_umbrales": (
+            "umbral independiente por recomendacion, optimizado por F1 en validacion"
+        ),
     }
     METADATA_PATH.write_text(
         json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8"

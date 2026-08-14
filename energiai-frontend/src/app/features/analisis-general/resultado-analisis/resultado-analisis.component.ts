@@ -1,5 +1,8 @@
 import { Component, computed, input } from '@angular/core';
-import { AnalisisResponse } from '../../../core/models/analisis-response';
+import {
+  AnalisisResponse,
+  RecomendacionDetalle,
+} from '../../../core/models/analisis-response';
 
 @Component({
   selector: 'app-resultado-analisis',
@@ -9,6 +12,19 @@ import { AnalisisResponse } from '../../../core/models/analisis-response';
 })
 export class ResultadoAnalisisComponent {
   readonly resultado = input.required<AnalisisResponse>();
+
+  readonly recomendacionesDetalle = computed<RecomendacionDetalle[]>(() => {
+    const estructuradas = this.resultado().recomendaciones_detalle;
+    if (estructuradas?.length) {
+      return estructuradas;
+    }
+    return (this.resultado().recomendaciones ?? []).map((texto, indice) => ({
+      codigo: `legacy_${indice + 1}`,
+      texto,
+      confianza: null,
+      factores_clave: [],
+    }));
+  });
 
   readonly esIneficiente = computed(() =>
     (this.resultado().categoria ?? '').toLowerCase().includes('ineficiente'),
@@ -53,6 +69,12 @@ export class ResultadoAnalisisComponent {
   etiquetaNivel(): string {
     const nivel = this.resultado().nivel_analisis ?? 'basico';
     return nivel.charAt(0).toUpperCase() + nivel.slice(1);
+  }
+
+  etiquetaOrigen(): string {
+    return this.resultado().origen_prediccion === 'fallback_reglas'
+      ? 'Reglas de respaldo'
+      : 'Modelo de IA';
   }
 
 }
