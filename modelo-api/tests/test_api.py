@@ -57,7 +57,7 @@ def test_predict_enruta_y_retorna_contrato_completo(client, extras, nivel):
     assert body["nivel_analisis"] == nivel
     assert body["origen_prediccion"] == "modelo_ml"
     assert body["modelo_version"]
-    assert body["advertencias"]
+    assert body["advertencias"] == []
     assert body["categoria"] in {"Eficiente", "Moderado", "Ineficiente"}
     assert 0 <= body["probabilidad"] <= 1
     assert body["recomendaciones"]
