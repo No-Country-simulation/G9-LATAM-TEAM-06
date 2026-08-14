@@ -19,7 +19,13 @@ RECOMENDACIONES = {
         "Distribuir, cuando sea posible, el consumo fuera de los horarios de mayor demanda"
     ),
     "rec_revisar_equipos_alto_consumo": (
-        "Identificar las principales fuentes de consumo y priorizar acciones de eficiencia energética"
+        "Priorizar el uso eficiente y mantenimiento de los equipos de mayor demanda"
+    ),
+    "rec_optimizar_equipos_medio_consumo": (
+        "Programar y agrupar el uso de los equipos de consumo medio para evitar funcionamiento innecesario"
+    ),
+    "rec_reducir_consumo_en_espera": (
+        "Desconectar o suspender los equipos de bajo consumo cuando no estén en uso para reducir consumos acumulados"
     ),
     "rec_optimizar_aire_acondicionado": (
         "Reducir consumos innecesarios y ajustar la duración de las actividades de mayor demanda"
@@ -50,63 +56,58 @@ def _generar_variables(filas: int, rng: np.random.Generator) -> pd.DataFrame:
     tipos = np.array(["Casa", "Apartamento", "Comercio", "Oficina"])
     tipo_inmueble = rng.choice(tipos, size=filas, p=[0.42, 0.32, 0.14, 0.12])
 
-    parametros_personas = {
-        "Casa": 4.0,
-        "Apartamento": 2.8,
-        "Comercio": 6.0,
-        "Oficina": 9.0,
+    limites_personas = {
+        "Casa": 7,
+        "Apartamento": 7,
+        "Comercio": 15,
+        "Oficina": 30,
     }
-    parametros_area = {
-        "Casa": (135.0, 42.0),
-        "Apartamento": (78.0, 24.0),
-        "Comercio": (165.0, 62.0),
-        "Oficina": (145.0, 48.0),
+    cantidad_personas = np.array([
+        rng.integers(1, limites_personas[tipo] + 1)
+        for tipo in tipo_inmueble
+    ])
+    limites_area = {
+        "Casa": (60.0, 350.0),
+        "Apartamento": (35.0, 180.0),
+        "Comercio": (30.0, 420.0),
+        "Oficina": (30.0, 420.0),
     }
-
-    cantidad_personas = np.array(
-        [
-            max(1, rng.poisson(parametros_personas[tipo]))
-            for tipo in tipo_inmueble
-        ]
-    )
-    area_m2 = np.array(
-        [
-            rng.normal(*parametros_area[tipo])
-            for tipo in tipo_inmueble
-        ]
-    )
-    area_m2 = np.clip(area_m2, 25, 420).round(1)
+    area_m2 = np.array([
+        rng.integers(int(limites_area[tipo][0]), int(limites_area[tipo][1]) + 1)
+        for tipo in tipo_inmueble
+    ]).round(1)
 
     factor_actividad = np.where(
         np.isin(tipo_inmueble, ["Comercio", "Oficina"]),
         7,
         2,
     )
-    cantidad_equipos = rng.poisson(
+    cantidad_habitual = rng.poisson(
         3 + cantidad_personas * 1.5 + factor_actividad
     )
-    cantidad_equipos = np.clip(cantidad_equipos, 2, 45)
+    cantidad_amplia = rng.integers(1, 501, filas)
+    cantidad_equipos = np.where(
+        rng.random(filas) < 0.20,
+        cantidad_amplia,
+        cantidad_habitual,
+    )
+    cantidad_equipos = np.clip(cantidad_equipos, 1, 500)
 
-    prob_equipo_alto = np.where(
-        np.isin(tipo_inmueble, ["Comercio", "Oficina"]),
-        0.28,
-        0.18,
-    )
-    equipos_alto_consumo = rng.binomial(
-        cantidad_equipos,
-        prob_equipo_alto,
-    )
+    probabilidades_equipos = {
+        "Casa": [0.12, 0.33, 0.55],
+        "Apartamento": [0.10, 0.30, 0.60],
+        "Comercio": [0.18, 0.37, 0.45],
+        "Oficina": [0.08, 0.42, 0.50],
+    }
+    distribucion_equipos = np.array([
+        rng.multinomial(int(total), probabilidades_equipos[tipo])
+        for total, tipo in zip(cantidad_equipos, tipo_inmueble)
+    ])
+    equipos_alto_consumo = distribucion_equipos[:, 0]
+    equipos_medio_consumo = distribucion_equipos[:, 1]
+    equipos_bajo_consumo = distribucion_equipos[:, 2]
 
-    tiene_aire = rng.random(filas) < np.where(
-        tipo_inmueble == "Apartamento",
-        0.58,
-        0.72,
-    )
-    horas_aire_acondicionado = np.where(
-        tiene_aire,
-        rng.beta(2.0, 3.2, filas) * 15,
-        0.0,
-    ).round(1)
+    horas_aire_acondicionado = rng.integers(0, 13, filas).astype(float)
 
     uso_horario_pico = rng.random(filas) < np.where(
         np.isin(tipo_inmueble, ["Casa", "Apartamento"]),
@@ -135,11 +136,12 @@ def _generar_variables(filas: int, rng: np.random.Generator) -> pd.DataFrame:
         default=15.0,
     )
 
-    consumo_kwh = (
+    consumo_base = (
         35
         + cantidad_personas * 24
-        + cantidad_equipos * 7.5
         + equipos_alto_consumo * 36
+        + equipos_medio_consumo * 10
+        + equipos_bajo_consumo * 2.5
         + horas_aire_acondicionado * 10
         + horas_alto_consumo * 8
         + area_m2 * 0.28
@@ -147,7 +149,12 @@ def _generar_variables(filas: int, rng: np.random.Generator) -> pd.DataFrame:
         + factor_tipo
         + rng.normal(0, 38, filas)
     )
-    consumo_kwh = np.clip(consumo_kwh, 45, 1800).round(1)
+    factor_demanda = rng.choice(
+        [0.05, 0.25, 0.50, 1.0, 1.5, 2.5, 4.0, 8.0],
+        size=filas,
+        p=[0.01, 0.015, 0.025, 0.77, 0.10, 0.05, 0.02, 0.01],
+    )
+    consumo_kwh = np.clip(consumo_base * factor_demanda, 40, 5000).round(1)
 
     cambio_mensual = np.clip(
         rng.normal(0.03, 0.16, filas)
@@ -156,8 +163,10 @@ def _generar_variables(filas: int, rng: np.random.Generator) -> pd.DataFrame:
         -0.38,
         0.65,
     )
-    consumo_mes_anterior_kwh = (
-        consumo_kwh / (1 + cambio_mensual)
+    consumo_mes_anterior_kwh = np.clip(
+        consumo_kwh / (1 + cambio_mensual),
+        35,
+        5000,
     ).round(1)
 
     consumo_por_persona = consumo_kwh / cantidad_personas
@@ -168,13 +177,20 @@ def _generar_variables(filas: int, rng: np.random.Generator) -> pd.DataFrame:
     proporcion_equipos_alto_consumo = (
         equipos_alto_consumo / cantidad_equipos
     )
+    proporcion_equipos_medio_consumo = equipos_medio_consumo / cantidad_equipos
+    proporcion_equipos_bajo_consumo = equipos_bajo_consumo / cantidad_equipos
+    carga_relativa_equipos = (
+        equipos_alto_consumo
+        + equipos_medio_consumo * 0.35
+        + equipos_bajo_consumo * 0.10
+    ) / cantidad_equipos
 
     puntaje_ineficiencia = (
         consumo_por_persona / np.median(consumo_por_persona) * 0.24
         + consumo_por_m2 / np.median(consumo_por_m2) * 0.19
-        + proporcion_equipos_alto_consumo * 0.90
+        + carga_relativa_equipos * 0.32
         + horas_aire_acondicionado / 12 * 0.16
-        + horas_alto_consumo / 12 * 0.16
+        + horas_alto_consumo / 24 * 0.16
         + uso_horario_pico * 0.13
         + np.maximum(variacion_mensual, 0) * 0.45
     )
@@ -201,6 +217,8 @@ def _generar_variables(filas: int, rng: np.random.Generator) -> pd.DataFrame:
             "cantidad_personas": cantidad_personas,
             "area_m2": area_m2,
             "equipos_alto_consumo": equipos_alto_consumo,
+            "equipos_medio_consumo": equipos_medio_consumo,
+            "equipos_bajo_consumo": equipos_bajo_consumo,
             "horas_aire_acondicionado": horas_aire_acondicionado,
             "consumo_mes_anterior_kwh": consumo_mes_anterior_kwh,
             "dias_facturados": dias_facturados,
@@ -210,6 +228,13 @@ def _generar_variables(filas: int, rng: np.random.Generator) -> pd.DataFrame:
             "proporcion_equipos_alto_consumo": (
                 proporcion_equipos_alto_consumo.round(4)
             ),
+            "proporcion_equipos_medio_consumo": (
+                proporcion_equipos_medio_consumo.round(4)
+            ),
+            "proporcion_equipos_bajo_consumo": (
+                proporcion_equipos_bajo_consumo.round(4)
+            ),
+            "carga_relativa_equipos": carga_relativa_equipos.round(4),
             "categoria": categoria,
         }
     )
@@ -230,10 +255,23 @@ def _generar_recomendaciones(
         + datos["horas_alto_consumo"] * 0.18
     )
     probabilidades["rec_revisar_equipos_alto_consumo"] = _sigmoid(
-        -3.0
-        + datos["proporcion_equipos_alto_consumo"] * 7.5
-        + datos["cantidad_equipos"] * 0.055
+        -3.2
+        + datos["proporcion_equipos_alto_consumo"] * 7.0
+        + np.log1p(datos["equipos_alto_consumo"]) * 0.55
         + ineficiente * 0.55
+    )
+    probabilidades["rec_optimizar_equipos_medio_consumo"] = _sigmoid(
+        -2.8
+        + datos["proporcion_equipos_medio_consumo"] * 4.8
+        + np.log1p(datos["equipos_medio_consumo"]) * 0.35
+        + datos["horas_alto_consumo"] * 0.055
+        + ineficiente * 0.35
+    )
+    probabilidades["rec_reducir_consumo_en_espera"] = _sigmoid(
+        -2.7
+        + datos["proporcion_equipos_bajo_consumo"] * 3.5
+        + np.log1p(datos["equipos_bajo_consumo"]) * 0.30
+        + ineficiente * 0.25
     )
     probabilidades["rec_optimizar_aire_acondicionado"] = _sigmoid(
         -3.1
@@ -259,8 +297,10 @@ def _generar_recomendaciones(
         + ineficiente * 0.65
     )
 
+    # Las reglas sintéticas son deterministas fuera de una pequeña proporción
+    # de ruido controlado; así el modelo aprende patrones reproducibles.
     etiquetas = pd.DataFrame(
-        rng.random(probabilidades.shape) < probabilidades.to_numpy(),
+        probabilidades.to_numpy() >= 0.50,
         columns=probabilidades.columns,
         index=datos.index,
     ).astype(int)
@@ -275,7 +315,7 @@ def _generar_recomendaciones(
     acciones = etiquetas.sum(axis=1)
     etiquetas["rec_mantener_habitos"] = (
         (acciones == 0)
-        | ((eficiente == 1) & (acciones <= 1) & (rng.random(len(datos)) < 0.72))
+        | ((eficiente == 1) & (acciones <= 1))
     ).astype(int)
 
     return etiquetas
@@ -296,7 +336,6 @@ def _simular_disponibilidad(
     dependencias = {
         "cantidad_personas": ["consumo_por_persona"],
         "area_m2": ["consumo_por_m2"],
-        "equipos_alto_consumo": ["proporcion_equipos_alto_consumo"],
         "horas_aire_acondicionado": [],
         "consumo_mes_anterior_kwh": ["variacion_mensual"],
         "dias_facturados": [],

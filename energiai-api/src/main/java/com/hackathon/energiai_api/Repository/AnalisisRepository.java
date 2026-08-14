@@ -13,4 +13,6 @@ public interface AnalisisRepository extends JpaRepository<Analisis, Long> {
     Page<Analisis> findByUsuarioId(String usuarioId, Pageable pageable);
 
     Page<Analisis> findByUsuarioIdAndCategoria(String usuarioId, String categoria, Pageable pageable);
+
+    long deleteByUsuarioId(String usuarioId);
 }

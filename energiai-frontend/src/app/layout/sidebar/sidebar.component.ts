@@ -12,6 +12,7 @@ interface ItemMenu {
   etiqueta: string;
   ruta: string;
   icono: string;
+  colorIcono: string;
 }
 
 @Component({
@@ -24,9 +25,13 @@ export class SidebarComponent {
   readonly globals = inject(ThemeOptions);
 
   readonly items: ItemMenu[] = [
-    { etiqueta: 'Inicio', ruta: '/', icono: 'pe-7s-home' },
-    { etiqueta: 'Análisis General', ruta: '/analisis-general', icono: 'pe-7s-display1' },
-    { etiqueta: 'Historial', ruta: '/historial', icono: 'pe-7s-notebook' },
+    { etiqueta: 'Inicio', ruta: '/', icono: 'pe-7s-home', colorIcono: 'icono-inicio' },
+    { etiqueta: 'Análisis General', ruta: '/analisis-general', icono: 'pe-7s-display1', colorIcono: 'icono-analisis' },
+    { etiqueta: 'Historial', ruta: '/historial', icono: 'pe-7s-notebook', colorIcono: 'icono-historial' },
+    { etiqueta: 'Comparar Períodos', ruta: '/comparacion', icono: 'pe-7s-graph2', colorIcono: 'icono-comparacion' },
+    { etiqueta: 'Procesamiento CSV', ruta: '/procesamiento-csv', icono: 'pe-7s-upload', colorIcono: 'icono-csv' },
+    { etiqueta: 'Ranking Energético', ruta: '/ranking', icono: 'pe-7s-cup', colorIcono: 'icono-ranking' },
+    { etiqueta: 'Simulador de Ahorro', ruta: '/simulador', icono: 'pe-7s-calculator', colorIcono: 'icono-simulador' },
   ];
 
   constructor() {

@@ -28,9 +28,9 @@ public class IntegracionDsService {
     public record PrediccionDs(String categoria, BigDecimal probabilidad) {
     }
 
-    private static final int UMBRAL_CONSUMO_INEFICIENTE = 350;
+    private static final int UMBRAL_CONSUMO_INEFICIENTE = 800;
     private static final int UMBRAL_HORAS_ALTO_CONSUMO = 8;
-    private static final int UMBRAL_CONSUMO_EFICIENTE = 150;
+    private static final int UMBRAL_CONSUMO_EFICIENTE = 300;
 
     public PrediccionDs obtenerPrediccionDs(AnalisisRequest request) {
         ModeloApiResponse response = obtenerRespuestaCompleta(request);
@@ -72,15 +72,17 @@ public class IntegracionDsService {
 
     private ModeloApiRequest buildModeloRequest(AnalisisRequest request) {
         return new ModeloApiRequest(
-                request.consumo_kwh() != null ? request.consumo_kwh().doubleValue() : null,
+                request.consumo_kwh(),
                 request.uso_horario_pico(),
                 request.cantidad_equipos(),
                 request.tipo_inmueble(),
-                request.horas_alto_consumo() != null ? request.horas_alto_consumo().doubleValue() : null,
+                request.horas_alto_consumo(),
                 request.cantidad_personas(),
                 request.area_m2() != null ? request.area_m2().doubleValue() : null,
-                request.equipos_alto_consumo(),
-                request.horas_aire_acondicionado() != null ? request.horas_aire_acondicionado().doubleValue() : null,
+                request.equiposAltoResueltos(),
+                request.equiposMedioResueltos(),
+                request.equiposBajoResueltos(),
+                request.horas_aire_acondicionado() != null ? request.horas_aire_acondicionado().intValue() : null,
                 request.consumo_mes_anterior_kwh() != null ? request.consumo_mes_anterior_kwh().doubleValue() : null,
                 request.dias_facturados()
         );

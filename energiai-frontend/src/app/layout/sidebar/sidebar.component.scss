@@ -15,3 +15,85 @@
     font-size: 18px;
   }
 }
+
+.vsm-header {
+  margin-bottom: 0.55rem;
+}
+
+.vsm-item {
+  margin-bottom: 0.4rem;
+}
+
+.vsm-link {
+  height: 3.25rem;
+  line-height: 3.25rem;
+  padding: 0 0.9rem 0 3.6rem;
+  border-radius: 0.7rem;
+  transition: background-color 160ms ease, color 160ms ease;
+
+  .vsm-title {
+    font-size: 0.94rem;
+    font-weight: 650;
+    letter-spacing: 0.005em;
+  }
+
+  .vsm-icon {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    left: 7px;
+    margin-top: -19px;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--color-icono) 18%, transparent);
+    border-radius: 0.65rem;
+    background: var(--fondo-icono) !important;
+    color: var(--color-icono) !important;
+    font-size: 20px;
+    opacity: 1;
+    transition: box-shadow 160ms ease, transform 160ms ease;
+  }
+
+  &:hover .vsm-icon {
+    box-shadow: 0 0.25rem 0.55rem color-mix(in srgb, var(--color-icono) 20%, transparent);
+    transform: translateY(-1px) scale(1.03);
+  }
+
+  &.active-item .vsm-icon {
+    box-shadow: 0 0.3rem 0.65rem color-mix(in srgb, var(--color-icono) 24%, transparent);
+  }
+}
+
+.icono-inicio {
+  --color-icono: #16875f;
+  --fondo-icono: #e7f8f0;
+}
+
+.icono-analisis {
+  --color-icono: #2563eb;
+  --fondo-icono: #eaf2ff;
+}
+
+.icono-historial {
+  --color-icono: #7c3aed;
+  --fondo-icono: #f1ebff;
+}
+
+.icono-comparacion {
+  --color-icono: #0284c7;
+  --fondo-icono: #e6f6fd;
+}
+
+.icono-csv {
+  --color-icono: #0f8f83;
+  --fondo-icono: #e4f8f5;
+}
+
+.icono-ranking {
+  --color-icono: #c87900;
+  --fondo-icono: #fff5dc;
+}
+
+.icono-simulador {
+  --color-icono: #c24170;
+  --fondo-icono: #fff0f5;
+}

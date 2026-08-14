@@ -3,16 +3,59 @@
   subheading="Registros guardados para la sesión: {{ usuarioActual }}"
   icon="pe-7s-notebook"
 >
-  <button
-    type="button"
-    class="btn btn-dark"
-    (click)="refrescar()"
-    [disabled]="cargando()"
-  >
-    <i class="pe-7s-refresh-2 me-1"></i>
-    Actualizar
-  </button>
+  <div class="acciones-historial d-flex gap-2">
+    @if (ocultoLocalmente()) {
+      <button
+        type="button"
+        class="btn accion-historial accion-restaurar"
+        (click)="restaurarHistorial()"
+        [disabled]="cargando()"
+        title="Volver a mostrar los análisis conservados en la base de datos"
+      >
+        <i class="pe-7s-look"></i>
+        Restaurar historial
+      </button>
+    }
+    <a
+      class="btn accion-historial accion-comparar"
+      routerLink="/comparacion"
+      [class.disabled]="historial().length < 2"
+      [attr.aria-disabled]="historial().length < 2"
+      [attr.tabindex]="historial().length < 2 ? -1 : null"
+      title="Comparar dos análisis guardados"
+    >
+      <i class="pe-7s-graph2"></i>
+      Comparar períodos
+    </a>
+    <button
+      type="button"
+      class="btn accion-historial accion-ocultar"
+      (click)="ocultarHistorial()"
+      [disabled]="cargando() || historial().length === 0"
+      title="Ocultar los análisis en este navegador sin borrarlos de la base de datos"
+    >
+      <i class="pe-7s-close-circle"></i>
+      Ocultar historial
+    </button>
+    <button
+      type="button"
+      class="btn accion-historial accion-actualizar"
+      (click)="refrescar()"
+      [disabled]="cargando()"
+      title="Consultar nuevamente el historial"
+    >
+      <i class="pe-7s-refresh-2"></i>
+      Actualizar
+    </button>
+  </div>
 </app-page-title>
+
+@if (ocultoLocalmente()) {
+  <div class="alert alert-info d-flex align-items-center gap-2 mb-3">
+    <i class="pe-7s-info"></i>
+    <span>Los análisis anteriores están ocultos solamente en este navegador. Continúan guardados en la base de datos.</span>
+  </div>
+}
 
 @if (errorSignal()) {
   <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
@@ -27,8 +70,12 @@
       <i class="pe-7s-rocket text-secondary" style="font-size: 40px"></i>
       <h4 class="mt-3">No hay análisis guardados</h4>
       <p class="text-muted mb-4">
-        Realiza tu primer cálculo en el apartado de <b>Análisis General</b>
-        para que aparezca aquí.
+        @if (ocultoLocalmente()) {
+          Puedes restaurar el historial anterior o realizar un análisis nuevo.
+        } @else {
+          Realiza tu primer cálculo en el apartado de <b>Análisis General</b>
+          para que aparezca aquí.
+        }
       </p>
       <a class="btn btn-primary btn-shadow" routerLink="/analisis-general">
         <i class="pe-7s-edit me-2"></i>
@@ -67,7 +114,7 @@
                   </small>
                 </td>
                 <td>
-                  <i class="fas fa-bolt me-1 text-secondary"></i>
+                  <i class="fas fa-bolt me-1 rayo-consumo"></i>
                   {{ item.consumoKwh }} kWh
                 </td>
                 <td>{{ item.tipoInmueble }}</td>

@@ -1,12 +1,14 @@
 package com.hackathon.energiai_api.service;
 
 import com.hackathon.energiai_api.DTOs.AnalisisRequest;
+import com.hackathon.energiai_api.DTOs.ModeloApiRequest;
 import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
 import com.hackathon.energiai_api.DTOs.RecomendacionModelo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -43,7 +45,7 @@ class IntegracionDsServiceTest {
     void obtenerPrediccionDs_conModeloDisponible_debeRetornarPrediccionDelModelo() {
         // Given
         AnalisisRequest request = new AnalisisRequest(
-                400, true, 8, "Residencial", 10,
+                400, true, 8, "Casa", 10,
                 4, 120.0f, 3, 6.0f, 380.0f, 30,
                 "user1", null, null, null, null
         );
@@ -71,10 +73,36 @@ class IntegracionDsServiceTest {
     }
 
     @Test
+    void obtenerRespuestaCompleta_debeEnviarLaDistribucionCompletaDeEquipos() {
+        AnalisisRequest request = new AnalisisRequest(
+                400, false, 10, "Casa", 4,
+                null, null, 0, null, null, null,
+                "user1", null, 0, 4, 6
+        );
+        ModeloApiResponse modeloResponse = new ModeloApiResponse(
+                "Moderado", 0.75, "basico", List.of(), List.of()
+        );
+
+        when(modeloApiWebClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri("/predict")).thenReturn(requestBodySpec);
+        when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(ModeloApiResponse.class)).thenReturn(Mono.just(modeloResponse));
+
+        integracionDsService.obtenerRespuestaCompleta(request);
+
+        ArgumentCaptor<ModeloApiRequest> captor = ArgumentCaptor.forClass(ModeloApiRequest.class);
+        verify(requestBodySpec).bodyValue(captor.capture());
+        assertThat(captor.getValue().equiposAltoConsumo()).isZero();
+        assertThat(captor.getValue().equiposMedioConsumo()).isEqualTo(4);
+        assertThat(captor.getValue().equiposBajoConsumo()).isEqualTo(6);
+    }
+
+    @Test
     void obtenerPrediccionDs_conModeloError_debeRetornarFallback() {
         // Given
         AnalisisRequest request = new AnalisisRequest(
-                400, true, 8, "Residencial", 10,
+                900, true, 8, "Casa", 10,
                 4, 120.0f, 3, 6.0f, 380.0f, 30,
                 "user1", null, null, null, null
         );
@@ -88,7 +116,7 @@ class IntegracionDsServiceTest {
         // When
         IntegracionDsService.PrediccionDs resultado = integracionDsService.obtenerPrediccionDs(request);
 
-        // Then: Debe usar fallback (consumo 400 > 350 = Ineficiente)
+        // Then: Debe usar fallback (consumo 900 > 800 = Ineficiente)
         assertThat(resultado.categoria()).isEqualTo("Ineficiente");
         assertThat(resultado.probabilidad()).isBetween(BigDecimal.valueOf(0.75), BigDecimal.valueOf(0.95));
     }
@@ -104,7 +132,7 @@ class IntegracionDsServiceTest {
     void fallbackPrediccion_conConsumoBajoYSinPico_debeRetornarEficiente() {
         // Given: consumo 100 < 150, sin pico
         AnalisisRequest request = new AnalisisRequest(
-                100, false, 3, "Residencial", 2,
+                200, false, 3, "Casa", 2,
                 null, null, null, null, null, null,
                 "user1", null, null, null, null
         );
@@ -118,7 +146,7 @@ class IntegracionDsServiceTest {
 
         IntegracionDsService.PrediccionDs resultado = integracionDsService.obtenerPrediccionDs(request);
 
-        // Then: consumo 100 < 150 y sin pico = Eficiente
+        // Then: consumo 200 < 300 y sin pico = Eficiente
         assertThat(resultado.categoria()).isEqualTo("Eficiente");
     }
 }

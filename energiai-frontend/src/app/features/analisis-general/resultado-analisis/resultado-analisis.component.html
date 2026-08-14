@@ -38,6 +38,61 @@
   </div>
 </div>
 
+@if (esIneficiente()) {
+  <div class="alerta-resultado alerta-alta" role="alert">
+    <span class="alerta-resultado-icono">
+      <i class="pe-7s-attention" aria-hidden="true"></i>
+    </span>
+    <div>
+      <span class="alerta-etiqueta">Alerta de alto consumo</span>
+      <h5>Tu consumo requiere atención prioritaria</h5>
+      <p>
+        La clasificación obtenida indica oportunidades importantes de mejora.
+        Comienza por la primera recomendación y realiza otro análisis después
+        de ajustar tus hábitos para comprobar el cambio.
+      </p>
+    </div>
+  </div>
+} @else if (requiereAtencion()) {
+  <div class="alerta-resultado alerta-media" role="status">
+    <span class="alerta-resultado-icono">
+      <i class="pe-7s-info" aria-hidden="true"></i>
+    </span>
+    <div>
+      <span class="alerta-etiqueta">Seguimiento recomendado</span>
+      <h5>Tu consumo se encuentra en un nivel intermedio</h5>
+      <p>
+        Aplica las recomendaciones y vuelve a medir para confirmar que la
+        tendencia se mueve hacia un perfil eficiente.
+      </p>
+    </div>
+  </div>
+}
+
+<div class="alert alert-info d-flex align-items-start gap-2">
+  <i class="pe-7s-info mt-1"></i>
+  <div>
+    <strong>Nivel de análisis: {{ etiquetaNivel() }}.</strong>
+    @if (resultado().nivel_analisis === 'avanzado') {
+      <div>
+        Se utilizaron todos los datos básicos y avanzados proporcionados.
+      </div>
+    } @else if (resultado().nivel_analisis === 'parcial') {
+      <div>
+        Se utilizaron los datos básicos y únicamente los datos avanzados
+        proporcionados. Los campos faltantes no se estimaron ni participaron
+        en el resultado.
+      </div>
+    } @else {
+      <div>
+        El análisis se realizó únicamente con los datos básicos. Los datos
+        avanzados ausentes no participaron y no se estimó
+        ningún valor.
+      </div>
+    }
+  </div>
+</div>
+
 <div class="main-card mb-3 card">
   <div class="card-header card-header-title d-flex align-items-center gap-2">
     <i class="header-icon pe-7s-light text-warning"></i>

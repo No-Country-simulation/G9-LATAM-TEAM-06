@@ -22,9 +22,22 @@
             type="number"
             class="form-control"
             formControlName="cantidad_personas"
-            min="1"
+            [class.is-invalid]="invalido('cantidad_personas')"
+            [attr.aria-invalid]="invalido('cantidad_personas')"
+            [min]="limites().personas.min"
+            [max]="limites().personas.max"
+            step="1"
+            inputmode="numeric"
             placeholder="Ej: 4"
           />
+          <div class="form-text">
+            Rango seguro: {{ limites().personas.min }}–{{ limites().personas.max }} personas.
+          </div>
+          @if (formulario().get('cantidad_personas')?.touched) {
+            @for (mensaje of mensajes('cantidad_personas'); track mensaje) {
+              <div class="invalid-feedback d-block">{{ mensaje }}</div>
+            }
+          }
         </div>
 
         <div class="col-md-4">
@@ -34,27 +47,22 @@
             type="number"
             class="form-control"
             formControlName="area_m2"
-            min="0.1"
-            step="0.1"
+            [class.is-invalid]="invalido('area_m2')"
+            [attr.aria-invalid]="invalido('area_m2')"
+            [min]="limites().area.min"
+            [max]="limites().area.max"
+            step="0.01"
+            inputmode="decimal"
             placeholder="Ej: 85.5"
           />
-        </div>
-
-        <div class="col-md-4">
-          <label class="form-label" for="equipos_alto_consumo">Equipos Alto Consumo:</label>
-          <input
-            id="equipos_alto_consumo"
-            type="number"
-            class="form-control"
-            formControlName="equipos_alto_consumo"
-            min="0"
-            placeholder="Ej: 2"
-          />
           <div class="form-text">
-            No puede superar cantidad de equipos ({{
-              formulario().get('cantidad_equipos')?.value
-            }})
+            Rango seguro para el inmueble: {{ limites().area.min }}–{{ limites().area.max }} m².
           </div>
+          @if (formulario().get('area_m2')?.touched) {
+            @for (mensaje of mensajes('area_m2'); track mensaje) {
+              <div class="invalid-feedback d-block">{{ mensaje }}</div>
+            }
+          }
         </div>
 
         <div class="col-md-4">
@@ -66,11 +74,20 @@
             type="number"
             class="form-control"
             formControlName="horas_aire_acondicionado"
+            [class.is-invalid]="invalido('horas_aire_acondicionado')"
+            [attr.aria-invalid]="invalido('horas_aire_acondicionado')"
             min="0"
-            max="24"
-            step="0.5"
+            max="12"
+            step="1"
+            inputmode="numeric"
             placeholder="Ej: 6"
           />
+          <div class="form-text">Usa entre 0 y 12 horas diarias.</div>
+          @if (formulario().get('horas_aire_acondicionado')?.touched) {
+            @for (mensaje of mensajes('horas_aire_acondicionado'); track mensaje) {
+              <div class="invalid-feedback d-block">{{ mensaje }}</div>
+            }
+          }
         </div>
 
         <div class="col-md-4">
@@ -80,10 +97,22 @@
             type="number"
             class="form-control"
             formControlName="consumo_mes_anterior_kwh"
-            min="0.1"
-            step="0.1"
+            [class.is-invalid]="invalido('consumo_mes_anterior_kwh')"
+            [attr.aria-invalid]="invalido('consumo_mes_anterior_kwh')"
+            [min]="limites().consumoAnterior.min"
+            [max]="limites().consumoAnterior.max"
+            step="0.01"
+            inputmode="decimal"
             placeholder="Ej: 230"
           />
+          <div class="form-text">
+            Rango seguro: {{ limites().consumoAnterior.min }}–{{ limites().consumoAnterior.max }} kWh.
+          </div>
+          @if (formulario().get('consumo_mes_anterior_kwh')?.touched) {
+            @for (mensaje of mensajes('consumo_mes_anterior_kwh'); track mensaje) {
+              <div class="invalid-feedback d-block">{{ mensaje }}</div>
+            }
+          }
         </div>
 
         <div class="col-md-4">
@@ -93,10 +122,20 @@
             type="number"
             class="form-control"
             formControlName="dias_facturados"
-            min="1"
-            max="60"
+            [class.is-invalid]="invalido('dias_facturados')"
+            [attr.aria-invalid]="invalido('dias_facturados')"
+            min="28"
+            max="31"
+            step="1"
+            inputmode="numeric"
             placeholder="Ej: 30"
           />
+          <div class="form-text">El entrenamiento contempla periodos de 28 a 31 días.</div>
+          @if (formulario().get('dias_facturados')?.touched) {
+            @for (mensaje of mensajes('dias_facturados'); track mensaje) {
+              <div class="invalid-feedback d-block">{{ mensaje }}</div>
+            }
+          }
         </div>
       </div>
     </div>

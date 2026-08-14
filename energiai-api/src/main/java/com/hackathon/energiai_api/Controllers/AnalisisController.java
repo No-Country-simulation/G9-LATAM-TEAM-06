@@ -7,12 +7,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
 
 import com.hackathon.energiai_api.DTOs.AnalisisRequest;
 import com.hackathon.energiai_api.DTOs.AnalisisResponse;
@@ -20,13 +22,20 @@ import com.hackathon.energiai_api.DTOs.HistorialResponse;
 import com.hackathon.energiai_api.service.AnalisisService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/analisis-energetico")
 @RequiredArgsConstructor
+@Validated
 public class AnalisisController {
+
+    private static final String USUARIO_VALIDO =
+            "invitado|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+";
 
     private final AnalisisService analisisService;
 
@@ -57,11 +66,28 @@ public class AnalisisController {
 
     @GetMapping
     public ResponseEntity<Page<HistorialResponse>> listarAnalisis(
-            @RequestParam String usuarioId,
-            @RequestParam(required = false) String categoria,
+            @RequestParam
+            @NotBlank(message = "El identificador de usuario es obligatorio")
+            @Size(max = 100, message = "El identificador de usuario no puede superar 100 caracteres")
+            @Pattern(regexp = USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
+            String usuarioId,
+            @RequestParam(required = false)
+            @Pattern(regexp = "Eficiente|Moderado|Ineficiente", message = "La categoría no es válida")
+            String categoria,
             @PageableDefault(size = 10, sort = "creadoEn", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<HistorialResponse> pagina = analisisService.listarPorUsuario(usuarioId, categoria, pageable);
         return ResponseEntity.ok(pagina);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> borrarHistorial(
+            @RequestParam
+            @NotBlank(message = "El identificador de usuario es obligatorio")
+            @Size(max = 100, message = "El identificador de usuario no puede superar 100 caracteres")
+            @Pattern(regexp = USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
+            String usuarioId) {
+        analisisService.borrarHistorialPorUsuario(usuarioId);
+        return ResponseEntity.noContent().build();
     }
 }

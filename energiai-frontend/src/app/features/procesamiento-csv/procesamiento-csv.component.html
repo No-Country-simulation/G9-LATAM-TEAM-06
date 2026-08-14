@@ -1,0 +1,101 @@
+<app-page-title
+  heading="Procesamiento por lotes"
+  subheading="Analiza hasta 100 consumos desde un archivo CSV"
+  icon="pe-7s-upload"
+>
+  <button type="button" class="btn accion-ui accion-ui-secundaria" (click)="descargarPlantilla()">
+    <i class="pe-7s-download" aria-hidden="true"></i> Descargar plantilla
+  </button>
+</app-page-title>
+
+<section class="guia-grid" aria-label="Cómo procesar un archivo">
+  <article><span>1</span><div><strong>Descarga</strong><small>Usa nuestra plantilla</small></div></article>
+  <article><span>2</span><div><strong>Completa</strong><small>Máximo 100 registros</small></div></article>
+  <article><span>3</span><div><strong>Valida</strong><small>Corrige antes de enviar</small></div></article>
+  <article><span>4</span><div><strong>Procesa</strong><small>Consulta tus resultados</small></div></article>
+</section>
+
+@if (!nombreArchivo()) {
+  <section
+    class="zona-carga"
+    [class.zona-activa]="arrastrando()"
+    (dragover)="permitirSoltar($event)"
+    (dragleave)="arrastrando.set(false)"
+    (drop)="soltarArchivo($event)"
+  >
+    <div class="icono-csv"><i class="pe-7s-file" aria-hidden="true"></i><span>CSV</span></div>
+    <h2>Arrastra aquí tu archivo CSV</h2>
+    <p>O selecciónalo desde tu equipo. Tamaño máximo: 1 MB.</p>
+    <label class="btn accion-ui accion-ui-principal" for="archivo-csv">
+      <i class="pe-7s-folder" aria-hidden="true"></i>
+      Seleccionar archivo
+    </label>
+    <input id="archivo-csv" type="file" accept=".csv,text/csv" (change)="seleccionarArchivo($event)" />
+  </section>
+} @else {
+  <section class="archivo-panel">
+    <div class="archivo-info">
+      <span class="archivo-icono"><i class="pe-7s-file" aria-hidden="true"></i></span>
+      <div><strong>{{ nombreArchivo() }}</strong><small>{{ filas().length }} filas detectadas</small></div>
+    </div>
+    <button type="button" class="btn accion-ui accion-ui-advertencia accion-ui-compacta" [disabled]="procesando()" (click)="limpiar()">
+      <i class="pe-7s-trash" aria-hidden="true"></i> Quitar archivo
+    </button>
+  </section>
+}
+
+@if (erroresGlobales().length) {
+  <div class="alerta-global" role="alert">
+    <i class="pe-7s-attention" aria-hidden="true"></i>
+    <div><strong>No podemos leer este archivo</strong>@for (error of erroresGlobales(); track error) {<p>{{ error }}</p>}</div>
+  </div>
+}
+
+@if (filas().length) {
+  <section class="validacion-panel">
+    <div class="panel-cabecera">
+      <div><span class="sobrelinea">Vista previa</span><h2>Validación del lote</h2><p>Las filas con errores se omitirán hasta que corrijas el archivo.</p></div>
+      <div class="contadores">
+        <span class="contador valido"><strong>{{ filasValidas().length }}</strong> listas</span>
+        <span class="contador invalido"><strong>{{ filasInvalidas().length }}</strong> con errores</span>
+      </div>
+    </div>
+    <div class="tabla-contenedor">
+      <table>
+        <thead><tr><th>Fila</th><th>Inmueble</th><th>Consumo</th><th>Equipos</th><th>Horario pico</th><th>Estado</th></tr></thead>
+        <tbody>
+          @for (fila of filas(); track fila.numero) {
+            <tr [class.fila-error]="fila.errores.length">
+              <td>#{{ fila.numero }}</td><td>{{ fila.valores['tipo_inmueble'] || '—' }}</td><td>{{ fila.valores['consumo_kwh'] || '—' }} kWh</td><td>{{ fila.valores['cantidad_equipos'] || '—' }}</td><td>{{ fila.valores['uso_horario_pico'] || '—' }}</td>
+              <td>
+                @if (fila.errores.length) {
+                  <span class="estado error"><i class="pe-7s-close-circle"></i> Revisar</span>
+                  <ul class="errores-fila">@for (error of fila.errores; track error) {<li>{{ error }}</li>}</ul>
+                } @else {<span class="estado correcto"><i class="pe-7s-check"></i> Lista</span>}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="acciones-lote">
+      <p><strong>{{ filasValidas().length }}</strong> análisis se guardarán en el historial de <strong>{{ usuarioService.usuarioActual }}</strong>.</p>
+      <button type="button" class="btn accion-ui accion-ui-principal" [disabled]="!filasValidas().length || procesando() || resultados().length > 0" (click)="procesarLote()">
+        @if (procesando()) {<span class="spinner-border spinner-border-sm"></span> Procesando {{ procesadas() }}/{{ filasValidas().length }}} @else {<i class="pe-7s-play"></i> Procesar lote}
+      </button>
+    </div>
+  </section>
+}
+
+@if (procesando() || resultados().length) {
+  <section class="resultados-panel" aria-live="polite">
+    <div class="panel-cabecera"><div><span class="sobrelinea">Resultado</span><h2>{{ procesando() ? 'Procesando análisis' : 'Lote completado' }}</h2></div><strong class="porcentaje">{{ progreso() }}%</strong></div>
+    <div class="progreso"><span [style.width.%]="progreso()"></span></div>
+    @if (!procesando()) {
+      <div class="resumen-resultado"><div class="resultado-ok"><i class="pe-7s-check"></i><strong>{{ exitosas() }}</strong><span>Guardados</span></div><div class="resultado-fallo"><i class="pe-7s-attention"></i><strong>{{ fallidas() }}</strong><span>No procesados</span></div><a class="btn accion-ui accion-ui-secundaria" routerLink="/historial"><i class="pe-7s-notebook"></i> Ver historial</a></div>
+      @if (resultados().length) {
+        <div class="chips-resultados">@for (item of resultados(); track item.fila) {<span [class.fallo]="item.estado === 'error'">Fila {{ item.fila }} · {{ item.estado === 'exitoso' ? item.categoria + ' · $' + (item.costo ?? 0).toFixed(2) : item.mensaje }}</span>}</div>
+      }
+    }
+  </section>
+}

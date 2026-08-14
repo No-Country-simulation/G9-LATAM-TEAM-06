@@ -8,6 +8,7 @@ describe('AnalisisGeneralComponent', () => {
   let componente: AnalisisGeneralComponent;
 
   beforeEach(async () => {
+    localStorage.removeItem('energiai_usuario');
     await TestBed.configureTestingModule({
       imports: [AnalisisGeneralComponent],
       providers: [
@@ -32,7 +33,7 @@ describe('AnalisisGeneralComponent', () => {
     componente.formulario.get('dispositivos_medio')?.setValue(2);
     componente.formulario.get('dispositivos_bajo')?.setValue(0);
     expect(componente.formulario.invalid).toBeTrue();
-    expect(componente.mensajeSumaEquipos).toContain('La suma (4)');
+    expect(componente.mensajeSumaEquipos).toContain('suma 4');
   });
 
   it('debe ser válido cuando la suma de dispositivos iguala la cantidad de equipos', () => {
@@ -40,7 +41,98 @@ describe('AnalisisGeneralComponent', () => {
     componente.formulario.get('dispositivos_alto')?.setValue(2);
     componente.formulario.get('dispositivos_medio')?.setValue(1);
     componente.formulario.get('dispositivos_bajo')?.setValue(2);
+    expect(componente.formulario.errors)
+      .withContext(JSON.stringify(componente.formulario.errors))
+      .toBeNull();
+    const erroresControles = Object.fromEntries(
+      Object.entries(componente.formulario.controls)
+        .filter(([, control]) => control.invalid)
+        .map(([nombre, control]) => [nombre, control.errors]),
+    );
+    expect(erroresControles)
+      .withContext(JSON.stringify(erroresControles))
+      .toEqual({});
     expect(componente.formulario.valid).toBeTrue();
+  });
+
+  it('debe aceptar un consumo bajo para comercio dentro del rango general', () => {
+    componente.formulario.get('tipo_inmueble')?.setValue('Comercio');
+    componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('cantidad_equipos')?.setValue(10);
+    componente.formulario.get('dispositivos_alto')?.setValue(2);
+    componente.formulario.get('dispositivos_medio')?.setValue(4);
+    componente.formulario.get('dispositivos_bajo')?.setValue(4);
+
+    expect(componente.formulario.valid).toBeTrue();
+    expect(componente.mensajesDominio).toEqual([]);
+  });
+
+  it('debe rechazar decimales en campos entrenados como enteros', () => {
+    componente.formulario.get('horas_alto_consumo')?.setValue(4.5);
+
+    expect(componente.formulario.invalid).toBeTrue();
+    expect(componente.mensajesDominio.join(' ')).toContain('número entero');
+  });
+
+  it('debe aceptar 24 horas de alto consumo y rechazar 25', () => {
+    componente.formulario.get('horas_alto_consumo')?.setValue(24);
+    expect(componente.formulario.valid).toBeTrue();
+
+    componente.formulario.get('horas_alto_consumo')?.setValue(25);
+    expect(componente.formulario.invalid).toBeTrue();
+  });
+
+  it('debe aceptar más de nueve equipos de alto consumo cuando no superan el total', () => {
+    componente.formulario.get('cantidad_equipos')?.setValue(20);
+    componente.formulario.get('dispositivos_alto')?.setValue(10);
+    componente.formulario.get('dispositivos_medio')?.setValue(5);
+    componente.formulario.get('dispositivos_bajo')?.setValue(5);
+
+    expect(componente.formulario.errors)
+      .withContext(JSON.stringify(componente.formulario.errors))
+      .toBeNull();
+    const erroresControles = Object.fromEntries(
+      Object.entries(componente.formulario.controls)
+        .filter(([, control]) => control.invalid)
+        .map(([nombre, control]) => [nombre, control.errors]),
+    );
+    expect(erroresControles)
+      .withContext(JSON.stringify(erroresControles))
+      .toEqual({});
+    expect(componente.formulario.valid).toBeTrue();
+    expect(componente.maximoEquiposAlto).toBe(20);
+  });
+
+  it('debe aplicar el dominio específico al cambiar el tipo de inmueble', () => {
+    componente.formulario.get('tipo_inmueble')?.setValue('Apartamento');
+    componente.formulario.get('cantidad_personas')?.setValue(8);
+    componente.formulario.get('area_m2')?.setValue(181);
+
+    expect(componente.formulario.invalid).toBeTrue();
+    expect(componente.mensajesCampo('cantidad_personas').join(' ')).toContain('entre 1 y 7');
+    expect(componente.mensajesCampo('area_m2').join(' ')).toContain('entre 35 y 180');
+  });
+
+  it('nunca debe enviar NaN, infinitos ni datos fuera del dominio', () => {
+    const http = TestBed.inject(HttpTestingController);
+    componente.formulario.get('consumo_kwh')?.setValue(Number.NaN);
+    componente.formulario.get('cantidad_equipos')?.setValue(Number.POSITIVE_INFINITY);
+
+    componente.enviar();
+
+    expect(componente.formulario.invalid).toBeTrue();
+    expect(componente.errorSignal()).toContain('dominio entrenado');
+    http.expectNone((req) => req.method === 'POST');
+    http.verify();
+  });
+
+  it('debe rechazar más de dos decimales en variables continuas', () => {
+    componente.formulario.get('area_m2')?.setValue(85.123);
+    componente.formulario.get('consumo_mes_anterior_kwh')?.setValue(230.999);
+
+    expect(componente.formulario.invalid).toBeTrue();
+    expect(componente.mensajesCampo('area_m2').join(' ')).toContain('máximo 2 decimales');
+    expect(componente.mensajesCampo('consumo_mes_anterior_kwh').join(' ')).toContain('máximo 2 decimales');
   });
 
   it('debe enviar la solicitud al endpoint correcto y guardar el resultado', () => {
@@ -59,12 +151,15 @@ describe('AnalisisGeneralComponent', () => {
     const cuerpo = solicitud.request.body;
     expect(cuerpo.consumo_kwh).toBe(250);
     expect(cuerpo.usuarioId).toBe('invitado');
+    expect(cuerpo.equipos_alto_consumo).toBe(1);
 
     solicitud.flush({
       categoria: 'Consumo Ineficiente',
       probabilidad: 0.75,
       recomendaciones: ['Ajustar horario'],
       costo_estimado_mensual: 150.5,
+      nivel_analisis: 'basico',
+      campos_imputados: [],
     });
 
     expect(componente.resultado()?.categoria).toBe('Consumo Ineficiente');

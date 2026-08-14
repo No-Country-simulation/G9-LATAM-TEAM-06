@@ -12,6 +12,8 @@ import java.util.List;
 @Service
 public class RecomendacionService {
 
+    private static final String CODIGO_MANTENER_HABITOS = "rec_mantener_habitos";
+
     public List<String> generarRecomendaciones(AnalisisRequest request) {
         return generarRecomendaciones(request, null);
     }
@@ -20,8 +22,12 @@ public class RecomendacionService {
         List<String> recomendaciones = new ArrayList<>();
 
         if (modeloResponse != null && modeloResponse.recomendaciones() != null && !modeloResponse.recomendaciones().isEmpty()) {
+            boolean hayAccionConcreta = modeloResponse.recomendaciones().stream()
+                    .anyMatch(rec -> !CODIGO_MANTENER_HABITOS.equals(rec.codigo()));
             for (RecomendacionModelo rec : modeloResponse.recomendaciones()) {
-                recomendaciones.add(rec.texto());
+                if (!hayAccionConcreta || !CODIGO_MANTENER_HABITOS.equals(rec.codigo())) {
+                    recomendaciones.add(rec.texto());
+                }
             }
             return recomendaciones;
         }
@@ -34,8 +40,16 @@ public class RecomendacionService {
             recomendaciones.add("Reducir el uso de equipos durante horarios pico");
         }
 
-        if (request.cantidad_equipos() != null && request.cantidad_equipos() >= 10) {
-            recomendaciones.add("Evaluar aparatos con alto consumo electrico");
+        if (request.equiposAltoResueltos() != null && request.equiposAltoResueltos() > 0) {
+            recomendaciones.add("Priorizar el uso eficiente y mantenimiento de los equipos de mayor demanda");
+        }
+
+        if (request.equiposMedioResueltos() != null && request.equiposMedioResueltos() > 0) {
+            recomendaciones.add("Programar y agrupar el uso de los equipos de consumo medio para evitar funcionamiento innecesario");
+        }
+
+        if (request.equiposBajoResueltos() != null && request.equiposBajoResueltos() > 0) {
+            recomendaciones.add("Desconectar o suspender los equipos de bajo consumo cuando no esten en uso para reducir consumos acumulados");
         }
 
         if (request.horas_alto_consumo() != null && request.horas_alto_consumo() >= 6) {

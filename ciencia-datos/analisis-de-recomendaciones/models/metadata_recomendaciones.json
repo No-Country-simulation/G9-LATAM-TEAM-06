@@ -1,58 +1,169 @@
 {
-  "nombre": "recomendador-energia-multietiqueta",
-  "version": "1.1.0",
-  "modelo_seleccionado": "regresion_logistica",
-  "columnas_entrada": [
-    "consumo_kwh",
-    "uso_horario_pico",
-    "cantidad_equipos",
-    "tipo_inmueble",
-    "horas_alto_consumo",
+  "nombre": "recomendador-energia-tres-niveles",
+  "version": "2.1.0",
+  "sin_imputacion": true,
+  "regla_enrutamiento": "usar el mismo nivel elegido por el clasificador de energía",
+  "campos_avanzados_requeridos": [
     "cantidad_personas",
     "area_m2",
-    "equipos_alto_consumo",
     "horas_aire_acondicionado",
     "consumo_mes_anterior_kwh",
-    "dias_facturados",
-    "consumo_por_persona",
-    "consumo_por_m2",
-    "variacion_mensual",
-    "proporcion_equipos_alto_consumo",
-    "categoria"
+    "dias_facturados"
   ],
+  "niveles": {
+    "basico": {
+      "archivo": "modelo_recomendaciones_basico.joblib",
+      "columnas_entrada": [
+        "consumo_kwh",
+        "uso_horario_pico",
+        "cantidad_equipos",
+        "tipo_inmueble",
+        "horas_alto_consumo",
+        "equipos_alto_consumo",
+        "equipos_medio_consumo",
+        "equipos_bajo_consumo",
+        "proporcion_equipos_alto_consumo",
+        "proporcion_equipos_medio_consumo",
+        "proporcion_equipos_bajo_consumo",
+        "carga_relativa_equipos",
+        "categoria"
+      ],
+      "modelo_seleccionado": "random_forest",
+      "umbral": 0.35,
+      "metricas_validacion": {
+        "precision_micro": 0.7779373743177248,
+        "recall_micro": 0.9072026800670017,
+        "f1_micro": 0.8376121249613362,
+        "f1_macro": 0.7882559666046338,
+        "hamming_loss": 0.12962962962962962,
+        "umbral": 0.35
+      },
+      "metricas_prueba": {
+        "precision_micro": 0.7817663817663818,
+        "recall_micro": 0.9137529137529138,
+        "f1_micro": 0.8426224474128666,
+        "f1_macro": 0.7983928329061463,
+        "hamming_loss": 0.12654320987654322
+      },
+      "registros_entrenamiento_disponibles": 6000
+    },
+    "avanzado": {
+      "archivo": "modelo_recomendaciones_avanzado.joblib",
+      "columnas_entrada": [
+        "consumo_kwh",
+        "uso_horario_pico",
+        "cantidad_equipos",
+        "tipo_inmueble",
+        "horas_alto_consumo",
+        "cantidad_personas",
+        "area_m2",
+        "horas_aire_acondicionado",
+        "consumo_mes_anterior_kwh",
+        "dias_facturados",
+        "equipos_alto_consumo",
+        "equipos_medio_consumo",
+        "equipos_bajo_consumo",
+        "proporcion_equipos_alto_consumo",
+        "proporcion_equipos_medio_consumo",
+        "proporcion_equipos_bajo_consumo",
+        "carga_relativa_equipos",
+        "consumo_por_persona",
+        "consumo_por_m2",
+        "variacion_mensual",
+        "categoria"
+      ],
+      "modelo_seleccionado": "random_forest",
+      "umbral": 0.39999999999999997,
+      "metricas_validacion": {
+        "precision_micro": 0.9152666179693206,
+        "recall_micro": 0.9315985130111524,
+        "f1_micro": 0.9233603537214443,
+        "f1_macro": 0.8878347108301261,
+        "hamming_loss": 0.05692391899288451,
+        "umbral": 0.39999999999999997
+      },
+      "metricas_prueba": {
+        "precision_micro": 0.9296875,
+        "recall_micro": 0.9437635183850036,
+        "f1_micro": 0.9366726296958855,
+        "f1_macro": 0.9068295609794917,
+        "hamming_loss": 0.048440065681444995
+      },
+      "registros_entrenamiento_disponibles": 2704
+    },
+    "parcial": {
+      "archivo": "modelo_recomendaciones_parcial.joblib",
+      "columnas_entrada": [
+        "consumo_kwh",
+        "uso_horario_pico",
+        "cantidad_equipos",
+        "tipo_inmueble",
+        "horas_alto_consumo",
+        "cantidad_personas",
+        "area_m2",
+        "horas_aire_acondicionado",
+        "consumo_mes_anterior_kwh",
+        "dias_facturados",
+        "equipos_alto_consumo",
+        "equipos_medio_consumo",
+        "equipos_bajo_consumo",
+        "proporcion_equipos_alto_consumo",
+        "proporcion_equipos_medio_consumo",
+        "proporcion_equipos_bajo_consumo",
+        "carga_relativa_equipos",
+        "consumo_por_persona",
+        "consumo_por_m2",
+        "variacion_mensual",
+        "categoria"
+      ],
+      "modelo_seleccionado": "hist_gradient_boosting",
+      "umbral": 0.3,
+      "metricas_validacion": {
+        "precision_micro": 0.86489898989899,
+        "recall_micro": 0.8989501312335958,
+        "f1_micro": 0.8815958815958816,
+        "f1_macro": 0.8242603630722625,
+        "hamming_loss": 0.08888888888888889,
+        "umbral": 0.3
+      },
+      "metricas_prueba": {
+        "precision_micro": 0.8647959183673469,
+        "recall_micro": 0.8909329829172142,
+        "f1_micro": 0.8776699029126214,
+        "f1_macro": 0.8238572905533104,
+        "hamming_loss": 0.09090909090909091
+      },
+      "registros_entrenamiento_disponibles": 1535,
+      "manejo_ausentes": "nativo_sin_imputacion"
+    }
+  },
   "columnas_objetivo": [
     "rec_reducir_horario_pico",
     "rec_revisar_equipos_alto_consumo",
+    "rec_optimizar_equipos_medio_consumo",
+    "rec_reducir_consumo_en_espera",
     "rec_optimizar_aire_acondicionado",
     "rec_reducir_consumo_por_persona",
     "rec_monitorear_incremento_mensual",
     "rec_mejorar_eficiencia_inmueble",
     "rec_mantener_habitos"
   ],
-  "umbral": 0.44999999999999996,
-  "metricas_validacion": {
-    "precision_micro": 0.5297478991596639,
-    "recall_micro": 0.7591522157996147,
-    "f1_micro": 0.6240348445852306,
-    "f1_macro": 0.6079375262613816,
-    "hamming_loss": 0.30142857142857143,
-    "umbral": 0.44999999999999996
-  },
-  "metricas_prueba": {
-    "precision_micro": 0.5289976533690915,
-    "recall_micro": 0.7539417104634496,
-    "f1_micro": 0.6217494089834515,
-    "f1_macro": 0.6029692354590871,
-    "hamming_loss": 0.3047619047619048
-  },
   "catalogo_recomendaciones": {
     "rec_reducir_horario_pico": "Distribuir, cuando sea posible, el consumo fuera de los horarios de mayor demanda",
-    "rec_revisar_equipos_alto_consumo": "Identificar las principales fuentes de consumo y priorizar acciones de eficiencia energética",
+    "rec_revisar_equipos_alto_consumo": "Priorizar el uso eficiente y mantenimiento de los equipos de mayor demanda",
+    "rec_optimizar_equipos_medio_consumo": "Programar y agrupar el uso de los equipos de consumo medio para evitar funcionamiento innecesario",
+    "rec_reducir_consumo_en_espera": "Desconectar o suspender los equipos de bajo consumo cuando no estén en uso para reducir consumos acumulados",
     "rec_optimizar_aire_acondicionado": "Reducir consumos innecesarios y ajustar la duración de las actividades de mayor demanda",
     "rec_reducir_consumo_por_persona": "Promover hábitos de ahorro y dar seguimiento continuo al consumo",
     "rec_monitorear_incremento_mensual": "Comparar periódicamente el consumo para detectar cambios y oportunidades de ahorro",
     "rec_mejorar_eficiencia_inmueble": "Aplicar mejoras graduales que aumenten la eficiencia energética general",
     "rec_mantener_habitos": "Mantener los buenos hábitos y monitorear el consumo periódicamente"
   },
+  "tipos_inmueble": [
+    "Casa",
+    "Apartamento",
+    "Comercio",
+    "Oficina"
+  ],
   "dataset_simulado": true
 }

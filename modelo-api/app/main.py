@@ -1,54 +1,117 @@
 import json
-import math
 from pathlib import Path
+from typing import Literal
 
 import joblib
+import numpy as np
 import pandas as pd
 from fastapi import FastAPI
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator, model_validator
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 MODELS_DIR = BASE_DIR / "models"
-
-ENERGY_MODEL_PATH = MODELS_DIR / "modelo_energia.joblib"
 ENERGY_METADATA_PATH = MODELS_DIR / "metadata_modelo.json"
-RECOMMENDATION_MODEL_PATH = MODELS_DIR / "modelo_recomendaciones.joblib"
 RECOMMENDATION_METADATA_PATH = MODELS_DIR / "metadata_recomendaciones.json"
 
 app = FastAPI(
     title="API de análisis y recomendaciones de energía",
-    version="1.1.0"
+    version="2.1.0",
 )
 
 
+LIMITES_POR_INMUEBLE = {
+    "Casa": {
+        "cantidad_equipos": (1, 500),
+        "cantidad_personas": (1, 7),
+        "area_m2": (60.0, 350.0),
+    },
+    "Apartamento": {
+        "cantidad_equipos": (1, 500),
+        "cantidad_personas": (1, 7),
+        "area_m2": (35.0, 180.0),
+    },
+    "Comercio": {
+        "cantidad_equipos": (1, 500),
+        "cantidad_personas": (1, 15),
+        "area_m2": (30.0, 420.0),
+    },
+    "Oficina": {
+        "cantidad_equipos": (1, 500),
+        "cantidad_personas": (1, 30),
+        "area_m2": (30.0, 420.0),
+    },
+}
+
+ADVANCED_FIELDS = [
+    "cantidad_personas",
+    "area_m2",
+    "horas_aire_acondicionado",
+    "consumo_mes_anterior_kwh",
+    "dias_facturados",
+]
+
+
 class PrediccionRequest(BaseModel):
-    consumo_kwh: float = Field(gt=0, le=5000)
-    uso_horario_pico: bool
-    cantidad_equipos: int = Field(gt=0)
-    tipo_inmueble: str = Field(min_length=1)
-    horas_alto_consumo: float = Field(ge=0, le=24)
-    cantidad_personas: int | None = Field(default=None, gt=0)
-    area_m2: float | None = Field(default=None, gt=0)
-    equipos_alto_consumo: int | None = Field(default=None, ge=0)
-    horas_aire_acondicionado: float | None = Field(
-        default=None,
-        ge=0,
-        le=24
-    )
-    consumo_mes_anterior_kwh: float | None = Field(default=None, gt=0)
-    dias_facturados: int | None = Field(default=None, gt=0)
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+
+    consumo_kwh: int = Field(ge=40, le=5000, strict=True)
+    uso_horario_pico: StrictBool
+    cantidad_equipos: int = Field(ge=1, le=500, strict=True)
+    tipo_inmueble: Literal["Casa", "Apartamento", "Comercio", "Oficina"]
+    horas_alto_consumo: int = Field(ge=0, le=24, strict=True)
+    cantidad_personas: int | None = Field(default=None, ge=1, le=30, strict=True)
+    area_m2: float | None = Field(default=None, ge=30, le=420)
+    equipos_alto_consumo: int = Field(ge=0, le=500, strict=True)
+    equipos_medio_consumo: int = Field(ge=0, le=500, strict=True)
+    equipos_bajo_consumo: int = Field(ge=0, le=500, strict=True)
+    horas_aire_acondicionado: int | None = Field(default=None, ge=0, le=12, strict=True)
+    consumo_mes_anterior_kwh: float | None = Field(default=None, ge=35, le=5000)
+    dias_facturados: int | None = Field(default=None, ge=28, le=31, strict=True)
+
+    @field_validator("area_m2", "consumo_mes_anterior_kwh", mode="before")
+    @classmethod
+    def validar_decimal_numerico(cls, valor):
+        if valor is None:
+            return valor
+        if isinstance(valor, bool) or not isinstance(valor, (int, float)):
+            raise ValueError("debe ser un número JSON")
+        return valor
+
+    @field_validator("area_m2", "consumo_mes_anterior_kwh")
+    @classmethod
+    def validar_maximo_dos_decimales(cls, valor):
+        if valor is None:
+            return valor
+        representacion = format(valor, ".15g")
+        if "." in representacion and len(representacion.rstrip("0").split(".")[1]) > 2:
+            raise ValueError("admite máximo 2 decimales")
+        return valor
 
     @model_validator(mode="after")
-    def validar_equipos(self):
-        if (
-            self.equipos_alto_consumo is not None
-            and self.equipos_alto_consumo > self.cantidad_equipos
-        ):
+    def validar_dominio(self):
+        suma_equipos = (
+            self.equipos_alto_consumo
+            + self.equipos_medio_consumo
+            + self.equipos_bajo_consumo
+        )
+        if suma_equipos != self.cantidad_equipos:
             raise ValueError(
-                "equipos_alto_consumo no puede ser mayor que cantidad_equipos"
+                "equipos_alto_consumo + equipos_medio_consumo + "
+                "equipos_bajo_consumo debe ser igual a cantidad_equipos"
             )
 
+        limites = LIMITES_POR_INMUEBLE[self.tipo_inmueble]
+        for campo in ["cantidad_equipos", "cantidad_personas", "area_m2"]:
+            valor = getattr(self, campo)
+            if valor is None:
+                continue
+            minimo, maximo = limites[campo]
+            if not minimo <= valor <= maximo:
+                raise ValueError(
+                    f"{campo} debe estar entre {minimo} y {maximo} "
+                    f"para {self.tipo_inmueble}"
+                )
         return self
 
 
@@ -61,28 +124,30 @@ class RecomendacionResponse(BaseModel):
 class PrediccionResponse(BaseModel):
     categoria: str
     probabilidad: float
-    nivel_analisis: str
+    nivel_analisis: Literal["basico", "parcial", "avanzado"]
     campos_imputados: list[str]
     recomendaciones: list[RecomendacionResponse]
 
 
+def _cargar_niveles(metadata):
+    return {
+        nivel: joblib.load(MODELS_DIR / configuracion["archivo"])
+        for nivel, configuracion in metadata["niveles"].items()
+    }
+
+
 @app.on_event("startup")
 def cargar_modelos():
-    app.state.modelo_energia = joblib.load(ENERGY_MODEL_PATH)
-    app.state.modelo_recomendaciones = joblib.load(
-        RECOMMENDATION_MODEL_PATH
-    )
-
     with open(ENERGY_METADATA_PATH, encoding="utf-8") as archivo:
         app.state.metadata_energia = json.load(archivo)
-
-    with open(
-        RECOMMENDATION_METADATA_PATH,
-        encoding="utf-8"
-    ) as archivo:
+    with open(RECOMMENDATION_METADATA_PATH, encoding="utf-8") as archivo:
         app.state.metadata_recomendaciones = json.load(archivo)
 
-    print("Modelos de energía y recomendaciones cargados correctamente")
+    app.state.modelos_energia = _cargar_niveles(app.state.metadata_energia)
+    app.state.modelos_recomendaciones = _cargar_niveles(
+        app.state.metadata_recomendaciones
+    )
+    print("Modelos básico, parcial y avanzado cargados sin imputación")
 
 
 @app.get("/health")
@@ -90,125 +155,117 @@ def health():
     return {
         "status": "ok",
         "service": "modelo-energia-y-recomendaciones",
+        "sin_imputacion": True,
         "models": {
             "energia": {
                 "nombre": app.state.metadata_energia["nombre"],
                 "version": app.state.metadata_energia["version"],
-                "cargado": app.state.modelo_energia is not None,
+                "niveles": sorted(app.state.modelos_energia),
             },
             "recomendaciones": {
                 "nombre": app.state.metadata_recomendaciones["nombre"],
                 "version": app.state.metadata_recomendaciones["version"],
-                "cargado": app.state.modelo_recomendaciones is not None,
+                "niveles": sorted(app.state.modelos_recomendaciones),
             },
         },
     }
 
 
-@app.post("/predict", response_model=PrediccionResponse)
-def predict(request: PrediccionRequest):
-    datos_originales = request.model_dump()
-
-    campos_avanzados = [
-        "cantidad_personas",
-        "area_m2",
-        "equipos_alto_consumo",
-        "horas_aire_acondicionado",
-        "consumo_mes_anterior_kwh",
-        "dias_facturados",
-    ]
-
-    campos_imputados = [
-        campo
-        for campo in campos_avanzados
-        if datos_originales[campo] is None
-    ]
-
-    if not campos_imputados:
-        nivel_analisis = "avanzado"
-    elif len(campos_imputados) == len(campos_avanzados):
-        nivel_analisis = "basico"
-    else:
-        nivel_analisis = "parcial"
-
-    datos = {
-        campo: math.nan if valor is None else valor
-        for campo, valor in datos_originales.items()
-    }
-
-    # Variables derivadas calculadas igual que durante el entrenamiento
-    datos["consumo_por_persona"] = (
-        request.consumo_kwh / request.cantidad_personas
-        if request.cantidad_personas is not None
-        else math.nan
+def _nivel_para(request):
+    presentes = sum(
+        getattr(request, campo) is not None for campo in ADVANCED_FIELDS
     )
+    if presentes == 0:
+        return "basico"
+    if presentes == len(ADVANCED_FIELDS):
+        return "avanzado"
+    return "parcial"
 
-    datos["consumo_por_m2"] = (
-        request.consumo_kwh / request.area_m2
-        if request.area_m2 is not None
-        else math.nan
-    )
 
-    datos["variacion_mensual"] = (
-        (
-            request.consumo_kwh
-            - request.consumo_mes_anterior_kwh
-        ) / request.consumo_mes_anterior_kwh
-        if request.consumo_mes_anterior_kwh is not None
-        else math.nan
-    )
-
+def _preparar_datos(request, nivel):
+    datos = request.model_dump(exclude_none=True)
     datos["proporcion_equipos_alto_consumo"] = (
         request.equipos_alto_consumo / request.cantidad_equipos
-        if request.equipos_alto_consumo is not None
-        else math.nan
     )
+    datos["proporcion_equipos_medio_consumo"] = (
+        request.equipos_medio_consumo / request.cantidad_equipos
+    )
+    datos["proporcion_equipos_bajo_consumo"] = (
+        request.equipos_bajo_consumo / request.cantidad_equipos
+    )
+    datos["carga_relativa_equipos"] = (
+        request.equipos_alto_consumo
+        + request.equipos_medio_consumo * 0.35
+        + request.equipos_bajo_consumo * 0.10
+    ) / request.cantidad_equipos
 
-    # Conserva las columnas y el orden usados durante el entrenamiento
-    columnas = app.state.metadata_energia["columnas_entrada"]
+    if nivel in {"parcial", "avanzado"}:
+        for campo in ADVANCED_FIELDS:
+            datos.setdefault(campo, np.nan)
+        datos["consumo_por_persona"] = (
+            request.consumo_kwh / request.cantidad_personas
+            if request.cantidad_personas is not None
+            else np.nan
+        )
+        datos["consumo_por_m2"] = (
+            request.consumo_kwh / request.area_m2
+            if request.area_m2 is not None
+            else np.nan
+        )
+        datos["variacion_mensual"] = (
+            (
+                request.consumo_kwh
+                - request.consumo_mes_anterior_kwh
+            ) / request.consumo_mes_anterior_kwh
+            if request.consumo_mes_anterior_kwh is not None
+            else np.nan
+        )
+    return datos
 
-    entrada = pd.DataFrame(
+
+def _crear_entrada(datos, columnas):
+    return pd.DataFrame(
         [[datos[columna] for columna in columnas]],
-        columns=columnas
+        columns=columnas,
     )
 
-    # Se conserva el tipo numérico para buscar su probabilidad
-    categoria_predicha = app.state.modelo_energia.predict(entrada)[0]
-    probabilidades = app.state.modelo_energia.predict_proba(entrada)[0]
 
-    clases = app.state.modelo_energia.named_steps["classifier"].classes_
-    posicion_categoria = list(clases).index(categoria_predicha)
-    probabilidad = float(probabilidades[posicion_categoria])
+@app.post("/predict", response_model=PrediccionResponse)
+def predict(request: PrediccionRequest):
+    nivel = _nivel_para(request)
+    datos = _preparar_datos(request, nivel)
 
-    codigo_categoria = str(int(categoria_predicha))
+    metadata_energia_nivel = app.state.metadata_energia["niveles"][nivel]
+    modelo_energia = app.state.modelos_energia[nivel]
+    entrada_energia = _crear_entrada(
+        datos, metadata_energia_nivel["columnas_entrada"]
+    )
+    categoria_predicha = modelo_energia.predict(entrada_energia)[0]
+    probabilidades = modelo_energia.predict_proba(entrada_energia)[0]
+    clases = modelo_energia.named_steps["classifier"].classes_
+    posicion = list(clases).index(categoria_predicha)
+    probabilidad = float(probabilidades[posicion])
+    categoria_nombre = app.state.metadata_energia["mapeo_categorias"][
+        str(int(categoria_predicha))
+    ]
 
-    categoria_nombre = app.state.metadata_energia[
-        "mapeo_categorias"
-    ][codigo_categoria]
-
-    # El recomendador usa los mismos datos y la categoría producida
-    # por el clasificador de energía.
     datos["categoria"] = categoria_nombre
     metadata_recomendaciones = app.state.metadata_recomendaciones
-    columnas_recomendaciones = metadata_recomendaciones[
-        "columnas_entrada"
-    ]
-
-    entrada_recomendaciones = pd.DataFrame(
-        [[datos[columna] for columna in columnas_recomendaciones]],
-        columns=columnas_recomendaciones
+    metadata_recomendaciones_nivel = metadata_recomendaciones["niveles"][nivel]
+    modelo_recomendaciones = app.state.modelos_recomendaciones[nivel]
+    entrada_recomendaciones = _crear_entrada(
+        datos, metadata_recomendaciones_nivel["columnas_entrada"]
     )
+    probabilidades_recomendaciones = modelo_recomendaciones.predict_proba(
+        entrada_recomendaciones
+    )[0]
+    codigos = metadata_recomendaciones["columnas_objetivo"]
+    umbral = float(metadata_recomendaciones_nivel["umbral"])
 
-    probabilidades_recomendaciones = (
-        app.state.modelo_recomendaciones
-        .predict_proba(entrada_recomendaciones)[0]
-    )
-    codigos_recomendaciones = metadata_recomendaciones[
-        "columnas_objetivo"
-    ]
-    umbral = float(metadata_recomendaciones["umbral"])
-
-    requisitos_recomendaciones = {
+    requisitos = {
+        "rec_revisar_equipos_alto_consumo": request.equipos_alto_consumo > 0,
+        "rec_optimizar_equipos_medio_consumo": request.equipos_medio_consumo > 0,
+        "rec_reducir_consumo_en_espera": request.equipos_bajo_consumo > 0,
         "rec_optimizar_aire_acondicionado": (
             request.horas_aire_acondicionado is not None
             and request.horas_aire_acondicionado > 0
@@ -221,45 +278,36 @@ def predict(request: PrediccionRequest):
         ),
     }
 
-    def recomendacion_aplicable(codigo: str) -> bool:
-        return requisitos_recomendaciones.get(codigo, True)
+    def aplicable(codigo):
+        return requisitos.get(codigo, True)
 
-    indices_seleccionados = [
+    seleccionados = [
         indice
-        for indice, confianza in enumerate(
-            probabilidades_recomendaciones
-        )
-        if float(confianza) >= umbral
-        and recomendacion_aplicable(codigos_recomendaciones[indice])
+        for indice, confianza in enumerate(probabilidades_recomendaciones)
+        if float(confianza) >= umbral and aplicable(codigos[indice])
     ]
-
-    # Si ninguna supera el umbral, devuelve la recomendación aplicable
-    # con mayor confianza, sin asumir datos que el usuario no proporcionó.
-    if not indices_seleccionados:
-        indices_aplicables = [
-            indice
-            for indice, codigo in enumerate(codigos_recomendaciones)
-            if recomendacion_aplicable(codigo)
+    if not seleccionados:
+        aplicables = [
+            indice for indice, codigo in enumerate(codigos) if aplicable(codigo)
         ]
-        indice_mayor = max(
-            indices_aplicables,
-            key=lambda indice: probabilidades_recomendaciones[indice]
-        )
-        indices_seleccionados = [indice_mayor]
+        seleccionados = [
+            max(aplicables, key=lambda indice: probabilidades_recomendaciones[indice])
+        ]
+
+    indice_mantener = codigos.index("rec_mantener_habitos")
+    if indice_mantener in seleccionados and len(seleccionados) > 1:
+        seleccionados.remove(indice_mantener)
 
     recomendaciones = sorted(
         [
             RecomendacionResponse(
-                codigo=codigos_recomendaciones[indice],
-                texto=metadata_recomendaciones[
-                    "catalogo_recomendaciones"
-                ][codigos_recomendaciones[indice]],
-                confianza=round(
-                    float(probabilidades_recomendaciones[indice]),
-                    4
-                ),
+                codigo=codigos[indice],
+                texto=metadata_recomendaciones["catalogo_recomendaciones"][
+                    codigos[indice]
+                ],
+                confianza=round(float(probabilidades_recomendaciones[indice]), 4),
             )
-            for indice in indices_seleccionados
+            for indice in seleccionados
         ],
         key=lambda recomendacion: recomendacion.confianza,
         reverse=True,
@@ -268,7 +316,7 @@ def predict(request: PrediccionRequest):
     return PrediccionResponse(
         categoria=categoria_nombre,
         probabilidad=round(probabilidad, 4),
-        nivel_analisis=nivel_analisis,
-        campos_imputados=campos_imputados,
+        nivel_analisis=nivel,
+        campos_imputados=[],
         recomendaciones=recomendaciones,
     )

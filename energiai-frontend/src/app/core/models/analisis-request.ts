@@ -1,8 +1,10 @@
+import { TipoInmueble } from './model-domain';
+
 export interface AnalisisRequest {
   consumo_kwh: number;
   uso_horario_pico: boolean;
   cantidad_equipos: number;
-  tipo_inmueble: string;
+  tipo_inmueble: TipoInmueble;
   horas_alto_consumo: number;
   cantidad_personas?: number | null;
   area_m2?: number | null;

@@ -7,7 +7,7 @@ import java.util.List;
 
 public record ModeloApiRequest(
         @JsonProperty("consumo_kwh")
-        Double consumoKwh,
+        Integer consumoKwh,
 
         @JsonProperty("uso_horario_pico")
         Boolean usoHorarioPico,
@@ -19,7 +19,7 @@ public record ModeloApiRequest(
         String tipoInmueble,
 
         @JsonProperty("horas_alto_consumo")
-        Double horasAltoConsumo,
+        Integer horasAltoConsumo,
 
         @JsonProperty("cantidad_personas")
         @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -33,9 +33,15 @@ public record ModeloApiRequest(
         @JsonInclude(JsonInclude.Include.NON_NULL)
         Integer equiposAltoConsumo,
 
+        @JsonProperty("equipos_medio_consumo")
+        Integer equiposMedioConsumo,
+
+        @JsonProperty("equipos_bajo_consumo")
+        Integer equiposBajoConsumo,
+
         @JsonProperty("horas_aire_acondicionado")
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        Double horasAireAcondicionado,
+        Integer horasAireAcondicionado,
 
         @JsonProperty("consumo_mes_anterior_kwh")
         @JsonInclude(JsonInclude.Include.NON_NULL)

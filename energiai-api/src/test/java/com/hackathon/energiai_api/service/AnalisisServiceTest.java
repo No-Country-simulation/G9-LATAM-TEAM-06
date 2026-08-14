@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -44,6 +45,9 @@ class AnalisisServiceTest {
     @Mock
     private AnalisisRepository analisisRepository;
 
+    @Spy
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
     @InjectMocks
     private AnalisisService analisisService;
 
@@ -51,8 +55,8 @@ class AnalisisServiceTest {
     void analizar_conRequestValido_debeGuardarYRetornarResponse() {
         // Given
         AnalisisRequest request = new AnalisisRequest(
-                250, true, 5, "Residencial", 6,
-                null, null, null, null, null, null,
+                250, true, 5, "Casa", 6,
+                4, null, null, null, null, null,
                 "user1", null, null, null, null
         );
 
@@ -76,6 +80,8 @@ class AnalisisServiceTest {
         assertThat(resultado.categoria()).isEqualTo("Moderado");
         assertThat(resultado.costo_estimado_mensual()).isEqualByComparingTo("187.50");
         assertThat(resultado.recomendaciones()).contains("Test rec");
+        assertThat(resultado.nivel_analisis()).isEqualTo("parcial");
+        assertThat(resultado.campos_imputados()).isEmpty();
         verify(analisisRepository).save(any(Analisis.class));
     }
 
@@ -83,7 +89,7 @@ class AnalisisServiceTest {
     void analizar_conModeloResponse_debeUsarDatosDelModelo() {
         // Given
         AnalisisRequest request = new AnalisisRequest(
-                400, true, 8, "Residencial", 10,
+                400, true, 8, "Casa", 10,
                 4, 120.0f, 3, 6.0f, 380.0f, 30,
                 "user1", null, null, null, null
         );
@@ -121,7 +127,7 @@ class AnalisisServiceTest {
                 .consumoKwh(250)
                 .usoHorarioPico(true)
                 .cantidadEquipos(5)
-                .tipoInmueble("Residencial")
+                .tipoInmueble("Casa")
                 .horasAltoConsumo(6)
                 .categoria("Moderado")
                 .probabilidad(BigDecimal.valueOf(0.60))
@@ -158,7 +164,7 @@ class AnalisisServiceTest {
                 .consumoKwh(250)
                 .usoHorarioPico(true)
                 .cantidadEquipos(5)
-                .tipoInmueble("Residencial")
+                .tipoInmueble("Casa")
                 .horasAltoConsumo(6)
                 .categoria("Moderado")
                 .probabilidad(BigDecimal.valueOf(0.60))
@@ -180,5 +186,15 @@ class AnalisisServiceTest {
         assertThat(hist.usuario()).isEqualTo("user1");
         assertThat(hist.consumoKwh()).isEqualTo(250);
         assertThat(hist.categoria()).isEqualTo("Moderado");
+    }
+
+    @Test
+    void borrarHistorialPorUsuario_debeEliminarRegistrosPersistidos() {
+        when(analisisRepository.deleteByUsuarioId("usuario@correo.com")).thenReturn(3L);
+
+        long eliminados = analisisService.borrarHistorialPorUsuario(" Usuario@Correo.com ");
+
+        assertThat(eliminados).isEqualTo(3L);
+        verify(analisisRepository).deleteByUsuarioId("usuario@correo.com");
     }
 }

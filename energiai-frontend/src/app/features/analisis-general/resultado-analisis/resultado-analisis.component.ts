@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { AnalisisResponse } from '../../../core/models/analisis-response';
 
 @Component({
@@ -9,6 +9,19 @@ import { AnalisisResponse } from '../../../core/models/analisis-response';
 })
 export class ResultadoAnalisisComponent {
   readonly resultado = input.required<AnalisisResponse>();
+
+  readonly esIneficiente = computed(() =>
+    (this.resultado().categoria ?? '').toLowerCase().includes('ineficiente'),
+  );
+
+  readonly requiereAtencion = computed(() => {
+    const valor = (this.resultado().categoria ?? '').toLowerCase();
+    return (
+      valor.includes('moderado') ||
+      valor.includes('medio') ||
+      valor.includes('normal')
+    );
+  });
 
   formatearProbabilidad(probabilidad: number | undefined): string {
     const valor = Number(probabilidad ?? 0);
@@ -28,11 +41,17 @@ export class ResultadoAnalisisComponent {
       return 'bg-danger';
     }
     if (valor.includes('moderado') || valor.includes('medio') || valor.includes('normal')) {
-      return 'bg-warning text-dark';
+      return 'bg-warning text-white';
     }
     if (valor.includes('eficiente')) {
       return 'bg-success';
     }
     return 'bg-danger';
   }
+
+  etiquetaNivel(): string {
+    const nivel = this.resultado().nivel_analisis ?? 'basico';
+    return nivel.charAt(0).toUpperCase() + nivel.slice(1);
+  }
+
 }

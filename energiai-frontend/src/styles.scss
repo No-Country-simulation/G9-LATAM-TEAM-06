@@ -29,3 +29,181 @@
 .altura-paginacion {
   min-height: 60px;
 }
+
+// Sistema de acciones reutilizable para las pantallas funcionales.
+.accion-ui {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.48rem;
+  padding: 0.62rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 160ms ease, border-color 160ms ease,
+    box-shadow 160ms ease, transform 160ms ease;
+
+  i {
+    flex: 0 0 auto;
+    margin: 0 !important;
+    font-size: 1.05rem;
+    line-height: 1;
+  }
+
+  &:hover:not(:disabled):not(.disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 0.22rem rgba(10, 159, 85, 0.2);
+  }
+
+  &:disabled,
+  &.disabled {
+    opacity: 0.7;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+label.accion-ui {
+  cursor: pointer;
+}
+
+.accion-ui-principal {
+  color: #fff;
+  background: #078b4a;
+  border-color: #06743e;
+  box-shadow: 0 0.3rem 0.75rem rgba(7, 139, 74, 0.2);
+
+  &:hover,
+  &:focus-visible {
+    color: #fff;
+    background: #066f3c;
+    border-color: #055d33;
+  }
+}
+
+.accion-ui-secundaria {
+  color: #087443;
+  background: #e9f8f0;
+  border-color: #69c594;
+
+  &:hover,
+  &:focus-visible {
+    color: #075f38;
+    background: #d7f2e3;
+    border-color: #3eae73;
+  }
+}
+
+.accion-ui-advertencia {
+  color: #9a3c0a;
+  background: #fff1e7;
+  border-color: #f39a67;
+
+  &:hover,
+  &:focus-visible {
+    color: #7f3007;
+    background: #ffe1cf;
+    border-color: #e97838;
+  }
+}
+
+.accion-ui-clara {
+  color: #14532d;
+  background: #fff;
+  border-color: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 0.3rem 0.75rem rgba(15, 23, 42, 0.12);
+
+  &:hover,
+  &:focus-visible {
+    color: #14532d;
+    background: #ecfdf3;
+    border-color: #dcfce7;
+  }
+}
+
+.accion-ui-compacta {
+  min-height: 36px;
+  padding: 0.48rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+// Controles rápidos del simulador: comportamiento coherente con los botones.
+.presets button {
+  min-height: 34px;
+  font-weight: 650;
+  transition: background-color 150ms ease, border-color 150ms ease,
+    color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: #69c594;
+    background: #e9f8f0;
+    color: #087443;
+    outline: 0;
+    box-shadow: 0 0 0 0.18rem rgba(10, 159, 85, 0.16);
+    transform: translateY(-1px);
+  }
+}
+
+// Explica qué variables intervienen realmente en la proyección financiera.
+.alcance-calculo {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  padding: 1rem;
+  border: 1px solid #cfe8dc;
+  border-radius: 0.8rem;
+  background: #f2fbf7;
+  color: #315f4d;
+
+  > i {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    place-items: center;
+    border-radius: 0.65rem;
+    background: #dcf5e9;
+    color: #11825b;
+    font-size: 1.2rem;
+  }
+
+  strong,
+  p {
+    display: block;
+  }
+
+  strong {
+    margin-bottom: 0.2rem;
+    color: #174d3a;
+    font-size: 0.86rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.76rem;
+    line-height: 1.5;
+  }
+}
+
+// Respiración inferior del simulador respecto al cierre del contenido.
+app-simulador-ahorro {
+  display: block;
+  padding-bottom: 1.25rem;
+}
+
+@media (max-width: 576px) {
+  app-simulador-ahorro {
+    padding-bottom: 0.9rem;
+  }
+}

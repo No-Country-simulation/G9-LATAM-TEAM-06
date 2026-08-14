@@ -3,7 +3,12 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
 
-import { UsuarioService } from '../../core/services/usuario.service';
+import {
+  MAXIMO_CORREO_USUARIO,
+  UsuarioService,
+  errorCorreoUsuario,
+  normalizarCorreoUsuario,
+} from '../../core/services/usuario.service';
 import { ThemeOptions } from '../../core/services/theme-options';
 
 @Component({
@@ -98,9 +103,16 @@ import { ThemeOptions } from '../../core/services/theme-options';
               class="form-control form-control-sm"
               placeholder="correo@ejemplo.com"
               [(ngModel)]="correoSesion"
+              [attr.maxlength]="maximoCorreo"
+              [class.is-invalid]="!!errorCorreo"
+              [attr.aria-invalid]="!!errorCorreo"
+              (ngModelChange)="validarCorreoEnVivo()"
               (keydown.enter)="guardarUsuario()"
               autocomplete="email"
             />
+            @if (errorCorreo) {
+              <div class="invalid-feedback d-block">{{ errorCorreo }}</div>
+            }
             <button
               type="button"
               class="btn btn-sm btn-primary w-100 mt-2"
@@ -144,8 +156,10 @@ import { ThemeOptions } from '../../core/services/theme-options';
 export class HeaderComponent {
   readonly usuarioService = inject(UsuarioService);
   readonly globals = inject(ThemeOptions);
+  readonly maximoCorreo = MAXIMO_CORREO_USUARIO;
 
   correoSesion = '';
+  errorCorreo = '';
 
   constructor() {
     this.correoSesion = this.usuarioService.usuario();
@@ -171,11 +185,27 @@ export class HeaderComponent {
   }
 
   salir(): void {
-    this.usuarioService.setUsuario('');
+    this.usuarioService.limpiar();
+    this.correoSesion = '';
+    this.errorCorreo = '';
   }
 
   guardarUsuario(): void {
-    this.usuarioService.setUsuario(this.correoSesion.trim());
+    const correo = normalizarCorreoUsuario(this.correoSesion);
+    const error = errorCorreoUsuario(correo);
+    if (error) {
+      this.errorCorreo = error;
+      return;
+    }
+    this.errorCorreo = '';
+    this.correoSesion = correo;
+    this.usuarioService.setUsuario(correo);
+  }
+
+  validarCorreoEnVivo(): void {
+    if (this.errorCorreo) {
+      this.errorCorreo = errorCorreoUsuario(this.correoSesion);
+    }
   }
 
   etiquetaBotonUsuario(): string {

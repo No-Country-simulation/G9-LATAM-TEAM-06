@@ -1,51 +1,127 @@
 {
-  "nombre": "clasificador-energia",
-  "version": "1.1.0",
-  "modelo_seleccionado": "regresion_logistica",
-  "metricas": {
-    "accuracy": 0.75,
-    "f1_macro": 0.7534760352391089
-  },
-  "metricas_basicas": {
-    "accuracy": 0.6625,
-    "f1_macro": 0.6682461677752564
-  },
-  "f1_promedio": 0.7108611015071826,
-  "columnas_entrada": [
-    "consumo_kwh",
-    "uso_horario_pico",
-    "cantidad_equipos",
-    "tipo_inmueble",
-    "horas_alto_consumo",
+  "nombre": "clasificador-energia-tres-niveles",
+  "version": "2.1.0",
+  "sin_imputacion": true,
+  "regla_enrutamiento": "usar avanzado solo cuando los cinco campos avanzados estén completos; usar parcial con uno a cuatro; usar básico con cero",
+  "campos_avanzados_requeridos": [
     "cantidad_personas",
     "area_m2",
-    "equipos_alto_consumo",
     "horas_aire_acondicionado",
-    "dias_facturados",
-    "consumo_por_persona",
-    "consumo_por_m2",
-    "variacion_mensual",
-    "proporcion_equipos_alto_consumo"
+    "consumo_mes_anterior_kwh",
+    "dias_facturados"
   ],
-  "categorias": [
-    0,
-    1,
-    2
-  ],
+  "niveles": {
+    "basico": {
+      "archivo": "modelo_energia_basico.joblib",
+      "columnas_entrada": [
+        "consumo_kwh",
+        "uso_horario_pico",
+        "cantidad_equipos",
+        "tipo_inmueble",
+        "horas_alto_consumo"
+      ],
+      "modelo_seleccionado": "regresion_logistica",
+      "metricas": {
+        "accuracy": 0.81375,
+        "f1_macro": 0.8182092630256447
+      },
+      "resultados_candidatos": {
+        "regresion_logistica": {
+          "accuracy": 0.81375,
+          "f1_macro": 0.8182092630256447
+        },
+        "arbol_decision": {
+          "accuracy": 0.78125,
+          "f1_macro": 0.7870030806594625
+        },
+        "random_forest": {
+          "accuracy": 0.800625,
+          "f1_macro": 0.8054853010661566
+        }
+      }
+    },
+    "avanzado": {
+      "archivo": "modelo_energia_avanzado.joblib",
+      "columnas_entrada": [
+        "consumo_kwh",
+        "uso_horario_pico",
+        "cantidad_equipos",
+        "tipo_inmueble",
+        "horas_alto_consumo",
+        "cantidad_personas",
+        "area_m2",
+        "horas_aire_acondicionado",
+        "consumo_mes_anterior_kwh",
+        "dias_facturados",
+        "consumo_por_persona",
+        "consumo_por_m2",
+        "variacion_mensual"
+      ],
+      "modelo_seleccionado": "regresion_logistica",
+      "metricas": {
+        "accuracy": 0.82125,
+        "f1_macro": 0.8252830776194506
+      },
+      "resultados_candidatos": {
+        "regresion_logistica": {
+          "accuracy": 0.82125,
+          "f1_macro": 0.8252830776194506
+        },
+        "arbol_decision": {
+          "accuracy": 0.770625,
+          "f1_macro": 0.7762113380651727
+        },
+        "random_forest": {
+          "accuracy": 0.81,
+          "f1_macro": 0.8152133511479261
+        }
+      }
+    },
+    "parcial": {
+      "archivo": "modelo_energia_parcial.joblib",
+      "columnas_entrada": [
+        "consumo_kwh",
+        "uso_horario_pico",
+        "cantidad_equipos",
+        "tipo_inmueble",
+        "horas_alto_consumo",
+        "cantidad_personas",
+        "area_m2",
+        "horas_aire_acondicionado",
+        "consumo_mes_anterior_kwh",
+        "dias_facturados",
+        "consumo_por_persona",
+        "consumo_por_m2",
+        "variacion_mensual"
+      ],
+      "modelo_seleccionado": "hist_gradient_boosting",
+      "metricas": {
+        "accuracy": 0.789375,
+        "f1_macro": 0.7948261489496117
+      },
+      "manejo_ausentes": "nativo_sin_imputacion"
+    }
+  },
   "mapeo_categorias": {
     "0": "Ineficiente",
     "1": "Moderado",
     "2": "Eficiente"
   },
-  "rango_consumo_kwh_entrenamiento": {
-    "minimo": 118.39,
-    "maximo": 5000.0
-  },
+  "tipos_inmueble": [
+    "Casa",
+    "Apartamento",
+    "Comercio",
+    "Oficina"
+  ],
   "limites_api_consumo_kwh": {
-    "minimo_exclusivo": 0,
+    "minimo": 40,
     "maximo": 5000
   },
-  "entrenado_para_nivel_basico": true,
+  "limites_api_cantidad_equipos": {
+    "minimo": 1,
+    "maximo": 500
+  },
   "tarifa_kwh": 0.75,
-  "moneda": "BRL"
+  "moneda": "BRL",
+  "dataset_simulado": true
 }

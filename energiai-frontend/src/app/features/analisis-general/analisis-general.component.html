@@ -21,17 +21,39 @@
             type="number"
             class="form-control"
             formControlName="consumo_kwh"
-            min="1"
+            [class.is-invalid]="campoInvalido('consumo_kwh')"
+            [attr.aria-invalid]="campoInvalido('consumo_kwh')"
+            [min]="limitesActuales.consumo.min"
+            [max]="limitesActuales.consumo.max"
+            step="1"
+            inputmode="numeric"
             required
           />
+          <div class="form-text">
+            Rango admitido por el modelo: {{ limitesActuales.consumo.min }}–{{ limitesActuales.consumo.max }} kWh.
+          </div>
+          @if (formulario.get('consumo_kwh')?.touched) {
+            @for (mensaje of mensajesCampo('consumo_kwh'); track mensaje) {
+              <div class="invalid-feedback d-block">{{ mensaje }}</div>
+            }
+          }
         </div>
 
         <div class="col-md-6 col-xl-3">
           <label class="form-label" for="tipo_inmueble">Tipo de Inmueble:</label>
-          <select id="tipo_inmueble" class="form-select" formControlName="tipo_inmueble">
-            <option value="Residencial">Residencial</option>
-            <option value="Comercial">Comercial</option>
+          <select id="tipo_inmueble" class="form-select" formControlName="tipo_inmueble" [class.is-invalid]="campoInvalido('tipo_inmueble')" [attr.aria-invalid]="campoInvalido('tipo_inmueble')">
+            <option value="Casa">Casa</option>
+            <option value="Apartamento">Apartamento</option>
+            <option value="Comercio">Comercio</option>
+            <option value="Oficina">Oficina</option>
           </select>
+          <div class="form-text">Selecciona la categoría exacta usada durante el entrenamiento.</div>
+          <div class="form-text fw-semibold">{{ limitesActuales.descripcion }}</div>
+          @if (formulario.get('tipo_inmueble')?.touched) {
+            @for (mensaje of mensajesCampo('tipo_inmueble'); track mensaje) {
+              <div class="invalid-feedback d-block">{{ mensaje }}</div>
+            }
+          }
         </div>
 
         <div class="col-md-6 col-xl-3">
@@ -41,9 +63,23 @@
             type="number"
             class="form-control"
             formControlName="cantidad_equipos"
-            min="1"
+            [class.is-invalid]="campoInvalido('cantidad_equipos')"
+            [attr.aria-invalid]="campoInvalido('cantidad_equipos')"
+            [min]="limitesActuales.equipos.min"
+            [max]="limitesActuales.equipos.max"
+            step="1"
+            inputmode="numeric"
             required
           />
+          <div class="form-text">
+            Rango seguro: {{ limitesActuales.equipos.min }}–{{ limitesActuales.equipos.max }};
+            valor habitual sugerido: {{ limitesActuales.equipos.sugerido }}.
+          </div>
+          @if (formulario.get('cantidad_equipos')?.touched) {
+            @for (mensaje of mensajesCampo('cantidad_equipos'); track mensaje) {
+              <div class="invalid-feedback d-block">{{ mensaje }}</div>
+            }
+          }
         </div>
 
         <div class="col-md-6 col-xl-3">
@@ -53,10 +89,20 @@
             type="number"
             class="form-control"
             formControlName="horas_alto_consumo"
+            [class.is-invalid]="campoInvalido('horas_alto_consumo')"
+            [attr.aria-invalid]="campoInvalido('horas_alto_consumo')"
             min="0"
             max="24"
+            step="1"
+            inputmode="numeric"
             required
           />
+          <div class="form-text">Indica horas por día, entre 0 y 24.</div>
+          @if (formulario.get('horas_alto_consumo')?.touched) {
+            @for (mensaje of mensajesCampo('horas_alto_consumo'); track mensaje) {
+              <div class="invalid-feedback d-block">{{ mensaje }}</div>
+            }
+          }
         </div>
       </div>
 
@@ -75,9 +121,22 @@
               type="number"
               class="form-control"
               formControlName="dispositivos_alto"
+              [class.is-invalid]="campoInvalido('dispositivos_alto')"
+              [attr.aria-invalid]="campoInvalido('dispositivos_alto')"
               min="0"
+              [attr.max]="maximoEquiposAlto"
+              step="1"
+              inputmode="numeric"
             />
-            <div class="form-text">Aire acondicionado, calefactor, secadora, etc.</div>
+            <div class="form-text">
+              Aire acondicionado, calefactor, secadora, etc. Máximo seguro:
+              {{ maximoEquiposAlto }} (no puede superar la cantidad total de equipos).
+            </div>
+            @if (formulario.get('dispositivos_alto')?.touched) {
+              @for (mensaje of mensajesCampo('dispositivos_alto'); track mensaje) {
+                <div class="invalid-feedback d-block">{{ mensaje }}</div>
+              }
+            }
           </div>
           <div class="col-md-4">
             <label class="form-label" for="dispositivos_medio">Dispositivos Medio Consumo</label>
@@ -86,9 +145,19 @@
               type="number"
               class="form-control"
               formControlName="dispositivos_medio"
+              [class.is-invalid]="campoInvalido('dispositivos_medio')"
+              [attr.aria-invalid]="campoInvalido('dispositivos_medio')"
               min="0"
+              [attr.max]="formulario.get('cantidad_equipos')?.value"
+              step="1"
+              inputmode="numeric"
             />
             <div class="form-text">Lavadora, lavavajillas, plancha, microondas, etc.</div>
+            @if (formulario.get('dispositivos_medio')?.touched) {
+              @for (mensaje of mensajesCampo('dispositivos_medio'); track mensaje) {
+                <div class="invalid-feedback d-block">{{ mensaje }}</div>
+              }
+            }
           </div>
           <div class="col-md-4">
             <label class="form-label" for="dispositivos_bajo">Dispositivos Bajo Consumo</label>
@@ -97,15 +166,35 @@
               type="number"
               class="form-control"
               formControlName="dispositivos_bajo"
+              [class.is-invalid]="campoInvalido('dispositivos_bajo')"
+              [attr.aria-invalid]="campoInvalido('dispositivos_bajo')"
               min="0"
+              [attr.max]="formulario.get('cantidad_equipos')?.value"
+              step="1"
+              inputmode="numeric"
             />
             <div class="form-text">Nevera, TV, PC, luces LED, router, cargadores, etc.</div>
+            @if (formulario.get('dispositivos_bajo')?.touched) {
+              @for (mensaje of mensajesCampo('dispositivos_bajo'); track mensaje) {
+                <div class="invalid-feedback d-block">{{ mensaje }}</div>
+              }
+            }
           </div>
         </div>
         @if (mensajeSumaEquipos) {
           <div class="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0">
             <i class="pe-7s-close-circle"></i>
             <span>{{ mensajeSumaEquipos }}</span>
+          </div>
+        }
+        @if (mensajesDominio.length) {
+          <div class="alert alert-danger mt-3 mb-0">
+            <strong>Valores fuera del dominio entrenado:</strong>
+            <ul class="mb-0 mt-1">
+              @for (mensaje of mensajesDominio; track mensaje) {
+                <li>{{ mensaje }}</li>
+              }
+            </ul>
           </div>
         }
       </div>
@@ -115,6 +204,14 @@
         [abierto]="avanzadoAbierto()"
         (alternar)="alternarAvanzado()"
       ></app-datos-avanzados>
+
+      @if (horasTotalesPeriodo !== null) {
+        <div class="alert alert-info py-2 mt-3 mb-0">
+          {{ formulario.get('horas_alto_consumo')?.value }} horas/día durante
+          {{ formulario.get('dias_facturados')?.value }} días equivalen a
+          <strong>{{ horasTotalesPeriodo }} horas de alto consumo en el periodo</strong>.
+        </div>
+      }
 
       <div class="form-check mt-3">
         <input
@@ -130,10 +227,14 @@
 
       <button
         type="submit"
-        class="btn btn-primary btn-lg mt-4"
-        [disabled]="cargando() || !!mensajeSumaEquipos"
+        class="btn accion-ui accion-ui-principal mt-4"
+        [disabled]="cargando() || formulario.invalid"
       >
-        <i class="pe-7s-paper-plane me-2"></i>
+        @if (cargando()) {
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        } @else {
+          <i class="pe-7s-paper-plane" aria-hidden="true"></i>
+        }
         {{ cargando() ? 'Analizando en Spring Boot...' : 'Generar Análisis' }}
       </button>
     </form>

@@ -31,6 +31,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
   readonly errorSignal = signal<string>('');
   readonly tieneMas = signal(false);
   readonly pagina = signal(0);
+  readonly ocultoLocalmente = signal(false);
 
   private readonly destruir$ = new Subject<void>();
   private suscripcionActual: Subscription | undefined;
@@ -39,7 +40,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
   private readonly analisisService = inject(AnalisisService);
 
   get usuarioActual(): string {
-    return this.usuarioService.usuarioActual || 'Invitado';
+    return this.usuarioService.usuarioActual;
   }
 
   readonly vacio = computed(
@@ -47,6 +48,9 @@ export class HistorialComponent implements OnInit, OnDestroy {
   );
 
   ngOnInit(): void {
+    this.ocultoLocalmente.set(
+      this.analisisService.historialOcultoLocalmente(this.usuarioActual),
+    );
     this.cargarHistorial(0, false);
   }
 
@@ -92,6 +96,28 @@ export class HistorialComponent implements OnInit, OnDestroy {
     this.cargarHistorial(0, false);
   }
 
+  ocultarHistorial(): void {
+    const confirmar = window.confirm(
+      `¿Deseas ocultar en este navegador el historial de ${this.usuarioActual}? Los registros seguirán guardados en la base de datos.`,
+    );
+    if (!confirmar) {
+      return;
+    }
+
+    const ultimoId = Math.max(...this.historial().map((item) => item.id));
+    this.analisisService.ocultarHistorialLocal(this.usuarioActual, ultimoId);
+    this.historial.set([]);
+    this.pagina.set(0);
+    this.tieneMas.set(false);
+    this.ocultoLocalmente.set(true);
+  }
+
+  restaurarHistorial(): void {
+    this.analisisService.restaurarHistorialLocal(this.usuarioActual);
+    this.ocultoLocalmente.set(false);
+    this.cargarHistorial(0, false);
+  }
+
   private mapearItem(item: HistorialResponse): ItemHistorial {
     return {
       id: item.id,
@@ -122,7 +148,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
       return 'bg-danger';
     }
     if (valor.includes('moderado') || valor.includes('medio') || valor.includes('normal')) {
-      return 'bg-warning text-dark';
+      return 'bg-warning text-white';
     }
     if (valor.includes('eficiente')) {
       return 'bg-success';

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hackathon.energiai_api.DTOs.AnalisisRequest;
@@ -21,9 +22,12 @@ import com.hackathon.energiai_api.model.Analisis;
 import com.hackathon.energiai_api.repository.AnalisisRepository;
 
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class AnalisisService {
 
     private final CalculoService calculoService;
@@ -54,7 +58,8 @@ public class AnalisisService {
     );
 
     @Transactional
-    public AnalisisResponse analizar(AnalisisRequest request) {
+    public AnalisisResponse analizar(
+            @NotNull(message = "La solicitud de análisis es obligatoria") @Valid AnalisisRequest request) {
 
         ModeloApiResponse modeloResponse = integracionDsService.obtenerRespuestaCompleta(request);
 
@@ -72,6 +77,12 @@ public class AnalisisService {
 
         List<String> recomendaciones
                 = recomendacionService.generarRecomendaciones(request, modeloResponse);
+        String nivelAnalisis = modeloResponse != null && modeloResponse.nivelAnalisis() != null
+                ? modeloResponse.nivelAnalisis()
+                : determinarNivelAnalisis(request);
+        List<String> camposImputados = modeloResponse != null && modeloResponse.camposImputados() != null
+                ? modeloResponse.camposImputados()
+                : determinarCamposImputados(request);
 
         // Clasificar electrodomésticos si se proporcionan (mapa detallado) O usar campos manuales (General)
         Map<String, Integer> clasificacionEquipos = new LinkedHashMap<>();
@@ -110,10 +121,11 @@ public class AnalisisService {
             clasificacionEquipos.put("alto", alta);
             clasificacionEquipos.put("medio", media);
             clasificacionEquipos.put("bajo", baja);
+            electrodomesticosJson = serializar(clasificacionEquipos);
         }
 
         Analisis analisis = Analisis.builder()
-                .usuarioId(request.usuarioId())
+                .usuarioId(normalizarUsuario(request.usuarioId()))
                 .consumoKwh(request.consumo_kwh())
                 .usoHorarioPico(request.uso_horario_pico())
                 .cantidadEquipos(request.cantidad_equipos())
@@ -121,7 +133,7 @@ public class AnalisisService {
                 .horasAltoConsumo(request.horas_alto_consumo())
                 .cantidadPersonas(request.cantidad_personas())
                 .areaM2(request.area_m2())
-                .equiposAltoConsumo(request.equipos_alto_consumo())
+                .equiposAltoConsumo(request.equiposAltoResueltos())
                 .horasAireAcondicionado(request.horas_aire_acondicionado())
                 .consumoMesAnteriorKwh(request.consumo_mes_anterior_kwh())
                 .diasFacturados(request.dias_facturados())
@@ -129,6 +141,9 @@ public class AnalisisService {
                 .probabilidad(prediccion.probabilidad())
                 .costo_estimado_mensual(costo_estimado_mensual)
                 .electrodomesticosDetalle(electrodomesticosJson)
+                .recomendacionesJson(serializar(recomendaciones))
+                .nivelAnalisis(nivelAnalisis)
+                .camposImputadosJson(serializar(camposImputados))
                 .build();
 
         analisisRepository.save(analisis);
@@ -138,7 +153,9 @@ public class AnalisisService {
                 prediccion.probabilidad(),
                 recomendaciones,
                 costo_estimado_mensual,
-                clasificacionEquipos
+                clasificacionEquipos,
+                nivelAnalisis,
+                camposImputados
         );
     }
 
@@ -161,11 +178,12 @@ public class AnalisisService {
     @Transactional(readOnly = true)
     public Page<HistorialResponse> listarPorUsuario(String usuarioId, String categoria, Pageable pageable) {
         Page<Analisis> resultados;
+        String usuarioNormalizado = normalizarUsuario(usuarioId);
 
         if (categoria != null && !categoria.isBlank()) {
-            resultados = analisisRepository.findByUsuarioIdAndCategoria(usuarioId, categoria, pageable);
+            resultados = analisisRepository.findByUsuarioIdAndCategoria(usuarioNormalizado, categoria, pageable);
         } else {
-            resultados = analisisRepository.findByUsuarioId(usuarioId, pageable);
+            resultados = analisisRepository.findByUsuarioId(usuarioNormalizado, pageable);
         }
 
         return resultados.map(this::mapToHistorialResponse);
@@ -204,7 +222,7 @@ public class AnalisisService {
                 null
         );
 
-        List<String> recomendaciones = recomendacionService.generarRecomendaciones(requestTemporal);
+        List<String> recomendaciones = obtenerRecomendacionesGuardadas(analisis, requestTemporal);
 
         return new HistorialResponse(
                 analisis.getId(),
@@ -256,14 +274,75 @@ public class AnalisisService {
             }
         }
 
-        List<String> recomendaciones = recomendacionService.generarRecomendaciones(requestTemporal);
+        List<String> recomendaciones = obtenerRecomendacionesGuardadas(analisis, requestTemporal);
 
         return new AnalisisResponse(
                 analisis.getCategoria(),
                 analisis.getProbabilidad(),
                 recomendaciones,
                 analisis.getCosto_estimado_mensual(),
-                clasificacionEquipos
+                clasificacionEquipos,
+                analisis.getNivelAnalisis() != null ? analisis.getNivelAnalisis() : determinarNivelAnalisis(requestTemporal),
+                deserializarLista(analisis.getCamposImputadosJson(), determinarCamposImputados(requestTemporal))
         );
+    }
+
+    @Transactional
+    public long borrarHistorialPorUsuario(String usuarioId) {
+        return analisisRepository.deleteByUsuarioId(normalizarUsuario(usuarioId));
+    }
+
+    private List<String> obtenerRecomendacionesGuardadas(Analisis analisis, AnalisisRequest request) {
+        return deserializarLista(
+                analisis.getRecomendacionesJson(),
+                recomendacionService.generarRecomendaciones(request)
+        );
+    }
+
+    private String serializar(Object valor) {
+        try {
+            return objectMapper.writeValueAsString(valor);
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
+    private List<String> deserializarLista(String json, List<String> valorAlternativo) {
+        if (json == null || json.isBlank()) {
+            return valorAlternativo;
+        }
+        try {
+            return objectMapper.readValue(
+                    json,
+                    new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {}
+            );
+        } catch (Exception exception) {
+            return valorAlternativo;
+        }
+    }
+
+    private String normalizarUsuario(String usuarioId) {
+        if (usuarioId == null || usuarioId.isBlank()) {
+            return "invitado";
+        }
+        return usuarioId.trim().toLowerCase();
+    }
+
+    private String determinarNivelAnalisis(AnalisisRequest request) {
+        int presentes = 0;
+        presentes += request.cantidad_personas() != null ? 1 : 0;
+        presentes += request.area_m2() != null ? 1 : 0;
+        presentes += request.horas_aire_acondicionado() != null ? 1 : 0;
+        presentes += request.consumo_mes_anterior_kwh() != null ? 1 : 0;
+        presentes += request.dias_facturados() != null ? 1 : 0;
+        if (presentes == 0) {
+            return "basico";
+        }
+        return presentes == 5 ? "avanzado" : "parcial";
+    }
+
+    private List<String> determinarCamposImputados(AnalisisRequest request) {
+        // Los campos ausentes ya no se estiman: el modelo básico no los incluye.
+        return List.of();
     }
 }

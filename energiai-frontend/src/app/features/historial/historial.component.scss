@@ -20,3 +20,121 @@
     white-space: normal;
   }
 }
+
+.rayo-consumo {
+  color: #ffc107;
+}
+.acciones-historial {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.accion-historial {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1rem;
+  border-width: 1px;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  transition: background-color 160ms ease, border-color 160ms ease,
+    box-shadow 160ms ease, transform 160ms ease;
+
+  i {
+    flex: 0 0 auto;
+    font-size: 1.05rem;
+    line-height: 1;
+  }
+
+  &:hover:not(:disabled):not(.disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 0.22rem rgba(10, 159, 85, 0.2);
+  }
+
+  &:disabled,
+  &.disabled {
+    opacity: 0.72;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+.accion-restaurar {
+  color: #fff;
+  background: #078b4a;
+  border: 1px solid #078346;
+  box-shadow: 0 0.35rem 0.8rem rgba(7, 139, 74, 0.24);
+
+  &:hover,
+  &:focus-visible {
+    color: #fff;
+    background: #066f3c;
+    border-color: #066f3c;
+  }
+}
+
+.accion-comparar {
+  color: #087443;
+  background: #e9f8f0;
+  border-color: #69c594;
+
+  &:hover,
+  &:focus-visible {
+    color: #075f38;
+    background: #d7f2e3;
+    border-color: #3eae73;
+  }
+}
+
+.accion-ocultar {
+  color: #a23d08;
+  background: #fff1e7;
+  border-color: #f39a67;
+
+  &:hover,
+  &:focus-visible {
+    color: #853005;
+    background: #ffe1cf;
+    border-color: #e97838;
+  }
+}
+
+.accion-actualizar {
+  color: #fff;
+  background: #37414b;
+  border-color: #2c343c;
+
+  &:hover,
+  &:focus-visible {
+    color: #fff;
+    background: #252d34;
+    border-color: #20272d;
+  }
+}
+
+:host ::ng-deep .app-page-title {
+  .page-title-wrapper {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .page-title-heading {
+    flex: 1 1 340px;
+    min-width: 0;
+  }
+
+  .page-title-actions {
+    flex: 1 1 480px;
+    min-width: 0;
+    margin-left: auto;
+  }
+}

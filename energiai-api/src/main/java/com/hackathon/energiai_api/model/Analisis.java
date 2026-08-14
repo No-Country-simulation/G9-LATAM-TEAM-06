@@ -77,6 +77,15 @@ public class Analisis {
     @Column(name = "electrodomesticos_detalle", columnDefinition = "JSON")
     private String electrodomesticosDetalle;
 
+    @Column(name = "recomendaciones_json", columnDefinition = "JSON")
+    private String recomendacionesJson;
+
+    @Column(name = "nivel_analisis", length = 20)
+    private String nivelAnalisis;
+
+    @Column(name = "campos_imputados_json", columnDefinition = "JSON")
+    private String camposImputadosJson;
+
     @Column(name = "creado_en", insertable = false, updatable = false)
     private LocalDateTime creadoEn;
 }
