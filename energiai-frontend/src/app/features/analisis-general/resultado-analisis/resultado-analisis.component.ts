@@ -29,10 +29,11 @@ export class ResultadoAnalisisComponent {
   }
 
   formatearCosto(costo: number | undefined): string {
-    return Number(costo ?? 0).toLocaleString('es-PE', {
+    const monto = Number(costo ?? 0).toLocaleString('es-PE', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
+    return `R$ ${monto}`;
   }
 
   claseCategoria(): string {

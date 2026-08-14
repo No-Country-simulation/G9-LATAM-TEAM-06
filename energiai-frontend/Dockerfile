@@ -3,7 +3,8 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+# sin auditoría/fund para reducir tiempos de instalación
+RUN npm ci --no-audit --no-fund --loglevel=error
 
 COPY . .
 

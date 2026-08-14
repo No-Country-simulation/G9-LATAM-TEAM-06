@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet, NgClass } from '@angular/common';
 
 import {
   MAXIMO_CORREO_USUARIO,
@@ -13,7 +13,7 @@ import { ThemeOptions } from '../../core/services/theme-options';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, FormsModule, NgTemplateOutlet],
+  imports: [RouterLink, FormsModule, NgTemplateOutlet, NgClass],
   template: `
     <div class="app-header header-shadow">
       <div class="app-header__content">
@@ -81,17 +81,17 @@ import { ThemeOptions } from '../../core/services/theme-options';
             <h6 class="mb-0 text-capitalize">
               {{ usuarioService.usuario() || 'Modo Invitado' }}
             </h6>
-            <small class="text-muted">Plataforma Energi AI</small>
           </div>
           <div class="dropdown-divider"></div>
-          <a class="dropdown-item" routerLink="/historial">
-            <i class="pe-7s-notebook me-2"></i>
-            Historial
-          </a>
-          <a class="dropdown-item" routerLink="/analisis-general">
-            <i class="pe-7s-edit me-2"></i>
-            Nuevo análisis
-          </a>
+          <button
+            type="button"
+            class="dropdown-item"
+            (click)="globals.alternarModoOscuro()"
+            [attr.aria-label]="globals.modoOscuro() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+          >
+            <i class="me-2" [ngClass]="globals.modoOscuro() ? 'fas fa-sun' : 'fas fa-moon'"></i>
+            {{ globals.modoOscuro() ? 'Modo claro' : 'Modo oscuro' }}
+          </button>
           <div class="dropdown-divider"></div>
           <div class="px-3 py-2">
             <label class="form-label small mb-1 d-block" [for]="idInput">
