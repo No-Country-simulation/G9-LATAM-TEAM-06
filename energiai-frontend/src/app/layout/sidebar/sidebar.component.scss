@@ -115,7 +115,10 @@
   margin-left: -20px !important;
 }
 
-:host-context(.closed-sidebar.closed-sidebar-open) .vsm-icon {
+// Debe ser más específico que .closed-sidebar .vsm-link .vsm-icon (línea de
+// abajo) para que, al expandir el sidebar en pantallas pequeñas, los iconos
+// vuelvan a la izquierda en vez de quedarse centrados.
+:host-context(.closed-sidebar.closed-sidebar-open) .vsm-link .vsm-icon {
   left: 7px !important;
   margin-left: 0 !important;
 }
@@ -135,7 +138,12 @@
     height: auto !important;
     max-height: none !important;
   }
+}
 
+// En el estado colapsado los iconos van centrados sin caja de fondo; el
+// destaque verde del item activo solo se oculta si el sidebar está cerrado y
+// NO abierto (a <1200px la clase .closed-sidebar está siempre presente).
+:host-context(.closed-sidebar:not(.closed-sidebar-open)) {
   .vsm-link {
     background: transparent !important;
     border: none !important;

@@ -5,7 +5,6 @@ import {
   computed,
   inject,
   signal,
-<<<<<<< Updated upstream
 } from "@angular/core";
 import { Router, RouterLink } from "@angular/router";
 import { Subject, finalize, takeUntil } from "rxjs";
@@ -13,15 +12,6 @@ import { HistorialResponse } from "../../core/models/historial-response";
 import { AnalisisService } from "../../core/services/analisis.service";
 import { UsuarioService } from "../../core/services/usuario.service";
 
-=======
-} from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { Subject, finalize, takeUntil } from 'rxjs';
-import { HistorialResponse } from '../../core/models/historial-response';
-import { AnalisisService } from '../../core/services/analisis.service';
-import { UsuarioService } from '../../core/services/usuario.service';
- 
->>>>>>> Stashed changes
 interface DistribucionCategoria {
   etiqueta: string;
   cantidad: number;

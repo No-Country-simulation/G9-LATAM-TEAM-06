@@ -2,11 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-<<<<<<< Updated upstream
 import { UsuarioService } from '../../core/services/usuario.service';
-=======
 import { CsvAnalisisService } from '../../core/services/csv-analisis.service';
->>>>>>> Stashed changes
 import { ProcesamientoCsvComponent } from './procesamiento-csv.component';
 
 const CSV_VALIDO = [
