@@ -1,0 +1,135 @@
+<div class="main-card mb-3 card">
+  <div class="card-header card-header-title d-flex align-items-center gap-2">
+    <i class="header-icon pe-7s-check text-success"></i>
+    <h5 class="mb-0">Resultado Generado con Éxito</h5>
+  </div>
+  <div class="card-body">
+    <div class="g-0 row">
+      <div class="col-md-6">
+        <div class="card no-shadow rm-border bg-transparent widget-chart text-start">
+          <div class="widget-chart-content">
+            <div class="widget-subheading">Categoría de Consumo</div>
+            <div class="widget-numbers">
+              <span
+                class="badge rounded-pill {{ claseCategoria() }}"
+              >
+                {{ resultado().categoria }}
+              </span>
+            </div>
+            <!--
+            <div class="widget-description opacity-8">
+              Probabilidad: {{ formatearProbabilidad(resultado().probabilidad) }}
+            </div>
+            -->
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card no-shadow rm-border bg-transparent widget-chart text-start">
+          <div class="widget-chart-content">
+            <div class="widget-subheading">Costo Estimado Mensual</div>
+            <div class="widget-numbers text-success">
+              <i class="pe-7s-cash pe-1 text-success"></i>
+              {{ formatearCosto(resultado().costo_estimado_mensual) }}
+            </div>
+            <div class="widget-description opacity-8">Estimación en Real brasileño (R$)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (esIneficiente()) {
+  <div class="alerta-resultado alerta-alta" role="alert">
+    <span class="alerta-resultado-icono">
+      <i class="pe-7s-attention" aria-hidden="true"></i>
+    </span>
+    <div>
+      <span class="alerta-etiqueta">Alerta de alto consumo</span>
+      <h5>Tu consumo requiere atención prioritaria</h5>
+      <p>
+        La clasificación obtenida indica oportunidades importantes de mejora.
+        Comienza por la primera recomendación y realiza otro análisis después
+        de ajustar tus hábitos para comprobar el cambio.
+      </p>
+    </div>
+  </div>
+} @else if (requiereAtencion()) {
+  <div class="alerta-resultado alerta-media" role="status">
+    <span class="alerta-resultado-icono">
+      <i class="pe-7s-info" aria-hidden="true"></i>
+    </span>
+    <div>
+      <span class="alerta-etiqueta">Seguimiento recomendado</span>
+      <h5>Tu consumo se encuentra en un nivel intermedio</h5>
+      <p>
+        Aplica las recomendaciones y vuelve a medir para confirmar que la
+        tendencia se mueve hacia un perfil eficiente.
+      </p>
+    </div>
+  </div>
+}
+
+<div class="alert alert-info d-flex align-items-start gap-2">
+  <i class="pe-7s-info mt-1"></i>
+  <div>
+    <strong>Nivel de análisis: {{ etiquetaNivel() }}.</strong>
+    <div class="trazabilidad-modelo">
+      <span class="badge text-bg-light">{{ etiquetaOrigen() }}</span>
+      @if (resultado().modelo_version) {
+        <span>Versión {{ resultado().modelo_version }}</span>
+      }
+    </div>
+    @if (resultado().nivel_analisis === 'avanzado') {
+      <div>
+        Se utilizaron todos los datos básicos y avanzados proporcionados.
+      </div>
+    } @else if (resultado().nivel_analisis === 'parcial') {
+      <div>
+        Se utilizaron los datos básicos y únicamente los datos avanzados
+        proporcionados. Los campos faltantes no se estimaron ni participaron
+        en el resultado.
+      </div>
+    } @else {
+      <div>
+        El análisis se realizó únicamente con los datos básicos. Los datos
+        avanzados ausentes no participaron y no se estimó
+        ningún valor.
+      </div>
+    }
+  </div>
+</div>
+
+<div class="main-card mb-3 card">
+  <div class="card-header card-header-title d-flex align-items-center gap-2">
+    <i class="header-icon pe-7s-light text-warning"></i>
+    <h5 class="mb-0">Recomendaciones</h5>
+  </div>
+  <div class="card-body">
+    <ul class="list-unstyled mb-0 lista-recomendaciones">
+      @for (recomendacion of recomendacionesDetalle(); track recomendacion.codigo) {
+        <li class="recomendacion-item">
+          <i class="pe-7s-angle-right-circle text-warning"></i>
+          <div class="recomendacion-contenido">
+            <div class="recomendacion-cabecera">
+              <span>{{ recomendacion.texto }}</span>
+              @if (recomendacion.confianza !== null) {
+                <span class="confianza" title="Confianza estimada del recomendador">
+                  {{ formatearProbabilidad(recomendacion.confianza) }} confianza
+                </span>
+              }
+            </div>
+            @if (recomendacion.factores_clave.length) {
+              <ul class="factores-clave" aria-label="Factores clave">
+                @for (factor of recomendacion.factores_clave; track factor) {
+                  <li>{{ factor }}</li>
+                }
+              </ul>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  </div>
+</div>

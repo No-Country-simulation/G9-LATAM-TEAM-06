@@ -1,37 +1,113 @@
 services:
 
-    energiai-api:
-        build: ./energiai-api
-        container_name: energiai_api
-        ports:
-            - 8080:8080
-        environment:
-            - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/energiai
-            - SPRING_DATASOURCE_USERNAME=admin
-            - SPRING_DATASOURCE_PASSWORD=123456
-        networks:
-            - energiai_net
-        volumes:
-            - ./energiai-api:/app
-            - ~/.m2:/root/.m2
-        depends_on:
-            - db
-    db:
-        image: mysql:9.7
-        container_name: mysql_energiai
-        ports:
-            - "63306:3306"
-        environment:
-            MYSQL_ROOT_PASSWORD: 123456
-            MYSQL_DATABASE: energiai
-            MYSQL_USER: admin
-            MYSQL_PASSWORD: 123456
-        volumes:
-            - mysql_data:/var/lib/mysql
-        networks:
-            - energiai_net
+  energiai-frontend:
+    build:
+      context: ./energiai-frontend
+      args:
+        API_KEY_SECRET: ${API_KEY_SECRET}
+    container_name: energiai_frontend
+    ports:
+      - "80:80"
+    networks:
+      - energiai_net
+    depends_on:
+      - energiai-api
+
+  modelo-api:
+    build: ./modelo-api
+    container_name: modelo_energia_api
+    ports:
+      - "8080:8000"
+    networks:
+      - energiai_net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  energiai-api:
+    build: ./energiai-api
+    container_name: energiai_api
+    ports:
+      - "8090:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/energiai
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_PROFILES_ACTIVE=dev
+      - API_KEY_SECRET_FILE=/run/secrets/api_key_secret
+      - DB_PASSWORD_FILE=/run/secrets/db_password
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost,http://localhost:80,http://localhost:8080,http://127.0.0.1,http://127.0.0.1:80,http://127.0.0.1:8080}
+    networks:
+      - energiai_net
+    depends_on:
+      db:
+        condition: service_healthy
+    secrets:
+      - api_key_secret
+      - db_password
+
+  db:
+    image: mysql:9.7
+    container_name: mysql_energiai
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: energiai
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - energiai_net
+    secrets:
+      - db_password
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${DB_ROOT_PASSWORD}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+   #cloudflared:
+    #image: cloudflare/cloudflared:latest
+    #container_name: cloudflared
+    #restart: unless-stopped
+    #command: tunnel --no-autoupdate run
+    #environment:
+     # - TUNNEL_TOKEN_FILE=/run/secrets/tunnel_token
+    #networks:
+     # - energiai_net
+    #secrets:
+     # - tunnel_token
+
+secrets:
+  #tunnel_token:
+    #file: ./secrets/tunnel_token.txt
+  api_key_secret:
+    file: ./secrets/api_key_secret.txt
+  db_password:
+    file: ./secrets/db_password.txt
 
 volumes:
-    mysql_data:
+  mysql_data:
 networks:
-    energiai_net:
+  energiai_net:

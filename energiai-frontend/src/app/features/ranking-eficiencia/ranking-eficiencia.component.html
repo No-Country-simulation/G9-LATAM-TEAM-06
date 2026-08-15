@@ -1,0 +1,52 @@
+<app-page-title heading="Ranking de eficiencia energética" subheading="Identifica tus análisis más eficientes con criterios transparentes" icon="pe-7s-cup">
+  <a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general"><i class="pe-7s-plus"></i> Nuevo análisis</a>
+</app-page-title>
+
+@if (cargando()) {
+  <section class="estado"><span class="spinner-border text-success"></span><h2>Calculando ranking…</h2></section>
+} @else if (errorSignal()) {
+  <section class="estado error" role="alert"><i class="pe-7s-cloud"></i><h2>No pudimos cargar tus datos</h2><p>{{ errorSignal() }}</p><button class="btn accion-ui accion-ui-principal" (click)="cargarRanking()"><i class="pe-7s-refresh-2"></i> Intentar nuevamente</button></section>
+} @else if (!historial().length) {
+  <section class="estado"><i class="pe-7s-medal"></i><h2>Aún no hay análisis para comparar</h2><p>Crea tu primer análisis y comienza a medir tu eficiencia.</p><a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general"><i class="pe-7s-plus"></i> Crear análisis</a></section>
+} @else {
+  <section class="ranking-hero">
+    <div><span class="sobrelinea">Tu mejor resultado</span><h2>{{ mejorRegistro()!.categoria }}</h2><p>El registro #{{ mejorRegistro()!.id }} lidera por su clasificación e intensidad de consumo.</p></div>
+    <div class="hero-dato"><i class="pe-7s-leaf"></i><strong>{{ formatearNumero(mejorRegistro()!.intensidad) }}</strong><span>kWh por equipo</span></div>
+    <div class="hero-dato"><i class="pe-7s-graph1"></i><strong>{{ totalRegistros() }}</strong><span>análisis evaluados</span></div>
+  </section>
+
+  <section class="metodologia">
+    <i class="pe-7s-info"></i><div><strong>¿Cómo se ordena?</strong><p>Primero por clasificación (eficiente, moderado, ineficiente); después por menor consumo por equipo y, en empate, por menor consumo total. No se inventa una puntuación adicional.</p></div>
+  </section>
+
+  <section class="filtros">
+    <div><span class="sobrelinea">Clasificación</span><h2>Todos tus resultados</h2></div>
+    <label for="filtro-inmueble">Tipo de inmueble
+      <select id="filtro-inmueble" class="form-select" [ngModel]="filtroInmueble()" (ngModelChange)="actualizarFiltro($event)">
+        @for (tipo of inmuebles(); track tipo) {<option [value]="tipo">{{ tipo }}</option>}
+      </select>
+    </label>
+  </section>
+
+  @if (!ranking().length) {
+    <div class="sin-filtro">No hay análisis para este tipo de inmueble.</div>
+  } @else {
+    <section class="podio" aria-label="Tres mejores análisis">
+      @for (item of ranking().slice(0, 3); track item.id) {
+        <article [class.primero]="item.posicion === 1">
+          <span class="medalla">{{ medalla(item.posicion) }}</span><span class="categoria" [class]="claseCategoria(item.categoria)">{{ item.categoria }}</span>
+          <strong>{{ formatearNumero(item.consumoKwh, 0) }} kWh</strong><small>{{ item.tipoInmueble }} · {{ formatearNumero(item.intensidad) }} kWh/equipo</small>
+          <div class="registro">Registro #{{ item.id }} · {{ formatearFecha(item.creadoEn) }}</div>
+        </article>
+      }
+    </section>
+
+    <section class="tabla-panel">
+      <div class="tabla-contenedor"><table><thead><tr><th>Posición</th><th>Análisis</th><th>Clasificación</th><th>Consumo</th><th>Intensidad</th><th>Costo estimado</th></tr></thead><tbody>
+        @for (item of ranking(); track item.id) {
+          <tr><td><strong class="posicion">{{ medalla(item.posicion) }}</strong></td><td><strong>#{{ item.id }} · {{ item.tipoInmueble }}</strong><small>{{ formatearFecha(item.creadoEn) }} · {{ item.cantidadEquipos }} equipos</small></td><td><span class="categoria" [class]="claseCategoria(item.categoria)">{{ item.categoria }}</span></td><td>{{ formatearNumero(item.consumoKwh, 0) }} kWh</td><td><strong>{{ formatearNumero(item.intensidad) }}</strong> kWh/equipo</td><td>${{ formatearNumero(item.costo_estimado_mensual, 2) }}</td></tr>
+        }
+      </tbody></table></div>
+    </section>
+  }
+}

@@ -1,0 +1,180 @@
+# =============================================================
+# Credenciales y configuracion privada
+# =============================================================
+.env
+.env.*
+*.env
+!.env.ejemplo
+!.env.example
+
+secrets/
+credentials/
+*.secret
+*.secrets
+
+# Claves, certificados privados y almacenes de claves
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.kdbx
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+
+# Credenciales de herramientas y proveedores cloud
+.aws/
+.azure/
+.config/gcloud/
+.kube/
+.oci/
+.ssh/
+.docker/config.json
+.npmrc
+.pypirc
+.netrc
+_netrc
+gradle.properties
+settings-security.xml
+service-account*.json
+*-service-account.json
+firebase-adminsdk-*.json
+google-credentials.json
+application-default-credentials.json
+.htpasswd
+*.ovpn
+
+# Oracle Wallet
+wallet/
+Wallet_*.zip
+cwallet.sso
+ewallet.p12
+tnsnames.ora
+sqlnet.ora
+
+# Configuracion local de Spring
+**/application-local.properties
+**/application-secrets.properties
+**/application-*.local.properties
+
+# =============================================================
+# Terraform e infraestructura local
+# =============================================================
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# =============================================================
+# Sistema operativo, editores y asistentes locales
+# =============================================================
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+*.code-workspace
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+.sts4-cache/
+*.swp
+*.swo
+*~
+
+# =============================================================
+# Java, Maven y Gradle
+# =============================================================
+**/target/
+**/build/
+**/.gradle/
+.m2/
+*.class
+*.jar
+*.war
+
+# =============================================================
+# Python
+# =============================================================
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# =============================================================
+# Jupyter y Google Colab
+# =============================================================
+**/.ipynb_checkpoints/
+
+# =============================================================
+# Node.js y frontend
+# =============================================================
+**/node_modules/
+**/dist/
+**/.next/
+**/.angular/
+**/coverage/
+.pnpm-store/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =============================================================
+# Registros, temporales, pruebas generadas y cache
+# =============================================================
+*.log
+*.tmp
+*.temp
+.cache/
+tmp/
+temp/
+outputs/
+
+# =============================================================
+# Bases de datos y volumenes locales
+# =============================================================
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.bak
+mysql_data/
+
+# =============================================================
+# Archivos locales del equipo (no versionar)
+# =============================================================
+TAREAS.md
+CONTEXTO.md
+AGENTS.md
+EnergiAI.pdf
+docker-compose.override.yml

@@ -1,0 +1,257 @@
+<app-page-title
+  heading="Comparación entre períodos"
+  subheading="Contrasta dos análisis guardados y descubre cómo cambió tu eficiencia"
+  icon="pe-7s-graph2"
+>
+  <a class="btn accion-ui accion-ui-secundaria" routerLink="/historial">
+    <i class="pe-7s-notebook" aria-hidden="true"></i>
+    Ver historial
+  </a>
+</app-page-title>
+
+@if (cargando()) {
+  <div class="comparacion-cargando" aria-live="polite" aria-busy="true">
+    <span class="visually-hidden">Cargando períodos disponibles</span>
+    <div class="esqueleto esqueleto-selector"></div>
+    <div class="esqueleto esqueleto-contenido"></div>
+  </div>
+} @else if (errorSignal()) {
+  <section class="estado-comparacion estado-error" role="alert">
+    <span class="estado-icono"><i class="pe-7s-cloud" aria-hidden="true"></i></span>
+    <div>
+      <h2>No pudimos cargar la comparación</h2>
+      <p>{{ errorSignal() }}</p>
+      <button type="button" class="btn accion-ui accion-ui-principal" (click)="cargarHistorial()">
+        <i class="pe-7s-refresh-2" aria-hidden="true"></i>
+        Intentar nuevamente
+      </button>
+    </div>
+  </section>
+} @else if (historial().length < 2) {
+  <section class="estado-comparacion">
+    <span class="estado-icono"><i class="pe-7s-copy-file" aria-hidden="true"></i></span>
+    <div>
+      <h2>Necesitas al menos dos análisis</h2>
+      <p>
+        Realiza otro análisis para poder medir cambios de consumo, costo y
+        eficiencia entre períodos.
+      </p>
+      <a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general">
+        <i class="pe-7s-plus" aria-hidden="true"></i>
+        Crear nuevo análisis
+      </a>
+    </div>
+  </section>
+} @else {
+  <section class="selector-panel" aria-labelledby="titulo-selector">
+    <div class="selector-encabezado">
+      <div>
+        <span class="sobrelinea">Configura la comparación</span>
+        <h2 id="titulo-selector">Selecciona dos períodos</h2>
+        <p>
+          Período base es tu punto de partida; período comparado es el resultado
+          que deseas evaluar.
+        </p>
+      </div>
+      <span class="registros-disponibles">
+        <i class="pe-7s-diskette" aria-hidden="true"></i>
+        {{ totalRegistros() }} registros disponibles
+      </span>
+    </div>
+
+    <div class="selectores-grid">
+      <div class="selector-campo">
+        <label for="periodo-base">
+          <span class="numero-periodo">A</span>
+          Período base
+        </label>
+        <select
+          id="periodo-base"
+          class="form-select"
+          [ngModel]="periodoBaseId()"
+          (ngModelChange)="seleccionarPeriodoBase($event)"
+        >
+          @for (item of historial(); track item.id) {
+            <option [ngValue]="item.id" [disabled]="item.id === periodoComparadoId()">
+              {{ etiquetaPeriodo(item) }}
+            </option>
+          }
+        </select>
+        <small>Registro que usarás como referencia.</small>
+      </div>
+
+      <button
+        type="button"
+        class="boton-intercambiar"
+        (click)="intercambiarPeriodos()"
+        aria-label="Intercambiar período base y período comparado"
+        title="Intercambiar períodos"
+      >
+        <i class="pe-7s-repeat" aria-hidden="true"></i>
+      </button>
+
+      <div class="selector-campo">
+        <label for="periodo-comparado">
+          <span class="numero-periodo numero-periodo-b">B</span>
+          Período comparado
+        </label>
+        <select
+          id="periodo-comparado"
+          class="form-select"
+          [ngModel]="periodoComparadoId()"
+          (ngModelChange)="seleccionarPeriodoComparado($event)"
+        >
+          @for (item of historial(); track item.id) {
+            <option [ngValue]="item.id" [disabled]="item.id === periodoBaseId()">
+              {{ etiquetaPeriodo(item) }}
+            </option>
+          }
+        </select>
+        <small>Registro que quieres contrastar con la referencia.</small>
+      </div>
+    </div>
+
+    @if (esSeleccionInvalida()) {
+      <div class="alert alert-warning mt-3 mb-0" role="alert">
+        Selecciona dos registros diferentes para realizar la comparación.
+      </div>
+    }
+  </section>
+
+  @if (puedeComparar() && periodoBase(); as base) {
+    @if (periodoComparado(); as comparado) {
+      <div class="periodos-resumen" aria-label="Períodos seleccionados">
+        <article class="periodo-card periodo-a">
+          <span class="periodo-marca">Período A · Base</span>
+          <strong class="periodo-nombre">{{ nombreAnalisis(base) }}</strong>
+          <small>{{ formatearFecha(base.creadoEn) }}</small>
+          <small>{{ base.tipoInmueble }} · {{ base.cantidadEquipos }} equipos</small>
+        </article>
+        <div class="versus" aria-hidden="true">VS</div>
+        <article class="periodo-card periodo-b">
+          <span class="periodo-marca">Período B · Comparado</span>
+          <strong class="periodo-nombre">{{ nombreAnalisis(comparado) }}</strong>
+          <small>{{ formatearFecha(comparado.creadoEn) }}</small>
+          <small>{{ comparado.tipoInmueble }} · {{ comparado.cantidadEquipos }} equipos</small>
+        </article>
+      </div>
+
+      @if (resumen(); as resultado) {
+        <section
+          class="resumen-resultado resumen-{{ resultado.estado }}"
+          [attr.role]="resultado.estado === 'alerta' ? 'alert' : 'status'"
+          aria-live="polite"
+        >
+          <span class="resumen-icono"><i class="{{ resultado.icono }}" aria-hidden="true"></i></span>
+          <div>
+            <span class="sobrelinea">Conclusión de la comparación</span>
+            <h2>{{ resultado.titulo }}</h2>
+            <p>{{ resultado.mensaje }}</p>
+          </div>
+          <a routerLink="/analisis-general" class="btn accion-ui accion-ui-clara accion-ui-compacta">
+            <i class="pe-7s-refresh-2" aria-hidden="true"></i>
+            Aplicar cambios y medir de nuevo
+          </a>
+        </section>
+      }
+
+      <div class="comparacion-grid">
+        <section class="panel-comparacion" aria-labelledby="titulo-indicadores">
+          <div class="panel-cabecera">
+            <div>
+              <span class="sobrelinea">Detalle cuantitativo</span>
+              <h2 id="titulo-indicadores">Indicadores comparados</h2>
+            </div>
+            <div class="leyenda-periodos" aria-label="Leyenda">
+              <span><i class="leyenda-a" aria-hidden="true"></i> Período A</span>
+              <span><i class="leyenda-b" aria-hidden="true"></i> Período B</span>
+            </div>
+          </div>
+
+          <div class="indicadores-lista">
+            @for (fila of filas(); track fila.etiqueta) {
+              <article class="indicador-comparado">
+                <div class="indicador-encabezado">
+                  <h3>{{ fila.etiqueta }}</h3>
+                  <span class="pildora-variacion {{ claseVariacion(fila) }}">
+                    <i class="{{ iconoVariacion(fila) }}" aria-hidden="true"></i>
+                    {{ textoVariacion(fila) }}
+                  </span>
+                </div>
+                <div class="barras-comparacion" aria-hidden="true">
+                  <div class="barra-fila">
+                    <span>A</span>
+                    <div class="barra-fondo">
+                      <i
+                        class="barra-valor barra-a"
+                        [style.width.%]="anchoBarra(fila.base, fila.base, fila.comparado)"
+                      ></i>
+                    </div>
+                    <strong>{{ formatearNumero(fila.base, fila.precision) }} {{ fila.unidad }}</strong>
+                  </div>
+                  <div class="barra-fila">
+                    <span>B</span>
+                    <div class="barra-fondo">
+                      <i
+                        class="barra-valor barra-b"
+                        [style.width.%]="anchoBarra(fila.comparado, fila.base, fila.comparado)"
+                      ></i>
+                    </div>
+                    <strong>{{ formatearNumero(fila.comparado, fila.precision) }} {{ fila.unidad }}</strong>
+                  </div>
+                </div>
+                <span class="visually-hidden">
+                  Período A: {{ fila.base }} {{ fila.unidad }}. Período B:
+                  {{ fila.comparado }} {{ fila.unidad }}. {{ textoVariacion(fila) }}.
+                </span>
+              </article>
+            }
+          </div>
+        </section>
+
+        <aside class="panel-comparacion panel-eficiencia" aria-labelledby="titulo-eficiencia">
+          <span class="sobrelinea">Resultado cualitativo</span>
+          <h2 id="titulo-eficiencia">Cambio de eficiencia</h2>
+
+          <div class="categorias-flujo">
+            <div>
+              <span>Período A</span>
+              <strong class="categoria {{ claseCategoria(base.categoria) }}">
+                {{ base.categoria }}
+              </strong>
+              <small>Confianza {{ formatearNumero(base.probabilidad * 100, 0) }}%</small>
+            </div>
+            <i class="pe-7s-angle-right" aria-hidden="true"></i>
+            <div>
+              <span>Período B</span>
+              <strong class="categoria {{ claseCategoria(comparado.categoria) }}">
+                {{ comparado.categoria }}
+              </strong>
+              <small>Confianza {{ formatearNumero(comparado.probabilidad * 100, 0) }}%</small>
+            </div>
+          </div>
+
+          <div class="cambio-categoria {{ claseCambioCategoria() }}">
+            <i
+              class="{{ textoCambioCategoria() === 'Mejoró' ? 'pe-7s-up-arrow' : textoCambioCategoria() === 'Empeoró' ? 'pe-7s-bottom-arrow' : 'pe-7s-minus' }}"
+              aria-hidden="true"
+            ></i>
+            {{ textoCambioCategoria() }}
+          </div>
+
+          <div class="horario-pico">
+            <span>Uso en horario pico</span>
+            <div>
+              <span class="estado-binario {{ base.usoHorarioPico ? 'estado-si' : 'estado-no' }}">
+                A: {{ base.usoHorarioPico ? 'Sí' : 'No' }}
+              </span>
+              <span class="estado-binario {{ comparado.usoHorarioPico ? 'estado-si' : 'estado-no' }}">
+                B: {{ comparado.usoHorarioPico ? 'Sí' : 'No' }}
+              </span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    }
+  }
+}

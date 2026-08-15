@@ -1,0 +1,306 @@
+<section class="hero-inicio">
+  <div class="hero-contenido">
+    <div class="d-flex align-items-center gap-2 text-white mb-3">
+      <i class="fas fa-bolt" aria-hidden="true"></i>
+      <span class="text-uppercase fw-semibold etiqueta-hero">
+        Optimizador energético con IA
+      </span>
+    </div>
+    <h1>Convierte tus datos de consumo en decisiones más inteligentes</h1>
+    <p>
+      Sigue tu evolución, detecta patrones de alto consumo y recibe acciones
+      concretas para mejorar tu eficiencia energética.
+    </p>
+    <button
+      type="button"
+      class="btn btn-lg accion-inicio accion-hero"
+      (click)="irAAnalisisGeneral()"
+    >
+      <i class="fas fa-plus" aria-hidden="true"></i>
+      Nuevo análisis
+    </button>
+  </div>
+  <div class="hero-decoracion" aria-hidden="true">
+    <i class="pe-7s-graph2"></i>
+  </div>
+</section>
+
+<section class="dashboard" aria-labelledby="titulo-seguimiento">
+  <div class="encabezado-seccion">
+    <div>
+      <span class="sobrelinea">Resumen personal</span>
+      <h2 id="titulo-seguimiento">Seguimiento de consumo</h2>
+      <p>
+        @if (usuarioActual()) {
+          Indicadores del historial asociado a {{ usuarioActual() }}.
+        } @else {
+          Indicadores de la sesión de invitado.
+        }
+      </p>
+    </div>
+    @if (historial().length) {
+      <div class="acciones-seguimiento">
+        @if (historial().length >= 2) {
+          <a
+            class="btn accion-inicio accion-principal"
+            routerLink="/comparacion"
+          >
+            <i class="pe-7s-graph2" aria-hidden="true"></i>
+            Comparar períodos
+          </a>
+        }
+        <a class="btn accion-inicio accion-secundaria" routerLink="/historial">
+          <i class="pe-7s-notebook" aria-hidden="true"></i>
+          Ver historial
+        </a>
+      </div>
+    }
+  </div>
+
+  @if (cargando()) {
+    <div class="row" aria-live="polite" aria-busy="true">
+      <span class="visually-hidden">Cargando indicadores del dashboard</span>
+      @for (item of [1, 2, 3, 4]; track item) {
+        <div class="col-sm-6 col-xl-3 mb-3">
+          <div class="tarjeta-esqueleto"></div>
+        </div>
+      }
+    </div>
+    <div class="panel-esqueleto" aria-hidden="true"></div>
+  } @else if (errorSignal()) {
+    <div class="estado-panel estado-error" role="alert">
+      <span class="estado-icono">
+        <i class="pe-7s-cloud" aria-hidden="true"></i>
+      </span>
+      <div>
+        <h3>No fue posible actualizar el dashboard</h3>
+        <p>{{ errorSignal() }}</p>
+        <button
+          type="button"
+          class="btn accion-inicio accion-principal"
+          (click)="cargarDashboard()"
+        >
+          <i class="pe-7s-refresh-2" aria-hidden="true"></i>
+          Intentar nuevamente
+        </button>
+      </div>
+    </div>
+  } @else if (!historial().length) {
+    <div class="estado-panel estado-vacio">
+      <span class="estado-icono">
+        <i class="pe-7s-graph1" aria-hidden="true"></i>
+      </span>
+      <div>
+        <h3>Tu seguimiento comienza con el primer análisis</h3>
+        <p>
+          Registra tu consumo para activar indicadores, tendencias y alertas
+          personalizadas.
+        </p>
+        <button
+          type="button"
+          class="btn accion-inicio accion-principal"
+          (click)="irAAnalisisGeneral()"
+        >
+          <i class="fas fa-plus" aria-hidden="true"></i>
+          Crear mi primer análisis
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="row metricas" aria-label="Indicadores principales">
+      <div class="col-sm-6 col-xl-3 mb-3">
+        <article class="tarjeta-metrica">
+          <span class="metrica-icono icono-verde">
+            <i class="pe-7s-note2" aria-hidden="true"></i>
+          </span>
+          <div>
+            <span class="metrica-etiqueta">Análisis realizados</span>
+            <strong>{{ totalAnalisis() }}</strong>
+            <small>Historial acumulado</small>
+          </div>
+        </article>
+      </div>
+      <div class="col-sm-6 col-xl-3 mb-3">
+        <article class="tarjeta-metrica">
+          <span class="metrica-icono icono-azul">
+            <i class="pe-7s-plugin" aria-hidden="true"></i>
+          </span>
+          <div>
+            <span class="metrica-etiqueta">Consumo promedio</span>
+            <strong
+              >{{ formatearNumero(promedioConsumo(), 0) }}
+              <small>kWh</small></strong
+            >
+            <small>Últimos {{ cantidadMuestra() }} análisis</small>
+          </div>
+        </article>
+      </div>
+      <div class="col-sm-6 col-xl-3 mb-3">
+        <article class="tarjeta-metrica">
+          <span class="metrica-icono icono-violeta">
+            <i class="pe-7s-cash" aria-hidden="true"></i>
+          </span>
+          <div>
+            <span class="metrica-etiqueta">Costo promedio</span>
+            <strong>{{ formatearNumero(promedioCosto(), 2) }}</strong>
+            <small>Divisa base mensual</small>
+          </div>
+        </article>
+      </div>
+      <div class="col-sm-6 col-xl-3 mb-3">
+        <article class="tarjeta-metrica">
+          <span class="metrica-icono icono-ambar">
+            <i class="pe-7s-leaf" aria-hidden="true"></i>
+          </span>
+          <div>
+            <span class="metrica-etiqueta">Análisis eficientes</span>
+            <strong>{{ porcentajeEficiente() }}<small>%</small></strong>
+            <small>Dentro de la muestra</small>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    @if (alertas().length) {
+      <section class="alertas-consumo" aria-labelledby="titulo-alertas">
+        <div class="titulo-bloque">
+          <div>
+            <span class="sobrelinea">Atención recomendada</span>
+            <h3 id="titulo-alertas">Alertas de consumo</h3>
+          </div>
+          <span class="contador-alertas" aria-label="Cantidad de alertas">
+            {{ alertas().length }}
+          </span>
+        </div>
+        <div class="lista-alertas">
+          @for (alerta of alertas(); track alerta.titulo) {
+            <article
+              class="alerta-consumo alerta-{{ alerta.nivel }}"
+              [attr.role]="alerta.nivel === 'danger' ? 'alert' : 'status'"
+            >
+              <span class="alerta-icono">
+                <i class="{{ alerta.icono }}" aria-hidden="true"></i>
+              </span>
+              <div>
+                <h4>{{ alerta.titulo }}</h4>
+                <p>{{ alerta.mensaje }}</p>
+              </div>
+              <a routerLink="/analisis-general" class="alerta-accion">
+                <i class="pe-7s-refresh-2" aria-hidden="true"></i>
+                Analizar de nuevo
+              </a>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <div class="row paneles-dashboard">
+      <div class="col-xl-8 mb-3">
+        <article class="panel-dashboard-evolucion">
+          <div class="panel-cabecera">
+            <div>
+              <span class="sobrelinea">Evolución reciente</span>
+              <h3>Consumo por análisis</h3>
+              <p>{{ rangoGrafica() }} · valores expresados en kWh</p>
+            </div>
+            <span class="indicador-variacion {{ claseVariacion() }}">
+              <i
+                class="{{
+                  (variacionReciente() ?? 0) > 0
+                    ? 'pe-7s-up-arrow'
+                    : 'pe-7s-down-arrow'
+                }}"
+                aria-hidden="true"
+              ></i>
+              {{ formatearVariacion() }}
+            </span>
+          </div>
+          <div class="grafica-contenedor">
+            <div class="eje-y">
+              <span>Mayor</span>
+              <span>Menor</span>
+            </div>
+            <svg
+              class="grafica-linea"
+              viewBox="0 0 560 140"
+              preserveAspectRatio="none"
+              role="img"
+              [attr.aria-label]="descripcionGrafica()"
+            >
+              <line x1="0" y1="15" x2="560" y2="15" class="linea-guia"></line>
+              <line x1="0" y1="70" x2="560" y2="70" class="linea-guia"></line>
+              <line x1="0" y1="125" x2="560" y2="125" class="linea-guia"></line>
+              <polyline
+                [attr.points]="puntosGrafica()"
+                class="linea-consumo"
+              ></polyline>
+            </svg>
+          </div>
+          <div class="leyenda-grafica">
+            <span><i aria-hidden="true"></i> Consumo registrado</span>
+            <span
+              >Se muestran hasta {{ registrosGrafica().length }} análisis
+              recientes</span
+            >
+          </div>
+          <ol class="visually-hidden">
+            @for (registro of registrosGrafica(); track registro.id) {
+              <li>
+                {{ fechaCorta(registro.creadoEn) }}:
+                {{ registro.consumoKwh }} kWh
+              </li>
+            }
+          </ol>
+        </article>
+      </div>
+
+      <div class="col-xl-4 mb-3">
+        <article class="panel-dashboard-perfil">
+          <div class="panel-cabecera">
+            <div>
+              <span class="sobrelinea">Perfil de eficiencia</span>
+              <h3>Distribución de resultados</h3>
+              <p>Últimos {{ cantidadMuestra() }} análisis</p>
+            </div>
+          </div>
+          <div class="distribucion-lista">
+            @for (item of distribucion(); track item.etiqueta) {
+              <div class="distribucion-item">
+                <div class="distribucion-meta">
+                  <span>{{ item.etiqueta }}</span>
+                  <strong>{{ item.cantidad }}</strong>
+                </div>
+                <div
+                  class="barra-fondo"
+                  role="progressbar"
+                  [attr.aria-label]="item.etiqueta"
+                  aria-valuemin="0"
+                  [attr.aria-valuemax]="cantidadMuestra()"
+                  [attr.aria-valuenow]="item.cantidad"
+                >
+                  <span
+                    class="barra-valor {{ item.clase }}"
+                    [style.width.%]="item.porcentaje"
+                  ></span>
+                </div>
+                <small
+                  >{{ formatearNumero(item.porcentaje, 0) }}% de la
+                  muestra</small
+                >
+              </div>
+            }
+          </div>
+          @if (ultimoAnalisis(); as ultimo) {
+            <div class="ultimo-resultado">
+              <span>Resultado más reciente</span>
+              <strong class="{{ claseCategoria(ultimo.categoria) }}">
+                {{ ultimo.categoria }}
+              </strong>
+            </div>
+          }
+        </article>
+      </div>
+    </div>
+  }
+</section>

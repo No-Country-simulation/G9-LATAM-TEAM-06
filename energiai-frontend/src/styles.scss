@@ -1,0 +1,1216 @@
+@use "assets/architectui/base";
+
+// Ajustes globales EnergiAI sobre el theme
+
+.app-page-title {
+  margin-bottom: 1.5rem;
+}
+
+.tabla-energiai {
+  thead th {
+    white-space: nowrap;
+  }
+
+  td,
+  th {
+    vertical-align: middle;
+  }
+}
+
+.paginacion-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.altura-paginacion {
+  min-height: 60px;
+}
+
+// Sistema de acciones reutilizable para las pantallas funcionales.
+.accion-ui {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.48rem;
+  padding: 0.62rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+
+  i {
+    flex: 0 0 auto;
+    margin: 0 !important;
+    font-size: 1.05rem;
+    line-height: 1;
+  }
+
+  &:hover:not(:disabled):not(.disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 0.22rem rgba(10, 159, 85, 0.2);
+  }
+
+  &:disabled,
+  &.disabled {
+    opacity: 0.7;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+label.accion-ui {
+  cursor: pointer;
+}
+
+.accion-ui-principal {
+  color: #fff;
+  background: #078b4a;
+  border-color: #06743e;
+  box-shadow: 0 0.3rem 0.75rem rgba(7, 139, 74, 0.2);
+
+  &:hover,
+  &:focus-visible {
+    color: #fff;
+    background: #066f3c;
+    border-color: #055d33;
+  }
+}
+
+.accion-ui-secundaria {
+  color: #087443;
+  background: #e9f8f0;
+  border-color: #69c594;
+
+  &:hover,
+  &:focus-visible {
+    color: #075f38;
+    background: #d7f2e3;
+    border-color: #3eae73;
+  }
+}
+
+.accion-ui-advertencia {
+  color: #9a3c0a;
+  background: #fff1e7;
+  border-color: #f39a67;
+
+  &:hover,
+  &:focus-visible {
+    color: #7f3007;
+    background: #ffe1cf;
+    border-color: #e97838;
+  }
+}
+
+.accion-ui-clara {
+  color: #14532d;
+  background: #fff;
+  border-color: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 0.3rem 0.75rem rgba(15, 23, 42, 0.12);
+
+  &:hover,
+  &:focus-visible {
+    color: #14532d;
+    background: #ecfdf3;
+    border-color: #dcfce7;
+  }
+}
+
+.accion-ui-compacta {
+  min-height: 36px;
+  padding: 0.48rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+// Controles rápidos del simulador: comportamiento coherente con los botones.
+.presets button {
+  min-height: 34px;
+  font-weight: 650;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: #69c594;
+    background: #e9f8f0;
+    color: #087443;
+    outline: 0;
+    box-shadow: 0 0 0 0.18rem rgba(10, 159, 85, 0.16);
+    transform: translateY(-1px);
+  }
+}
+
+// Explica qué variables intervienen realmente en la proyección financiera.
+.alcance-calculo {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  padding: 1rem;
+  border: 1px solid #cfe8dc;
+  border-radius: 0.8rem;
+  background: #f2fbf7;
+  color: #315f4d;
+
+  > i {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    place-items: center;
+    border-radius: 0.65rem;
+    background: #dcf5e9;
+    color: #11825b;
+    font-size: 1.2rem;
+  }
+
+  strong,
+  p {
+    display: block;
+  }
+
+  strong {
+    margin-bottom: 0.2rem;
+    color: #174d3a;
+    font-size: 0.86rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.76rem;
+    line-height: 1.5;
+  }
+}
+
+// Respiración inferior del simulador respecto al cierre del contenido.
+app-simulador-ahorro {
+  display: block;
+  padding-bottom: 1.25rem;
+}
+
+@media (max-width: 576px) {
+  app-simulador-ahorro {
+    padding-bottom: 0.9rem;
+  }
+}
+// Dropdown del usuario: espaciado compacto
+.dropdown-menu {
+  .dropdown-header {
+    padding: 0.5rem 1.25rem;
+  }
+
+  .dropdown-item {
+    padding: 0.5rem 1.25rem;
+  }
+
+  .dropdown-divider {
+    margin: 0.25rem 0;
+  }
+}
+
+// Modo oscuro: overrides del theme ArchitectUI (colores hardcodeados)
+.app-theme-dark.app-container {
+  background: #141619;
+}
+
+.app-theme-dark {
+  .app-sidebar {
+    .app-sidebar-content {
+      background: #1e2226;
+    }
+
+    .app-header__logo {
+      background: #1a1d21;
+    }
+  }
+
+  .app-page-title {
+    background: rgba(255, 255, 255, 0.04);
+
+    .page-title-icon {
+      background: #1e2226;
+    }
+  }
+
+  .card-header {
+    background-color: #1e2226;
+    color: #e9ecef;
+  }
+
+  .card-footer {
+    background-color: #1e2226;
+    color: #e9ecef;
+  }
+
+  .app-inner-layout__wrapper {
+    border-bottom: #343a40 solid 1px;
+  }
+
+  .app-header,
+  .app-footer .app-footer__inner {
+    background: #1a1d21;
+  }
+
+  .hamburger-inner,
+  .hamburger-inner::before,
+  .hamburger-inner::after {
+    background-color: #adb5bd;
+  }
+
+  .v-sidebar-menu {
+    .vsm-header {
+      color: #6c757d;
+    }
+
+    .vsm-link {
+      color: #cbd5e1;
+
+      &:hover,
+      &.active-item {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+      }
+    }
+
+    .vsm-icon,
+    .vsm-arrow {
+      color: #94a3b8;
+    }
+  }
+
+  .dropdown-menu-lg,
+  .dropdown-menu-sm {
+    border-color: #343a40;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .dropdown-header {
+    background-color: #2b3035;
+    border-bottom-color: #343a40;
+
+    h6 {
+      color: #e9ecef;
+    }
+  }
+
+  .dropdown-item {
+    color: #dee2e6;
+
+    &:hover {
+      background-color: #343a40;
+    }
+
+    &:active {
+      background-color: #495057;
+    }
+
+    i {
+      color: #adb5bd;
+    }
+  }
+
+  .widget-heading {
+    color: #e9ecef;
+  }
+
+  .widget-subheading,
+  .text-gray-500 {
+    color: #adb5bd !important;
+  }
+
+  .app-main__inner {
+    .seccion-equipos,
+    .card-header-title {
+      background-color: #1e293b;
+      border-color: #334155;
+    }
+  }
+
+  // Especificidad alta para vencer al estilo scoped del componente
+  // (.lista-recomendaciones[_ngcontent] li[_ngcontent])
+  .app-main__outer .app-main__inner .lista-recomendaciones li {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+  }
+}
+
+// Tema oscuro integral. Mantiene una jerarquia visual consistente en todas
+// las vistas y eleva la especificidad sobre los estilos encapsulados.
+.app-theme-dark {
+  --energiai-fondo: #0f1317;
+  --energiai-superficie: #181e24;
+  --energiai-superficie-elevada: #202830;
+  --energiai-superficie-suave: #151b20;
+  --energiai-borde: #34404b;
+  --energiai-borde-suave: #29343e;
+  --energiai-texto: #f1f5f9;
+  --energiai-texto-secundario: #b6c2cf;
+  --energiai-texto-suave: #8f9dac;
+  --energiai-verde: #43d394;
+  --energiai-verde-fuerte: #22b978;
+  --energiai-verde-fondo: #123a2c;
+  --energiai-azul: #67c7f2;
+  color-scheme: dark;
+  color: var(--energiai-texto);
+
+  .app-main__outer,
+  .app-main__inner,
+  .router-outlet-container {
+    background: var(--energiai-fondo);
+    color: var(--energiai-texto);
+  }
+
+  .app-main__inner {
+    min-height: calc(100vh - 60px);
+  }
+
+  .app-page-title {
+    border: 1px solid var(--energiai-borde-suave);
+    background: linear-gradient(135deg, #171d23, #12171b);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+
+    .page-title-heading,
+    .page-title-subheading,
+    .page-title-actions {
+      color: var(--energiai-texto);
+    }
+
+    .page-title-subheading {
+      color: var(--energiai-texto-secundario);
+    }
+
+    .page-title-icon {
+      border: 1px solid #315344;
+      background: #1b3028;
+      color: var(--energiai-verde);
+      box-shadow: none;
+    }
+  }
+
+  .card,
+  .main-card,
+  .card-body,
+  .card-header,
+  .card-footer {
+    border-color: var(--energiai-borde);
+    background-color: var(--energiai-superficie);
+    color: var(--energiai-texto);
+  }
+
+  .card {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .card.bg-transparent,
+  .bg-transparent {
+    background-color: transparent !important;
+    box-shadow: none;
+  }
+
+  .form-label,
+  .form-check-label,
+  label,
+  legend,
+  .widget-numbers {
+    color: var(--energiai-texto);
+  }
+
+  .form-control,
+  .form-select,
+  .input-group-text {
+    border-color: #465360;
+    background-color: #11171c;
+    color: var(--energiai-texto);
+
+    &::placeholder {
+      color: #718091;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: #5b6977;
+    }
+
+    &:focus {
+      border-color: var(--energiai-verde-fuerte);
+      background-color: #141b20;
+      color: #fff;
+      box-shadow: 0 0 0 0.22rem rgba(34, 185, 120, 0.18);
+    }
+
+    &:disabled,
+    &[readonly] {
+      border-color: #303a43;
+      background-color: #20262c;
+      color: #8793a0;
+    }
+  }
+
+  .form-select {
+    option {
+      background: #171d22;
+      color: var(--energiai-texto);
+    }
+  }
+
+  .form-text,
+  .text-muted,
+  .text-secondary {
+    color: var(--energiai-texto-suave) !important;
+  }
+
+  .form-check-input {
+    border-color: #607080;
+    background-color: #11171c;
+
+    &:checked {
+      border-color: var(--energiai-verde-fuerte);
+      background-color: var(--energiai-verde-fuerte);
+    }
+
+    &:focus {
+      border-color: var(--energiai-verde);
+      box-shadow: 0 0 0 0.22rem rgba(34, 185, 120, 0.18);
+    }
+  }
+
+  .table {
+    --bs-table-color: var(--energiai-texto-secundario);
+    --bs-table-bg: var(--energiai-superficie);
+    --bs-table-border-color: var(--energiai-borde);
+    --bs-table-striped-color: var(--energiai-texto);
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.025);
+    --bs-table-hover-color: #fff;
+    --bs-table-hover-bg: rgba(67, 211, 148, 0.08);
+
+    thead th {
+      border-bottom-color: #45515c;
+      background: #202830;
+      color: #c8d3dd;
+    }
+  }
+
+  .alert {
+    border-width: 1px;
+
+    &.alert-info {
+      border-color: #275d75;
+      background: #132b37;
+      color: #b9e8fb;
+    }
+
+    &.alert-warning {
+      border-color: #72591f;
+      background: #352a12;
+      color: #f7dda0;
+    }
+
+    &.alert-danger {
+      border-color: #783d44;
+      background: #371c21;
+      color: #ffc2c7;
+    }
+
+    &.alert-success {
+      border-color: #286248;
+      background: #153527;
+      color: #b9f0d4;
+    }
+  }
+
+  .accion-ui-secundaria,
+  .accion-comparar,
+  .accion-secundaria {
+    border-color: #2d805d;
+    background: #153c2d;
+    color: #8ce7bc;
+
+    &:hover,
+    &:focus-visible {
+      border-color: #43d394;
+      background: #1a4b38;
+      color: #c2f6dc;
+    }
+  }
+
+  .accion-ui-advertencia,
+  .accion-ocultar {
+    border-color: #8b5a30;
+    background: #3a291b;
+    color: #f4bd86;
+
+    &:hover,
+    &:focus-visible {
+      border-color: #bd7840;
+      background: #4a3320;
+      color: #ffd5ab;
+    }
+  }
+
+  .accion-ui-clara {
+    border-color: #6ad6a5;
+    background: #e8fff3;
+    color: #075f38;
+
+    &:hover,
+    &:focus-visible {
+      background: #c9f8df;
+      color: #064c2e;
+    }
+  }
+
+  .dropdown-menu {
+    border-color: var(--energiai-borde);
+    background: #1b2228;
+    color: var(--energiai-texto);
+  }
+
+  .dropdown-divider {
+    border-color: var(--energiai-borde);
+  }
+
+  .v-sidebar-menu .vsm-link {
+    border: 1px solid transparent;
+
+    &:hover {
+      border-color: #35443e;
+      background: #222b29;
+    }
+
+    &.active-item {
+      border-color: #2b634b;
+      background: linear-gradient(90deg, #1b3b2e, #222a2d);
+      color: #fff;
+      box-shadow: inset 3px 0 0 var(--energiai-verde);
+    }
+  }
+
+  .btn:focus-visible,
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 3px solid rgba(67, 211, 148, 0.32);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: #256f50;
+    color: #fff;
+  }
+
+  * {
+    scrollbar-color: #4d5b67 #171d22;
+    scrollbar-width: thin;
+  }
+}
+
+// Inicio
+.app-theme-dark .app-main__outer .app-main__inner app-inicio {
+  --texto: var(--energiai-texto);
+  --texto-suave: var(--energiai-texto-secundario);
+  --borde: var(--energiai-borde);
+  --superficie: var(--energiai-superficie);
+  --verde-700: var(--energiai-verde);
+
+  .hero-inicio {
+    border: 1px solid rgba(74, 222, 128, 0.26);
+    background:
+      radial-gradient(
+        circle at 86% 18%,
+        rgba(110, 231, 183, 0.16),
+        transparent 24%
+      ),
+      linear-gradient(135deg, #0b3d28 0%, #10613b 48%, #159a57 100%);
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.28);
+  }
+
+  .encabezado-seccion h2,
+  .tarjeta-metrica strong,
+  .alertas-consumo h3,
+  .alerta-consumo h4,
+  .panel-cabecera h3,
+  .distribucion-meta strong,
+  .estado-panel h3 {
+    color: var(--energiai-texto);
+  }
+
+  .encabezado-seccion p,
+  .tarjeta-metrica small,
+  .alerta-consumo p,
+  .panel-cabecera p,
+  .leyenda-grafica,
+  .distribucion-item small,
+  .ultimo-resultado,
+  .estado-panel p {
+    color: var(--energiai-texto-secundario) !important;
+  }
+
+  .tarjeta-metrica,
+  .panel-dashboard-evolucion,
+  .panel-dashboard-perfil,
+  .estado-panel {
+    border-color: var(--energiai-borde);
+    background: linear-gradient(145deg, #1b2228, #171d22);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+  }
+
+  .tarjeta-metrica:hover {
+    border-color: #446054;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+  }
+
+  .metrica-etiqueta,
+  .distribucion-meta,
+  .leyenda-grafica span:first-child {
+    color: #c3ced8;
+  }
+
+  .icono-verde,
+  .estado-eficiente,
+  .variacion-positiva {
+    background: #153b2d;
+    color: #83e4b4;
+  }
+
+  .icono-azul {
+    background: #163648;
+    color: #75d1fa;
+  }
+
+  .icono-violeta {
+    background: #30264d;
+    color: #c4a8ff;
+  }
+
+  .icono-ambar,
+  .estado-moderado {
+    background: #3d3117;
+    color: #f6cf79;
+  }
+
+  .estado-ineficiente,
+  .variacion-negativa {
+    background: #3a2024;
+    color: #ffadb5;
+  }
+
+  .variacion-neutra {
+    background: #27313a;
+    color: #c0cbd5;
+  }
+
+  .alertas-consumo {
+    border-color: #705727;
+    background: #2c2618;
+  }
+
+  .contador-alertas {
+    background: #493518;
+    color: #ffc66d;
+  }
+
+  .alerta-consumo {
+    border-color: #3b4650;
+    background: #1a2025;
+  }
+
+  .alerta-danger {
+    border-left-color: #f87171;
+  }
+
+  .alerta-warning {
+    border-left-color: #fbbf24;
+  }
+
+  .alerta-accion {
+    border-color: #2f7e5d;
+    background: #153b2d;
+    color: #91e9bf;
+  }
+
+  .linea-guia,
+  .leyenda-grafica,
+  .ultimo-resultado {
+    border-color: var(--energiai-borde);
+  }
+
+  .linea-guia {
+    stroke: #3a4651;
+  }
+
+  .barra-fondo {
+    background: #2a343d;
+  }
+
+  .tarjeta-esqueleto,
+  .panel-esqueleto {
+    background: linear-gradient(90deg, #1a2127 25%, #28323b 45%, #1a2127 65%);
+    background-size: 300% 100%;
+  }
+}
+
+// Analisis general, resultados e historial
+.app-theme-dark .app-main__outer .app-main__inner {
+  app-analisis-general .seccion-equipos,
+  app-datos-avanzados .seccion-avanzado {
+    border-color: var(--energiai-borde);
+    background: var(--energiai-superficie-suave);
+  }
+
+  app-datos-avanzados .seccion-avanzado {
+    padding: 16px;
+    border: 1px solid var(--energiai-borde);
+    border-radius: 10px;
+
+    .btn-link,
+    .rotulo {
+      color: #9be8c2;
+    }
+
+    .btn-link:focus-visible {
+      border-radius: 6px;
+      outline: 3px solid rgba(67, 211, 148, 0.22);
+      outline-offset: 4px;
+    }
+  }
+
+  app-resultado-analisis {
+    .card-header-title,
+    .lista-recomendaciones li {
+      border-color: var(--energiai-borde);
+      background: #202830;
+      color: var(--energiai-texto-secundario);
+    }
+
+    .alerta-resultado h5 {
+      color: var(--energiai-texto);
+    }
+
+    .alerta-resultado p {
+      color: var(--energiai-texto-secundario);
+    }
+
+    .alerta-alta {
+      border-color: #763940;
+      border-left-color: #ef5c67;
+      background: #321b20;
+
+      .alerta-resultado-icono {
+        background: #54242b;
+        color: #ff8f99;
+      }
+    }
+
+    .alerta-media {
+      border-color: #73591f;
+      border-left-color: #f0ad2c;
+      background: #332912;
+
+      .alerta-resultado-icono {
+        background: #4d3914;
+        color: #f7c65c;
+      }
+    }
+  }
+
+  app-historial {
+    .tarjeta-vacia {
+      border-color: var(--energiai-borde);
+      background: var(--energiai-superficie);
+    }
+
+    .tabla-historial-scroll {
+      border-radius: 10px;
+    }
+  }
+}
+
+// Comparacion de periodos
+.app-theme-dark .app-main__outer .app-main__inner app-comparacion-periodos {
+  --texto: var(--energiai-texto);
+  --texto-suave: var(--energiai-texto-secundario);
+  --borde: var(--energiai-borde);
+  --verde: var(--energiai-verde);
+
+  .selector-panel,
+  .panel-comparacion,
+  .estado-comparacion {
+    border-color: var(--energiai-borde);
+    background: var(--energiai-superficie);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  }
+
+  .selector-encabezado h2,
+  .panel-cabecera h2,
+  .panel-eficiencia h2,
+  .estado-comparacion h2,
+  .periodo-card strong,
+  .indicador-encabezado h3,
+  .resumen-resultado h2 {
+    color: var(--energiai-texto);
+  }
+
+  .selector-encabezado p,
+  .panel-cabecera p,
+  .estado-comparacion p,
+  .periodo-card small,
+  .resumen-resultado p,
+  .leyenda-periodos,
+  .categorias-flujo > div > span,
+  .categorias-flujo small {
+    color: var(--energiai-texto-secundario) !important;
+  }
+
+  .registros-disponibles,
+  .versus,
+  .variacion-neutra {
+    border-color: var(--energiai-borde);
+    background: #252e36;
+    color: #c1ccd6;
+  }
+
+  .selector-campo label,
+  .barra-fila strong,
+  .horario-pico > span {
+    color: #d5dde5;
+  }
+
+  .selector-campo .form-select {
+    border-color: #465360;
+    background-color: #11171c;
+    color: var(--energiai-texto);
+  }
+
+  .boton-intercambiar {
+    border-color: #2d805d;
+    background: #153c2d;
+    color: #86e5b7;
+  }
+
+  .periodo-a {
+    border-color: #286747;
+    background: #143326;
+  }
+
+  .periodo-b {
+    border-color: #275e79;
+    background: #142e3b;
+  }
+
+  .resumen-mejora {
+    border-color: #286747;
+    border-left-color: #43d394;
+    background: #143326;
+  }
+
+  .resumen-alerta {
+    border-color: #783d44;
+    border-left-color: #f87171;
+    background: #351c21;
+  }
+
+  .resumen-estable {
+    border-color: #485662;
+    border-left-color: #94a3b8;
+    background: #202830;
+  }
+
+  .variacion-favorable,
+  .categoria-eficiente,
+  .estado-no {
+    background: #153b2d;
+    color: #8ce7bc;
+  }
+
+  .variacion-desfavorable,
+  .categoria-ineficiente {
+    background: #3a2024;
+    color: #ffadb5;
+  }
+
+  .categoria-moderada,
+  .estado-si {
+    background: #3d3117;
+    color: #f6cf79;
+  }
+
+  .indicador-comparado,
+  .horario-pico {
+    border-color: var(--energiai-borde);
+  }
+
+  .barra-fondo {
+    background: #2a343d;
+  }
+
+  .esqueleto {
+    background: linear-gradient(90deg, #1a2127 25%, #28323b 45%, #1a2127 65%);
+    background-size: 300% 100%;
+  }
+}
+
+// Procesamiento CSV
+.app-theme-dark .app-main__outer .app-main__inner app-procesamiento-csv {
+  .guia-grid article,
+  .archivo-panel,
+  .validacion-panel,
+  .resultados-panel {
+    border-color: var(--energiai-borde);
+    background: var(--energiai-superficie);
+    color: var(--energiai-texto);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+  }
+
+  .guia-grid strong,
+  .archivo-info strong,
+  .panel-cabecera h2,
+  .zona-carga h2,
+  td {
+    color: var(--energiai-texto);
+  }
+
+  .guia-grid small,
+  .archivo-info small,
+  .panel-cabecera p,
+  .zona-carga p,
+  .acciones-lote p {
+    color: var(--energiai-texto-secundario) !important;
+  }
+
+  .zona-carga {
+    border-color: #3a745b;
+    background: linear-gradient(135deg, #17231e, #151d1a);
+    box-shadow: inset 0 0 0 1px rgba(67, 211, 148, 0.04);
+  }
+
+  .zona-carga.zona-activa {
+    border-color: var(--energiai-verde);
+    background: #183528;
+    box-shadow: 0 0 0 4px rgba(67, 211, 148, 0.12);
+  }
+
+  .guia-grid article > span,
+  .icono-csv,
+  .archivo-icono {
+    background: #173c2d;
+    color: #79dfae;
+  }
+
+  .panel-cabecera,
+  td {
+    border-color: var(--energiai-borde);
+  }
+
+  th,
+  .acciones-lote {
+    background: #202830;
+    color: #c3ced8;
+  }
+
+  tbody tr {
+    background: var(--energiai-superficie);
+
+    &:hover {
+      background: #202a30;
+    }
+  }
+
+  .fila-error {
+    background: #2c1d20;
+  }
+
+  .alerta-global {
+    border-color: #783d44;
+    background: #351c21;
+    color: #ffc2c7;
+  }
+
+  .contador.valido,
+  .estado.correcto,
+  .resultado-ok,
+  .chips-resultados span {
+    background: #153b2d;
+    color: #8ce7bc;
+  }
+
+  .contador.invalido,
+  .estado.error,
+  .resultado-fallo,
+  .chips-resultados .fallo {
+    background: #3a2024;
+    color: #ffadb5;
+  }
+
+  .progreso {
+    background: #2a343d;
+  }
+}
+
+// Ranking energetico
+.app-theme-dark .app-main__outer .app-main__inner app-ranking-eficiencia {
+  .estado,
+  .podio article,
+  .tabla-panel,
+  .sin-filtro {
+    border-color: var(--energiai-borde);
+    background: var(--energiai-superficie);
+    color: var(--energiai-texto);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+  }
+
+  .estado h2,
+  .filtros h2,
+  .podio strong,
+  td {
+    color: var(--energiai-texto);
+  }
+
+  .estado p,
+  .filtros label,
+  .podio small,
+  .registro,
+  td:nth-child(2) small,
+  .sin-filtro {
+    color: var(--energiai-texto-secundario) !important;
+  }
+
+  .metodologia {
+    border-color: #2d654f;
+    background: #173329;
+    color: #b4e5cf;
+  }
+
+  .podio article.primero {
+    border-color: #856e31;
+    background: linear-gradient(145deg, #342d1b, #1e2326);
+  }
+
+  .registro,
+  td {
+    border-color: var(--energiai-borde);
+  }
+
+  th {
+    background: #202830;
+    color: #c3ced8;
+  }
+
+  tbody tr:hover {
+    background: rgba(67, 211, 148, 0.07);
+  }
+
+  .categoria.eficiente {
+    background: #153b2d;
+    color: #8ce7bc;
+  }
+
+  .categoria.moderado {
+    background: #3d3117;
+    color: #f6cf79;
+  }
+
+  .categoria.ineficiente {
+    background: #3a2024;
+    color: #ffadb5;
+  }
+}
+
+// Simulador de ahorro
+.app-theme-dark .app-main__outer .app-main__inner app-simulador-ahorro {
+  .estado,
+  .controles-panel,
+  .resultados-panel {
+    border-color: var(--energiai-borde);
+    background: var(--energiai-superficie);
+    color: var(--energiai-texto);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+  }
+
+  .estado h2,
+  .panel-titulo h2,
+  .campo > span,
+  .control-label label,
+  .metricas strong,
+  .barra-fila strong,
+  .costos strong {
+    color: var(--energiai-texto);
+  }
+
+  .estado p,
+  .panel-titulo p,
+  .escala,
+  .interruptor small,
+  .metricas span,
+  .costos span {
+    color: var(--energiai-texto-secundario) !important;
+  }
+
+  .aviso,
+  .alcance-calculo {
+    border-color: #285b72;
+    background: #142d39;
+    color: #b9e8fb;
+  }
+
+  .alcance-calculo > i {
+    background: #173d4e;
+    color: #67c7f2;
+  }
+
+  .alcance-calculo strong,
+  .alcance-calculo p {
+    color: #c8eaf7;
+  }
+
+  .panel-titulo,
+  .control,
+  .interruptor,
+  .comparacion-consumo {
+    border-color: var(--energiai-borde);
+  }
+
+  .presets button {
+    border-color: #465360;
+    background: #202830;
+    color: #c4ced8;
+
+    &:hover,
+    &:focus-visible,
+    &.activo {
+      border-color: #35b87b;
+      background: #153b2d;
+      color: #8ce7bc;
+    }
+  }
+
+  .metricas article,
+  .costos > div {
+    border: 1px solid var(--energiai-borde-suave);
+    background: #202830;
+  }
+
+  .barra-fila > div {
+    background: #2a343d;
+  }
+}
