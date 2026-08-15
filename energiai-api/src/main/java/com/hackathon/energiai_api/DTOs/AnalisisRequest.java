@@ -68,10 +68,13 @@ public record AnalisisRequest(
 
         @Size(max = 100, message = "El identificador de usuario no puede superar 100 caracteres")
         @Pattern(
-                regexp = "invitado|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+",
+                regexp = REGEX_USUARIO_VALIDO,
                 message = "El usuario debe ser un correo válido o invitado"
         )
         String usuarioId,
+
+        @Size(max = 120, message = "El nombre del análisis no puede superar 120 caracteres")
+        String nombre_o_numero_analisis,
 
         @Size(max = 17, message = "No se permiten más de 17 tipos de electrodomésticos")
         Map<String, Integer> electrodomesticos,
@@ -87,6 +90,10 @@ public record AnalisisRequest(
         @Min(value = 0, message = "Los dispositivos de bajo consumo no pueden ser negativos")
         @Max(value = 500, message = "Los dispositivos de bajo consumo no pueden superar 500")
         Integer dispositivos_bajo) {
+
+    /** Regex canónica de identificador de usuario compartida con AnalisisController. */
+    public static final String REGEX_USUARIO_VALIDO =
+            "invitado|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+";
 
     private static final Set<String> EQUIPOS_ALTO = Set.of(
             "aire_acondicionado", "calefactor", "secadora", "horno_electrico", "ducha_electrica"
@@ -191,6 +198,18 @@ public record AnalisisRequest(
             case "Oficina" -> dentroOpcional(cantidad_personas, 1, 30) && dentroOpcional(area_m2, 30, 420);
             default -> true;
         };
+    }
+
+    @AssertTrue(message = "El nombre del análisis debe ser congruente: incluye al menos una letra o un número")
+    public boolean isNombreAnalisisCongruente() {
+        if (nombre_o_numero_analisis == null) {
+            return true;
+        }
+        String nombre = nombre_o_numero_analisis.trim();
+        if (nombre.isEmpty()) {
+            return true;
+        }
+        return nombre.chars().anyMatch(Character::isLetterOrDigit);
     }
 
     public Integer equiposAltoResueltos() {

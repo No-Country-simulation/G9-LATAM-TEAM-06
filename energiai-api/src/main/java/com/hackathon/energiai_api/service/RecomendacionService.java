@@ -68,7 +68,7 @@ public class RecomendacionService {
                     "Desconectar o suspender los equipos de bajo consumo cuando no estén en uso para reducir consumos acumulados",
                     request.equiposBajoResueltos() + " equipos pueden acumular consumo en espera."));
         }
-        if (request.horas_alto_consumo() != null && request.horas_alto_consumo() >= 6) {
+        if (request.horas_alto_consumo() != null && request.horas_alto_consumo() >= UmbralesModelo.HORAS_ALTO_CONSUMO_RECOMENDACION) {
             recomendaciones.add(fallback(
                     "fallback_distribuir_alto_consumo",
                     "Distribuir actividades de mayor consumo a lo largo del día",

@@ -79,7 +79,7 @@ class AnalisisRequestValidationTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, false, 8, "Casa", 4,
                 4, 100.123f, 2, 2.5f, 220.123f, 30,
-                "persona@example.com", null, 2, 3, 3
+                "persona@example.com", null, null, 2, 3, 3
         );
 
         assertThat(validator.validate(request))
@@ -91,7 +91,7 @@ class AnalisisRequestValidationTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, false, 8, "Casa", 4,
                 4, 100f, 2, 2f, 220f, 30,
-                "persona@example.com", null, 2, null, 6
+                "persona@example.com", null, null, 2, null, 6
         );
 
         assertThat(validator.validate(request))
@@ -105,7 +105,7 @@ class AnalisisRequestValidationTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, false, 8, "Casa", 4,
                 4, 100f, null, 2f, 220f, 30,
-                "persona@example.com", mapa, null, null, null
+                "persona@example.com", null, mapa, null, null, null
         );
 
         assertThat(validator.validate(request))
@@ -118,7 +118,7 @@ class AnalisisRequestValidationTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, false, 8, "Casa", 4,
                 4, 100f, 1, 2f, 220f, 30,
-                "persona@example.com", mapa, 1, 1, 6
+                "persona@example.com", null, mapa, 1, 1, 6
         );
 
         assertThat(validator.validate(request))
@@ -130,11 +130,63 @@ class AnalisisRequestValidationTest {
         AnalisisRequest validoExceptoCorreo = new AnalisisRequest(
                 250, false, 8, "Casa", 4,
                 4, 100f, 2, 2f, 220f, 30,
-                "persona@localhost", null, 2, 3, 3
+                "persona@localhost", null, null, 2, 3, 3
         );
 
         assertThat(validator.validate(validoExceptoCorreo))
                 .anyMatch(error -> error.getMessage().contains("correo válido"));
+    }
+
+    @Test
+    void nombreOpcional_masDe120Caracteres_esInvalido() {
+        AnalisisRequest request = new AnalisisRequest(
+                250, false, 8, "Casa", 4,
+                4, 100f, 2, 2f, 220f, 30,
+                "persona@example.com", "a".repeat(121), null, 2, 3, 3
+        );
+
+        assertThat(validator.validate(request))
+                .anyMatch(error -> error.getMessage().contains("no puede superar 120"));
+    }
+
+    @Test
+    void nombreSoloDePuntosSimbolos_esInvalido() {
+        AnalisisRequest request = new AnalisisRequest(
+                250, false, 8, "Casa", 4,
+                4, 100f, 2, 2f, 220f, 30,
+                "persona@example.com", "...!!! ###", null, 2, 3, 3
+        );
+
+        assertThat(validator.validate(request))
+                .anyMatch(error -> error.getMessage().contains("congruente"));
+    }
+
+    @Test
+    void nombreConLetraONumero_esValido() {
+        AnalisisRequest conLetra = new AnalisisRequest(
+                250, false, 8, "Casa", 4,
+                4, 100f, 2, 2f, 220f, 30,
+                "persona@example.com", "Consumo 2026!", null, 2, 3, 3
+        );
+        AnalisisRequest conUnicode = new AnalisisRequest(
+                250, false, 8, "Casa", 4,
+                4, 100f, 2, 2f, 220f, 30,
+                "persona@example.com", "Ánálisis", null, 2, 3, 3
+        );
+
+        assertThat(validator.validate(conLetra)).isEmpty();
+        assertThat(validator.validate(conUnicode)).isEmpty();
+    }
+
+    @Test
+    void nombreEnBlanco_esValidoPorqueSeAutoNumera() {
+        AnalisisRequest request = new AnalisisRequest(
+                250, false, 8, "Casa", 4,
+                4, 100f, 2, 2f, 220f, 30,
+                "persona@example.com", "   ", null, 2, 3, 3
+        );
+
+        assertThat(validator.validate(request)).isEmpty();
     }
 
     private AnalisisRequest request(
@@ -174,6 +226,7 @@ class AnalisisRequestValidationTest {
                 null,
                 30,
                 "persona@example.com",
+                null,
                 null,
                 distribucionAlto,
                 medio,

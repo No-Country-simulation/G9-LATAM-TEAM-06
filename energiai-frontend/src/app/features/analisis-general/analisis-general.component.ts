@@ -33,6 +33,14 @@ function validarDominioModelo(grupo: AbstractControl): ValidationErrors | null {
   return problemas.length ? { dominioModelo: problemas } : null;
 }
 
+function nombreCongruente(control: AbstractControl): ValidationErrors | null {
+  const valor = typeof control.value === 'string' ? control.value.trim() : '';
+  if (!valor) {
+    return null;
+  }
+  return /[\p{L}\p{N}]/u.test(valor) ? null : { nombreIncongruente: true };
+}
+
 @Component({
   selector: 'app-analisis-general',
   imports: [
@@ -73,6 +81,7 @@ export class AnalisisGeneralComponent {
         null as number | null,
         [Validators.min(DIAS_FACTURADOS.min), Validators.max(DIAS_FACTURADOS.max)],
       ],
+      nombre_o_numero_analisis: ['', [Validators.maxLength(120), nombreCongruente]],
     },
     { validators: [validarDominioModelo] },
   );
@@ -196,6 +205,17 @@ export class AnalisisGeneralComponent {
       dispositivos_alto: Number(crudo['dispositivos_alto']),
       dispositivos_medio: Number(crudo['dispositivos_medio']),
       dispositivos_bajo: Number(crudo['dispositivos_bajo']),
+      nombre_o_numero_analisis: this.normalizarNombreAnalisis(
+        crudo['nombre_o_numero_analisis'],
+      ),
     };
+  }
+
+  private normalizarNombreAnalisis(valor: unknown): string | undefined {
+    if (typeof valor !== 'string') {
+      return undefined;
+    }
+    const nombre = valor.trim().slice(0, 120);
+    return nombre || undefined;
   }
 }

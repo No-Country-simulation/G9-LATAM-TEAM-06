@@ -123,13 +123,15 @@
       <div class="periodos-resumen" aria-label="Períodos seleccionados">
         <article class="periodo-card periodo-a">
           <span class="periodo-marca">Período A · Base</span>
-          <strong>{{ formatearFecha(base.creadoEn) }}</strong>
+          <strong class="periodo-nombre">{{ nombreAnalisis(base) }}</strong>
+          <small>{{ formatearFecha(base.creadoEn) }}</small>
           <small>{{ base.tipoInmueble }} · {{ base.cantidadEquipos }} equipos</small>
         </article>
         <div class="versus" aria-hidden="true">VS</div>
         <article class="periodo-card periodo-b">
           <span class="periodo-marca">Período B · Comparado</span>
-          <strong>{{ formatearFecha(comparado.creadoEn) }}</strong>
+          <strong class="periodo-nombre">{{ nombreAnalisis(comparado) }}</strong>
+          <small>{{ formatearFecha(comparado.creadoEn) }}</small>
           <small>{{ comparado.tipoInmueble }} · {{ comparado.cantidadEquipos }} equipos</small>
         </article>
       </div>

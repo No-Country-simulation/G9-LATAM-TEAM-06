@@ -90,6 +90,7 @@
         <table class="table table-hover table-striped tabla-energiai mb-0">
           <thead>
             <tr>
+              <th scope="col">Análisis</th>
               <th scope="col">Fecha</th>
               <th scope="col">Categoría</th>
               <th scope="col">Consumo (kWh)</th>
@@ -101,6 +102,10 @@
           <tbody>
             @for (item of historial(); track item.id) {
               <tr>
+                <td>
+                  <i class="pe-7s-note2 me-1 text-muted"></i>
+                  <span class="fw-semibold">{{ item.nombre }}</span>
+                </td>
                 <td>
                   <i class="pe-7s-date me-1 text-muted"></i>
                   {{ item.fecha }}

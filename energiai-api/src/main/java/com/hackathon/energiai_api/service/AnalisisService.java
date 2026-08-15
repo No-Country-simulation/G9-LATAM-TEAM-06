@@ -21,7 +21,9 @@ import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
 import com.hackathon.energiai_api.DTOs.RecomendacionModelo;
 import com.hackathon.energiai_api.exception.ServicioAnalisisException;
 import com.hackathon.energiai_api.model.Analisis;
+import com.hackathon.energiai_api.model.Usuario;
 import com.hackathon.energiai_api.repository.AnalisisRepository;
+import com.hackathon.energiai_api.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
@@ -36,6 +38,7 @@ public class AnalisisService {
     private final RecomendacionService recomendacionService;
     private final IntegracionDsService integracionDsService;
     private final AnalisisRepository analisisRepository;
+    private final UsuarioRepository usuarioRepository;
     private final ObjectMapper objectMapper;
 
     // Catálogo de clasificación de electrodomésticos
@@ -67,8 +70,7 @@ public class AnalisisService {
 
         IntegracionDsService.PrediccionDs prediccion;
         if (modeloResponse != null && modeloResponse.categoria() != null) {
-            BigDecimal probabilidad = BigDecimal.valueOf(modeloResponse.probabilidad() != null ? modeloResponse.probabilidad() : 0.5)
-                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal probabilidad = IntegracionDsService.probabilidadAcotada(modeloResponse.probabilidad());
             prediccion = new IntegracionDsService.PrediccionDs(modeloResponse.categoria(), probabilidad);
         } else {
             prediccion = integracionDsService.fallbackPrediccion(request);
@@ -148,8 +150,14 @@ public class AnalisisService {
             electrodomesticosJson = serializar(clasificacionEquipos);
         }
 
+        String usuarioNormalizado = normalizarUsuario(request.usuarioId());
+        Usuario usuario = obtenerOCrearUsuario(usuarioNormalizado);
+        String nombreAnalisis = resolverNombreAnalisis(request.nombre_o_numero_analisis(), usuario);
+
         Analisis analisis = Analisis.builder()
-                .usuarioId(normalizarUsuario(request.usuarioId()))
+                .usuarioId(usuarioNormalizado)
+                .usuario(usuario)
+                .nombreONumeroAnalisis(nombreAnalisis)
                 .consumoKwh(request.consumo_kwh())
                 .usoHorarioPico(request.uso_horario_pico())
                 .cantidadEquipos(request.cantidad_equipos())
@@ -187,7 +195,8 @@ public class AnalisisService {
                 recomendacionesDetalle,
                 origenPrediccion,
                 modeloVersion,
-                advertencias
+                advertencias,
+                nombreAnalisis
         );
     }
 
@@ -248,6 +257,7 @@ public class AnalisisService {
                 analisis.getConsumoMesAnteriorKwh(),
                 analisis.getDiasFacturados(),
                 analisis.getUsuarioId(),
+                analisis.getNombreONumeroAnalisis(),
                 null,
                 null,
                 null,
@@ -274,7 +284,8 @@ public class AnalisisService {
                 detalles,
                 valorO(analisis.getOrigenPrediccion(), "registro_legacy"),
                 valorO(analisis.getModeloVersion(), "no_reportada"),
-                deserializarLista(analisis.getAdvertenciasJson(), List.of())
+                deserializarLista(analisis.getAdvertenciasJson(), List.of()),
+                analisis.getNombreONumeroAnalisis()
         );
     }
 
@@ -292,6 +303,7 @@ public class AnalisisService {
                 analisis.getConsumoMesAnteriorKwh(),
                 analisis.getDiasFacturados(),
                 analisis.getUsuarioId(),
+                analisis.getNombreONumeroAnalisis(),
                 null,
                 null,
                 null,
@@ -325,7 +337,8 @@ public class AnalisisService {
                 detalles,
                 valorO(analisis.getOrigenPrediccion(), "registro_legacy"),
                 valorO(analisis.getModeloVersion(), "no_reportada"),
-                deserializarLista(analisis.getAdvertenciasJson(), List.of())
+                deserializarLista(analisis.getAdvertenciasJson(), List.of()),
+                analisis.getNombreONumeroAnalisis()
         );
     }
 
@@ -388,6 +401,28 @@ public class AnalisisService {
             return "invitado";
         }
         return usuarioId.trim().toLowerCase();
+    }
+
+    private Usuario obtenerOCrearUsuario(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    Usuario nuevo = Usuario.builder().email(email).build();
+                    return usuarioRepository.save(nuevo);
+                });
+    }
+
+    private String resolverNombreAnalisis(String nombreSolicitado, Usuario usuario) {
+        int numero = siguienteNumeroAnalisis(usuario);
+        if (nombreSolicitado != null && !nombreSolicitado.isBlank()) {
+            return nombreSolicitado.trim();
+        }
+        return "Análisis " + numero;
+    }
+
+    private int siguienteNumeroAnalisis(Usuario usuario) {
+        usuarioRepository.incrementarContador(usuario.getId());
+        Integer numero = usuarioRepository.obtenerContadorAnalisis(usuario.getId());
+        return numero != null ? numero : 0;
     }
 
     private String valorO(String valor, String alternativo) {

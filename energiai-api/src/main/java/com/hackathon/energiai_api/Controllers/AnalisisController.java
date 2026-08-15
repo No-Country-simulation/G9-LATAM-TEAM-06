@@ -34,9 +34,6 @@ import lombok.RequiredArgsConstructor;
 @Validated
 public class AnalisisController {
 
-    private static final String USUARIO_VALIDO =
-            "invitado|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+";
-
     private final AnalisisService analisisService;
 
     @PostMapping
@@ -69,7 +66,7 @@ public class AnalisisController {
             @RequestParam
             @NotBlank(message = "El identificador de usuario es obligatorio")
             @Size(max = 100, message = "El identificador de usuario no puede superar 100 caracteres")
-            @Pattern(regexp = USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
+            @Pattern(regexp = AnalisisRequest.REGEX_USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
             String usuarioId,
             @RequestParam(required = false)
             @Pattern(regexp = "Eficiente|Moderado|Ineficiente", message = "La categoría no es válida")
@@ -85,7 +82,7 @@ public class AnalisisController {
             @RequestParam
             @NotBlank(message = "El identificador de usuario es obligatorio")
             @Size(max = 100, message = "El identificador de usuario no puede superar 100 caracteres")
-            @Pattern(regexp = USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
+            @Pattern(regexp = AnalisisRequest.REGEX_USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
             String usuarioId) {
         analisisService.borrarHistorialPorUsuario(usuarioId);
         return ResponseEntity.noContent().build();

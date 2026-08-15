@@ -91,6 +91,18 @@ public class GlobalExceptionHandler {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
+        @ExceptionHandler(ModeloApiException.class)
+        public ResponseEntity<Map<String, Object>> handleModeloApiException(ModeloApiException ex) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("estado", "error");
+                response.put("codigo", "MODELO_API_NO_DISPONIBLE");
+                response.put("mensaje", ex.getMessage());
+
+                logger.error("Modelo API no disponible: {}", ex.getMessage());
+
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+        }
+
         @ExceptionHandler(Exception.class)
         public ResponseEntity<Map<String, Object>> handlerGenericException(Exception ex) {
                 Map<String, Object> response = new HashMap<>();

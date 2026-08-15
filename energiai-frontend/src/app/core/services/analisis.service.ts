@@ -55,10 +55,12 @@ export class AnalisisService {
     page = 0,
     size = 10,
   ): Observable<Paginacion<HistorialResponse>> {
+    const pagina = Math.max(0, Math.floor(Number(page) || 0));
+    const tamano = Math.min(100, Math.max(1, Math.floor(Number(size) || 10)));
     let params = new HttpParams()
       .set('usuarioId', usuarioId)
-      .set('page', page.toString())
-      .set('size', size.toString());
+      .set('page', pagina.toString())
+      .set('size', tamano.toString());
     if (categoria) {
       params = params.set('categoria', categoria);
     }

@@ -2,6 +2,7 @@
 
 Esta documentación describe el sistema que realmente está en el repositorio y sirve como evidencia técnica para el hackathon.
 
+- [Despliegue en OCI](despliegue-oci.md)
 - [Arquitectura y flujo](arquitectura.md)
 - [Modelo de clasificación energética](model-card-clasificacion.md)
 - [Modelo de recomendaciones](model-card-recomendaciones.md)

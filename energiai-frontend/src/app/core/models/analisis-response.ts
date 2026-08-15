@@ -17,4 +17,5 @@ export interface AnalisisResponse {
   origen_prediccion?: 'modelo_ml' | 'fallback_reglas' | 'registro_legacy';
   modelo_version?: string;
   advertencias?: string[];
+  nombre_o_numero_analisis?: string;
 }

@@ -14,7 +14,7 @@ flowchart LR
 
 Spring valida la solicitud y FastAPI selecciona un nivel según la presencia de cinco campos avanzados. Cero campos usa el modelo básico, uno a cuatro usa el parcial y cinco usa el avanzado. No se inventan valores ausentes.
 
-FastAPI retorna categoría, probabilidad, recomendaciones estructuradas, confianza, factores clave, nivel y versiones. Spring conserva esa estructura y la persiste. Si FastAPI falla, Spring aplica reglas deterministas y marca `origen_prediccion=fallback_reglas`; nunca presenta el fallback como inferencia ML.
+FastAPI retorna categoría, probabilidad, recomendaciones estructuradas, confianza, factores clave, nivel y versiones. Spring conserva esa estructura y la persiste. Si FastAPI falla: en desarrollo (`fallback-enabled=true`) Spring aplica reglas deterministas y marca `origen_prediccion=fallback_reglas` — nunca presenta el fallback como inferencia ML —; en producción (`fallback-enabled=false`) la API responde `503 MODELO_API_NO_DISPONIBLE` y no enmascara la caída del modelo.
 
 ## Contrato de recomendación
 

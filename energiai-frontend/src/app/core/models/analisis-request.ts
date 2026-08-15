@@ -13,6 +13,7 @@ export interface AnalisisRequest {
   consumo_mes_anterior_kwh?: number | null;
   dias_facturados?: number | null;
   usuarioId?: string;
+  nombre_o_numero_analisis?: string;
   dispositivos_alto: number;
   dispositivos_medio: number;
   dispositivos_bajo: number;

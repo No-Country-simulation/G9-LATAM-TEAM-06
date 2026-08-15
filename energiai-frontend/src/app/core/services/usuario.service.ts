@@ -1,8 +1,11 @@
 import { Injectable, signal } from '@angular/core';
+import { Subject } from 'rxjs';
 
 const CLAVE_USUARIO = 'energiai_usuario';
 export const MAXIMO_CORREO_USUARIO = 100;
-const FORMATO_CORREO = /^[^\s@]{1,64}@[^\s@.]+(?:\.[^\s@.]+)+$/;
+// Misma regex que el backend (AnalisisRequest.REGEX_USUARIO_VALIDO, sin "invitado").
+const FORMATO_CORREO =
+  /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/;
 
 export function normalizarCorreoUsuario(correo: string): string {
   return (correo ?? '').trim().toLowerCase();
@@ -19,8 +22,10 @@ export function errorCorreoUsuario(correo: string): string {
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
   private readonly usuarioSignal = signal<string>(this.cargarUsuario());
+  private readonly cambiosUsuario = new Subject<string>();
 
   readonly usuario = this.usuarioSignal.asReadonly();
+  readonly cambioUsuario = this.cambiosUsuario.asObservable();
 
   get usuarioActual(): string {
     return this.usuarioSignal() || 'invitado';
@@ -37,11 +42,13 @@ export class UsuarioService {
     } else {
       localStorage.removeItem(CLAVE_USUARIO);
     }
+    this.cambiosUsuario.next(usuario);
   }
 
   limpiar(): void {
     this.usuarioSignal.set('');
     localStorage.removeItem(CLAVE_USUARIO);
+    this.cambiosUsuario.next('');
   }
 
   private cargarUsuario(): string {

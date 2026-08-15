@@ -14,6 +14,43 @@
   <div class="card-body">
     <form [formGroup]="formulario" (ngSubmit)="enviar()">
       <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label" for="nombre_o_numero_analisis">
+            Nombre del análisis (opcional)
+          </label>
+          <input
+            id="nombre_o_numero_analisis"
+            type="text"
+            class="form-control"
+            formControlName="nombre_o_numero_analisis"
+            maxlength="120"
+            placeholder="Ej. Consumo de julio, Casa de la playa, Mi oficina"
+            [class.is-invalid]="
+              formulario.get('nombre_o_numero_analisis')?.touched &&
+              formulario.get('nombre_o_numero_analisis')?.invalid
+            "
+            [attr.aria-invalid]="
+              formulario.get('nombre_o_numero_analisis')?.invalid
+            "
+          />
+          <div class="form-text">
+            Si lo dejas vacío, se asignará automáticamente la numeración
+            correlativa de tu historial (Análisis 1, Análisis 2, …).
+          </div>
+          @if (formulario.get('nombre_o_numero_analisis')?.touched &&
+          formulario.get('nombre_o_numero_analisis')?.invalid) {
+            @if (formulario.get('nombre_o_numero_analisis')?.hasError('maxlength')) {
+              <div class="invalid-feedback d-block">
+                El nombre no puede superar 120 caracteres.
+              </div>
+            } @else {
+              <div class="invalid-feedback d-block">
+                Escribe un nombre congruente: incluye al menos una letra o un número.
+              </div>
+            }
+          }
+        </div>
+
         <div class="col-md-6 col-xl-3">
           <label class="form-label" for="consumo_kwh">Consumo Mensual (kWh):</label>
           <input

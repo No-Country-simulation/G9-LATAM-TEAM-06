@@ -7,7 +7,9 @@ import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
 import com.hackathon.energiai_api.DTOs.RecomendacionModelo;
 import com.hackathon.energiai_api.exception.ServicioAnalisisException;
 import com.hackathon.energiai_api.model.Analisis;
+import com.hackathon.energiai_api.model.Usuario;
 import com.hackathon.energiai_api.repository.AnalisisRepository;
+import com.hackathon.energiai_api.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,6 +47,9 @@ class AnalisisServiceTest {
     @Mock
     private AnalisisRepository analisisRepository;
 
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
     @Spy
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
@@ -57,7 +62,7 @@ class AnalisisServiceTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, true, 5, "Casa", 6,
                 4, null, null, null, null, null,
-                "user1", null, null, null, null
+                "user1", null, null, null, null, null
         );
 
         when(integracionDsService.obtenerRespuestaCompleta(any())).thenReturn(null);
@@ -66,6 +71,10 @@ class AnalisisServiceTest {
         );
         when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
         when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of("Test rec"));
+        when(usuarioRepository.findByEmail("user1")).thenReturn(Optional.empty());
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.incrementarContador(any())).thenReturn(1);
+        when(usuarioRepository.obtenerContadorAnalisis(any())).thenReturn(1);
         when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> {
             Analisis a = inv.getArgument(0);
             a.setId(1L);
@@ -82,7 +91,66 @@ class AnalisisServiceTest {
         assertThat(resultado.recomendaciones()).contains("Test rec");
         assertThat(resultado.nivel_analisis()).isEqualTo("parcial");
         assertThat(resultado.campos_imputados()).isEmpty();
+        assertThat(resultado.nombre_o_numero_analisis()).isEqualTo("Análisis 1");
         verify(analisisRepository).save(any(Analisis.class));
+    }
+
+    @Test
+    void analizar_sinNombre_debeAsignarNumeracionCorrelativaPorUsuario() {
+        // Given
+        AnalisisRequest request = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                4, null, null, null, null, null,
+                "persona@correo.com", null, null, null, null, null
+        );
+
+        when(integracionDsService.obtenerRespuestaCompleta(any())).thenReturn(null);
+        when(integracionDsService.fallbackPrediccion(any())).thenReturn(
+                new IntegracionDsService.PrediccionDs("Eficiente", BigDecimal.valueOf(0.80))
+        );
+        when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
+        when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of());
+        when(usuarioRepository.findByEmail("persona@correo.com")).thenReturn(Optional.empty());
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.incrementarContador(any())).thenReturn(4);
+        when(usuarioRepository.obtenerContadorAnalisis(any())).thenReturn(4);
+        when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        AnalisisResponse resultado = analisisService.analizar(request);
+
+        // Then
+        assertThat(resultado.nombre_o_numero_analisis()).isEqualTo("Análisis 4");
+        verify(usuarioRepository).incrementarContador(any());
+        verify(usuarioRepository).obtenerContadorAnalisis(any());
+    }
+
+    @Test
+    void analizar_conNombrePersonalizado_debeUsarElNombreIndicado() {
+        // Given
+        AnalisisRequest request = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                4, null, null, null, null, null,
+                "persona@correo.com", "Mi consumo de julio", null, null, null, null
+        );
+
+        when(integracionDsService.obtenerRespuestaCompleta(any())).thenReturn(null);
+        when(integracionDsService.fallbackPrediccion(any())).thenReturn(
+                new IntegracionDsService.PrediccionDs("Eficiente", BigDecimal.valueOf(0.80))
+        );
+        when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
+        when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of());
+        when(usuarioRepository.findByEmail("persona@correo.com")).thenReturn(Optional.empty());
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.incrementarContador(any())).thenReturn(0);
+        when(usuarioRepository.obtenerContadorAnalisis(any())).thenReturn(1);
+        when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        AnalisisResponse resultado = analisisService.analizar(request);
+
+        // Then
+        assertThat(resultado.nombre_o_numero_analisis()).isEqualTo("Mi consumo de julio");
     }
 
     @Test
@@ -91,7 +159,7 @@ class AnalisisServiceTest {
         AnalisisRequest request = new AnalisisRequest(
                 400, true, 8, "Casa", 10,
                 4, 120.0f, 3, 6.0f, 380.0f, 30,
-                "user1", null, null, null, null
+                "user1", null, null, null, null, null
         );
 
         ModeloApiResponse modeloResponse = new ModeloApiResponse(
@@ -103,6 +171,7 @@ class AnalisisServiceTest {
         when(calculoService.calcularCostoMensual(400)).thenReturn(BigDecimal.valueOf(300.00));
         when(recomendacionService.generarRecomendaciones(any(), eq(modeloResponse)))
                 .thenReturn(List.of("Rec del modelo"));
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
         when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> {
             Analisis a = inv.getArgument(0);
             a.setId(1L);
@@ -116,6 +185,61 @@ class AnalisisServiceTest {
         // Then
         assertThat(resultado.categoria()).isEqualTo("Ineficiente");
         assertThat(resultado.recomendaciones()).contains("Rec del modelo");
+    }
+
+    @Test
+    void analizar_conProbabilidadDelModeloFueraDeRango_debeAcotarlaAlUno() {
+        // Given
+        AnalisisRequest request = new AnalisisRequest(
+                400, true, 8, "Casa", 10,
+                4, 120.0f, 3, 6.0f, 380.0f, 30,
+                "user1", null, null, null, null, null
+        );
+
+        ModeloApiResponse modeloResponse = new ModeloApiResponse(
+                "Ineficiente", 1.75, "avanzado", List.of(), List.of()
+        );
+
+        when(integracionDsService.obtenerRespuestaCompleta(any())).thenReturn(modeloResponse);
+        when(calculoService.calcularCostoMensual(400)).thenReturn(BigDecimal.valueOf(300.00));
+        when(recomendacionService.generarRecomendaciones(any(), eq(modeloResponse))).thenReturn(List.of());
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        AnalisisResponse resultado = analisisService.analizar(request);
+
+        // Then
+        assertThat(resultado.probabilidad()).isEqualByComparingTo("1.00");
+    }
+
+    @Test
+    void analizar_sinNombre_debeConsumirElContadorCorrelativo() {
+        // Given
+        AnalisisRequest request = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                4, null, null, null, null, null,
+                "user1", null, null, null, null, null
+        );
+
+        when(integracionDsService.obtenerRespuestaCompleta(any())).thenReturn(null);
+        when(integracionDsService.fallbackPrediccion(any())).thenReturn(
+                new IntegracionDsService.PrediccionDs("Moderado", BigDecimal.valueOf(0.60))
+        );
+        when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
+        when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of());
+        when(usuarioRepository.findByEmail("user1")).thenReturn(Optional.empty());
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.obtenerContadorAnalisis(any())).thenReturn(7);
+        when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        AnalisisResponse resultado = analisisService.analizar(request);
+
+        // Then
+        assertThat(resultado.nombre_o_numero_analisis()).isEqualTo("Análisis 7");
+        verify(usuarioRepository).incrementarContador(any());
+        verify(usuarioRepository).obtenerContadorAnalisis(any());
     }
 
     @Test
@@ -161,6 +285,7 @@ class AnalisisServiceTest {
         Analisis analisis = Analisis.builder()
                 .id(1L)
                 .usuarioId("user1")
+                .nombreONumeroAnalisis("Análisis 1")
                 .consumoKwh(250)
                 .usoHorarioPico(true)
                 .cantidadEquipos(5)
@@ -186,6 +311,7 @@ class AnalisisServiceTest {
         assertThat(hist.usuario()).isEqualTo("user1");
         assertThat(hist.consumoKwh()).isEqualTo(250);
         assertThat(hist.categoria()).isEqualTo("Moderado");
+        assertThat(hist.nombre_o_numero_analisis()).isEqualTo("Análisis 1");
     }
 
     @Test

@@ -29,7 +29,9 @@
   line-height: 3.25rem;
   padding: 0 0.9rem 0 3.6rem;
   border-radius: 0.7rem;
-  transition: background-color 160ms ease, color 160ms ease;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
 
   .vsm-title {
     font-size: 0.94rem;
@@ -50,16 +52,22 @@
     color: var(--color-icono) !important;
     font-size: 20px;
     opacity: 1;
-    transition: box-shadow 160ms ease, transform 160ms ease;
+    transition:
+      box-shadow 160ms ease,
+      transform 160ms ease,
+      left 300ms ease,
+      margin-left 300ms ease;
   }
 
   &:hover .vsm-icon {
-    box-shadow: 0 0.25rem 0.55rem color-mix(in srgb, var(--color-icono) 20%, transparent);
+    box-shadow: 0 0.25rem 0.55rem
+      color-mix(in srgb, var(--color-icono) 20%, transparent);
     transform: translateY(-1px) scale(1.03);
   }
 
   &.active-item .vsm-icon {
-    box-shadow: 0 0.3rem 0.65rem color-mix(in srgb, var(--color-icono) 24%, transparent);
+    box-shadow: 0 0.3rem 0.65rem
+      color-mix(in srgb, var(--color-icono) 24%, transparent);
   }
 }
 
@@ -96,4 +104,54 @@
 .icono-simulador {
   --color-icono: #c24170;
   --fondo-icono: #fff0f5;
+}
+
+// Al colapsar el sidebar (closed-sidebar), la regla del theme (left:50%) empata
+// en especificidad con el icono custom (left:7px) y pierde por orden, dejando
+// los iconos pegados a la izquierda. Con :host-context + !important se fuerzan
+// centrados en el estado colapsado y alineados (left:7px) al expandirlo.
+:host-context(.closed-sidebar) .vsm-icon {
+  left: 50% !important;
+  margin-left: -20px !important;
+}
+
+:host-context(.closed-sidebar.closed-sidebar-open) .vsm-icon {
+  left: 7px !important;
+  margin-left: 0 !important;
+}
+
+// Apagamos el scroll y forzamos el contenedor del sidebar cuando está cerrado
+:host-context(.closed-sidebar) {
+  overflow: hidden !important;
+
+  .app-sidebar-content,
+  .app-sidebar-scroll,
+  .sidebar-scrollbar,
+  .v-sidebar-menu,
+  .vsm-list {
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .vsm-link {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+
+    &.active-item {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .vsm-icon {
+      left: 50% !important;
+      margin-left: -19px !important;
+      width: 38px !important;
+      height: 38px !important;
+    }
+  }
 }

@@ -41,7 +41,10 @@
     @if (historial().length) {
       <div class="acciones-seguimiento">
         @if (historial().length >= 2) {
-          <a class="btn accion-inicio accion-principal" routerLink="/comparacion">
+          <a
+            class="btn accion-inicio accion-principal"
+            routerLink="/comparacion"
+          >
             <i class="pe-7s-graph2" aria-hidden="true"></i>
             Comparar períodos
           </a>
@@ -72,7 +75,11 @@
       <div>
         <h3>No fue posible actualizar el dashboard</h3>
         <p>{{ errorSignal() }}</p>
-        <button type="button" class="btn accion-inicio accion-principal" (click)="cargarDashboard()">
+        <button
+          type="button"
+          class="btn accion-inicio accion-principal"
+          (click)="cargarDashboard()"
+        >
           <i class="pe-7s-refresh-2" aria-hidden="true"></i>
           Intentar nuevamente
         </button>
@@ -89,7 +96,11 @@
           Registra tu consumo para activar indicadores, tendencias y alertas
           personalizadas.
         </p>
-        <button type="button" class="btn accion-inicio accion-principal" (click)="irAAnalisisGeneral()">
+        <button
+          type="button"
+          class="btn accion-inicio accion-principal"
+          (click)="irAAnalisisGeneral()"
+        >
           <i class="fas fa-plus" aria-hidden="true"></i>
           Crear mi primer análisis
         </button>
@@ -116,7 +127,10 @@
           </span>
           <div>
             <span class="metrica-etiqueta">Consumo promedio</span>
-            <strong>{{ formatearNumero(promedioConsumo(), 0) }} <small>kWh</small></strong>
+            <strong
+              >{{ formatearNumero(promedioConsumo(), 0) }}
+              <small>kWh</small></strong
+            >
             <small>Últimos {{ cantidadMuestra() }} análisis</small>
           </div>
         </article>
@@ -183,7 +197,7 @@
 
     <div class="row paneles-dashboard">
       <div class="col-xl-8 mb-3">
-        <article class="panel-dashboard">
+        <article class="panel-dashboard-evolucion">
           <div class="panel-cabecera">
             <div>
               <span class="sobrelinea">Evolución reciente</span>
@@ -192,44 +206,57 @@
             </div>
             <span class="indicador-variacion {{ claseVariacion() }}">
               <i
-                class="{{ (variacionReciente() ?? 0) > 0 ? 'pe-7s-up-arrow' : 'pe-7s-down-arrow' }}"
+                class="{{
+                  (variacionReciente() ?? 0) > 0
+                    ? 'pe-7s-up-arrow'
+                    : 'pe-7s-down-arrow'
+                }}"
                 aria-hidden="true"
               ></i>
               {{ formatearVariacion() }}
             </span>
           </div>
           <div class="grafica-contenedor">
-            <div class="eje-y" aria-hidden="true">
+            <div class="eje-y">
               <span>Mayor</span>
               <span>Menor</span>
             </div>
             <svg
               class="grafica-linea"
-              viewBox="0 0 560 180"
+              viewBox="0 0 560 140"
               preserveAspectRatio="none"
               role="img"
               [attr.aria-label]="descripcionGrafica()"
             >
-              <line x1="0" y1="15" x2="560" y2="15" class="linea-guia" />
-              <line x1="0" y1="90" x2="560" y2="90" class="linea-guia" />
-              <line x1="0" y1="165" x2="560" y2="165" class="linea-guia" />
-              <polyline [attr.points]="puntosGrafica()" class="linea-consumo" />
+              <line x1="0" y1="15" x2="560" y2="15" class="linea-guia"></line>
+              <line x1="0" y1="70" x2="560" y2="70" class="linea-guia"></line>
+              <line x1="0" y1="125" x2="560" y2="125" class="linea-guia"></line>
+              <polyline
+                [attr.points]="puntosGrafica()"
+                class="linea-consumo"
+              ></polyline>
             </svg>
           </div>
           <div class="leyenda-grafica">
             <span><i aria-hidden="true"></i> Consumo registrado</span>
-            <span>Se muestran hasta {{ registrosGrafica().length }} análisis recientes</span>
+            <span
+              >Se muestran hasta {{ registrosGrafica().length }} análisis
+              recientes</span
+            >
           </div>
           <ol class="visually-hidden">
             @for (registro of registrosGrafica(); track registro.id) {
-              <li>{{ fechaCorta(registro.creadoEn) }}: {{ registro.consumoKwh }} kWh</li>
+              <li>
+                {{ fechaCorta(registro.creadoEn) }}:
+                {{ registro.consumoKwh }} kWh
+              </li>
             }
           </ol>
         </article>
       </div>
 
       <div class="col-xl-4 mb-3">
-        <article class="panel-dashboard">
+        <article class="panel-dashboard-perfil">
           <div class="panel-cabecera">
             <div>
               <span class="sobrelinea">Perfil de eficiencia</span>
@@ -257,7 +284,10 @@
                     [style.width.%]="item.porcentaje"
                   ></span>
                 </div>
-                <small>{{ formatearNumero(item.porcentaje, 0) }}% de la muestra</small>
+                <small
+                  >{{ formatearNumero(item.porcentaje, 0) }}% de la
+                  muestra</small
+                >
               </div>
             }
           </div>

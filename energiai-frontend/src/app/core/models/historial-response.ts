@@ -18,4 +18,5 @@ export interface HistorialResponse {
   origen_prediccion?: string;
   modelo_version?: string;
   advertencias?: string[];
+  nombre_o_numero_analisis?: string;
 }

@@ -15,6 +15,7 @@ public record AnalisisResponse(
         List<RecomendacionModelo> recomendaciones_detalle,
         String origen_prediccion,
         String modelo_version,
-        List<String> advertencias
+        List<String> advertencias,
+        String nombre_o_numero_analisis
 ) {
 }

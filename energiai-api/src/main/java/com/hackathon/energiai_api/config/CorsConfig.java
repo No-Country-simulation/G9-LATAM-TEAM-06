@@ -20,7 +20,7 @@ public class CorsConfig implements WebMvcConfigurer {
         List<String> origins = parseOrigins(allowedOrigins);
         registry.addMapping("/analisis-energetico/**")
                 .allowedOrigins(origins.toArray(new String[0]))
-                .allowedMethods("GET", "POST", "OPTIONS")
+                .allowedMethods("GET", "POST", "DELETE", "OPTIONS")
                 .allowedHeaders("Content-Type", "Accept", "X-API-KEY")
                 .maxAge(3600)
                 .allowCredentials(false);

@@ -8,6 +8,7 @@ import { PageTitleComponent } from '../../layout/page-title';
 
 interface ItemHistorial {
   id: number;
+  nombre: string;
   fecha: string;
   categoria: string;
   consumoKwh: number;
@@ -39,9 +40,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
   readonly usuarioService = inject(UsuarioService);
   private readonly analisisService = inject(AnalisisService);
 
-  get usuarioActual(): string {
-    return this.usuarioService.usuarioActual;
-  }
+  readonly usuarioActual = computed(() => this.usuarioService.usuarioActual);
 
   readonly vacio = computed(
     () => this.historial().length === 0 && !this.cargando(),
@@ -49,9 +48,17 @@ export class HistorialComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.ocultoLocalmente.set(
-      this.analisisService.historialOcultoLocalmente(this.usuarioActual),
+      this.analisisService.historialOcultoLocalmente(this.usuarioActual()),
     );
     this.cargarHistorial(0, false);
+    this.usuarioService.cambioUsuario
+      .pipe(takeUntil(this.destruir$))
+      .subscribe(() => {
+        this.ocultoLocalmente.set(
+          this.analisisService.historialOcultoLocalmente(this.usuarioActual()),
+        );
+        this.cargarHistorial(0, false);
+      });
   }
 
   ngOnDestroy(): void {
@@ -65,7 +72,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
     this.errorSignal.set('');
 
     this.suscripcionActual = this.analisisService
-      .listarPorUsuario(this.usuarioActual, null, page, TAMANO_PAGINA)
+      .listarPorUsuario(this.usuarioActual(), null, page, TAMANO_PAGINA)
       .pipe(
         takeUntil(this.destruir$),
         tap((data) => {
@@ -98,14 +105,14 @@ export class HistorialComponent implements OnInit, OnDestroy {
 
   ocultarHistorial(): void {
     const confirmar = window.confirm(
-      `¿Deseas ocultar en este navegador el historial de ${this.usuarioActual}? Los registros seguirán guardados en la base de datos.`,
+      `¿Deseas ocultar en este navegador el historial de ${this.usuarioActual()}? Los registros seguirán guardados en la base de datos.`,
     );
     if (!confirmar) {
       return;
     }
 
     const ultimoId = Math.max(...this.historial().map((item) => item.id));
-    this.analisisService.ocultarHistorialLocal(this.usuarioActual, ultimoId);
+    this.analisisService.ocultarHistorialLocal(this.usuarioActual(), ultimoId);
     this.historial.set([]);
     this.pagina.set(0);
     this.tieneMas.set(false);
@@ -113,7 +120,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
   }
 
   restaurarHistorial(): void {
-    this.analisisService.restaurarHistorialLocal(this.usuarioActual);
+    this.analisisService.restaurarHistorialLocal(this.usuarioActual());
     this.ocultoLocalmente.set(false);
     this.cargarHistorial(0, false);
   }
@@ -121,6 +128,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
   private mapearItem(item: HistorialResponse): ItemHistorial {
     return {
       id: item.id,
+      nombre: item.nombre_o_numero_analisis ?? `Análisis #${item.id}`,
       fecha: new Date(item.creadoEn).toLocaleString(),
       categoria: item.categoria,
       consumoKwh: item.consumoKwh,
@@ -132,7 +140,8 @@ export class HistorialComponent implements OnInit, OnDestroy {
   }
 
   formatearProbabilidad(probabilidad: number): string {
-    return `${(Number(probabilidad) * 100).toFixed(0)}%`;
+    const valor = Number(probabilidad);
+    return Number.isFinite(valor) ? `${Math.round(valor * 100)}%` : '—';
   }
 
   formatearCosto(costo: number): string {

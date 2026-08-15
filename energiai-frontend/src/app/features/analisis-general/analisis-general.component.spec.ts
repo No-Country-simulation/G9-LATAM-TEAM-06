@@ -165,4 +165,63 @@ describe('AnalisisGeneralComponent', () => {
     expect(componente.resultado()?.categoria).toBe('Consumo Ineficiente');
     http.verify();
   });
+
+  it('envía el nombre opcional recortado y lo omite cuando queda vacío', () => {
+    const http = TestBed.inject(HttpTestingController);
+
+    componente.formulario.get('nombre_o_numero_analisis')?.setValue('  Mi consumo de julio  ');
+    componente.enviar();
+    const conNombre = http.expectOne((req) => req.method === 'POST');
+    expect(conNombre.request.body.nombre_o_numero_analisis).toBe('Mi consumo de julio');
+    conNombre.flush({
+      categoria: 'Eficiente',
+      probabilidad: 0.8,
+      recomendaciones: [],
+      costo_estimado_mensual: 150,
+      nivel_analisis: 'basico',
+      campos_imputados: [],
+    });
+
+    componente.formulario.get('nombre_o_numero_analisis')?.setValue('   ');
+    componente.enviar();
+    const sinNombre = http.expectOne((req) => req.method === 'POST');
+    expect(sinNombre.request.body.nombre_o_numero_analisis).toBeUndefined();
+    sinNombre.flush({
+      categoria: 'Eficiente',
+      probabilidad: 0.8,
+      recomendaciones: [],
+      costo_estimado_mensual: 150,
+      nivel_analisis: 'basico',
+      campos_imputados: [],
+    });
+
+    http.verify();
+  });
+
+  it('rechaza un nombre compuesto solo de puntos, símbolos o espacios', () => {
+    const campo = componente.formulario.get('nombre_o_numero_analisis');
+
+    campo?.setValue('...!!! ###');
+    expect(campo?.invalid).toBeTrue();
+    expect(campo?.hasError('nombreIncongruente')).toBeTrue();
+
+    expect(componente.formulario.invalid).toBeTrue();
+  });
+
+  it('acepta un nombre vacío para activar la auto-numeración', () => {
+    const campo = componente.formulario.get('nombre_o_numero_analisis');
+
+    campo?.setValue('   ');
+    expect(campo?.valid).toBeTrue();
+  });
+
+  it('acepta nombres con letras o números, incluidos acentos', () => {
+    const campo = componente.formulario.get('nombre_o_numero_analisis');
+
+    campo?.setValue('Mi casa 2026');
+    expect(campo?.valid).toBeTrue();
+
+    campo?.setValue('Ánálisis de julio');
+    expect(campo?.valid).toBeTrue();
+  });
 });

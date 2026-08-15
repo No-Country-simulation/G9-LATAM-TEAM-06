@@ -29,7 +29,7 @@ class RecomendacionServiceTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, true, 5, "Casa", 6,
                 null, null, null, null, null, null,
-                "user1", null, null, null, null
+                "user1", null, null, null, null, null
         );
 
         List<String> resultado = recomendacionService.generarRecomendaciones(request);
@@ -42,7 +42,7 @@ class RecomendacionServiceTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, false, 10, "Casa", 6,
                 null, null, null, null, null, null,
-                "user1", null, 2, 3, 5
+                "user1", null, null, 2, 3, 5
         );
 
         List<String> resultado = recomendacionService.generarRecomendaciones(request);
@@ -59,7 +59,7 @@ class RecomendacionServiceTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, false, 5, "Casa", 8,
                 null, null, null, null, null, null,
-                "user1", null, null, null, null
+                "user1", null, null, null, null, null
         );
 
         List<String> resultado = recomendacionService.generarRecomendaciones(request);
@@ -72,7 +72,7 @@ class RecomendacionServiceTest {
         AnalisisRequest request = new AnalisisRequest(
                 200, false, 3, "Casa", 2,
                 null, null, null, null, null, null,
-                "user1", null, null, null, null
+                "user1", null, null, null, null, null
         );
 
         List<String> resultado = recomendacionService.generarRecomendaciones(request);
@@ -85,7 +85,7 @@ class RecomendacionServiceTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, true, 5, "Casa", 6,
                 null, null, null, null, null, null,
-                "user1", null, null, null, null
+                "user1", null, null, null, null, null
         );
 
         ModeloApiResponse modeloResponse = new ModeloApiResponse(
@@ -106,7 +106,7 @@ class RecomendacionServiceTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, false, 10, "Casa", 2,
                 null, null, 0, null, null, null,
-                "user1", null, 0, 4, 6
+                "user1", null, null, 0, 4, 6
         );
 
         List<String> resultado = recomendacionService.generarRecomendaciones(request);
@@ -121,7 +121,7 @@ class RecomendacionServiceTest {
         AnalisisRequest request = new AnalisisRequest(
                 250, false, 5, "Casa", 2,
                 null, null, null, null, null, null,
-                "user1@example.com", null, 1, 2, 2
+                "user1@example.com", null, null, 1, 2, 2
         );
         ModeloApiResponse modeloResponse = new ModeloApiResponse(
                 "Eficiente",

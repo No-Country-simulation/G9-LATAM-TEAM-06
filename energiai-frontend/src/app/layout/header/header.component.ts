@@ -59,7 +59,7 @@ import { ThemeOptions } from '../../core/services/theme-options';
     <ng-template #menuUsuario let-idInput="idInput">
       <div class="header-btn-lg d-flex align-items-center dropdown">
         <div class="widget-content-left me-2">
-          <div class="widget-heading text-capitalize">
+          <div class="widget-heading">
             {{ usuarioService.usuario() || 'Invitado' }}
           </div>
           <div class="widget-subheading">Sesión activa</div>
@@ -78,7 +78,7 @@ import { ThemeOptions } from '../../core/services/theme-options';
         <div class="dropdown-menu dropdown-menu-end dropdown-menu-sm">
           <div class="dropdown-header text-center">
             <span class="usuario-avatar avatar-lg mb-2">{{ inicial() }}</span>
-            <h6 class="mb-0 text-capitalize">
+            <h6 class="mb-0">
               {{ usuarioService.usuario() || 'Modo Invitado' }}
             </h6>
           </div>

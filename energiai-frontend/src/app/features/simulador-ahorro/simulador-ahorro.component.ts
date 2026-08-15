@@ -36,7 +36,12 @@ export class SimuladorAhorroComponent implements OnInit, OnDestroy {
   readonly costoProyectado = computed(() => this.consumoProyectado() * this.tarifa());
   readonly ahorroMensual = computed(() => Math.max(0, Number(this.base()?.costo_estimado_mensual ?? 0) - this.costoProyectado()));
   readonly ahorroAnual = computed(() => this.ahorroMensual() * 12);
-  ngOnInit(): void { this.cargarHistorial(); }
+  ngOnInit(): void {
+    this.cargarHistorial();
+    this.usuarioService.cambioUsuario
+      .pipe(takeUntil(this.destruir$))
+      .subscribe(() => this.cargarHistorial());
+  }
   ngOnDestroy(): void { this.destruir$.next(); this.destruir$.complete(); }
 
   cargarHistorial(): void {
@@ -66,7 +71,7 @@ export class SimuladorAhorroComponent implements OnInit, OnDestroy {
     this.reduccionConsumo.set(15);
   }
   anchoConsumo(valor: number): number { const maximo = Math.max(Number(this.base()?.consumoKwh ?? 0), 1); return Math.max(3, Math.min(100, valor / maximo * 100)); }
-  etiquetaAnalisis(item: HistorialResponse): string { return `#${item.id} · ${this.formatearFecha(item.creadoEn)} · ${this.formatearNumero(item.consumoKwh, 0)} kWh · ${item.categoria}`; }
+  etiquetaAnalisis(item: HistorialResponse): string { return `${item.nombre_o_numero_analisis ?? `Análisis #${item.id}`} · ${this.formatearFecha(item.creadoEn)} · ${this.formatearNumero(item.consumoKwh, 0)} kWh · ${item.categoria}`; }
   formatearFecha(fecha: string): string { return new Intl.DateTimeFormat('es-MX', { day:'2-digit', month:'short', year:'numeric' }).format(new Date(fecha)); }
   formatearNumero(valor: number, decimales = 1): string { return Number(valor ?? 0).toLocaleString('es-MX', { minimumFractionDigits:decimales, maximumFractionDigits:decimales }); }
 

@@ -166,6 +166,9 @@ export class ComparacionPeriodosComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarHistorial();
+    this.usuarioService.cambioUsuario
+      .pipe(takeUntil(this.destruir$))
+      .subscribe(() => this.cargarHistorial());
   }
 
   ngOnDestroy(): void {
@@ -224,7 +227,11 @@ export class ComparacionPeriodosComponent implements OnInit, OnDestroy {
   }
 
   etiquetaPeriodo(item: HistorialResponse): string {
-    return `#${item.id} · ${this.formatearFecha(item.creadoEn)} · ${this.formatearNumero(item.consumoKwh, 0)} kWh · ${item.categoria}`;
+    return `${this.nombreAnalisis(item)} · ${this.formatearFecha(item.creadoEn)} · ${this.formatearNumero(item.consumoKwh, 0)} kWh · ${item.categoria}`;
+  }
+
+  nombreAnalisis(item: HistorialResponse): string {
+    return item.nombre_o_numero_analisis ?? `Análisis #${item.id}`;
   }
 
   formatearFecha(fecha: string): string {

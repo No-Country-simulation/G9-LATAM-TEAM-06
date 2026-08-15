@@ -15,8 +15,7 @@ services:
   modelo-api:
     build: ./modelo-api
     container_name: modelo_energia_api
-    ports:
-      - "8000:8000"
+    # Puerto NO publicado: solo accesible internamente por energiai-api (red energiai_net).
     networks:
       - energiai_net
     healthcheck:
@@ -45,7 +44,7 @@ services:
       - MODELO_API_FALLBACK_ENABLED=false
       - API_KEY_SECRET_FILE=/run/secrets/api_key_secret
       - DB_PASSWORD_FILE=/run/secrets/db_password
-      - CORS_ALLOWED_ORIGINS=https://tudominio.com,https://www.tudominio.com
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
     networks:
       - energiai_net
     depends_on:

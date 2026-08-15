@@ -54,7 +54,12 @@ export class RankingEficienciaComponent implements OnInit, OnDestroy {
 
   readonly mejorRegistro = computed(() => this.ranking()[0] ?? null);
 
-  ngOnInit(): void { this.cargarRanking(); }
+  ngOnInit(): void {
+    this.cargarRanking();
+    this.usuarioService.cambioUsuario
+      .pipe(takeUntil(this.destruir$))
+      .subscribe(() => this.cargarRanking());
+  }
   ngOnDestroy(): void { this.destruir$.next(); this.destruir$.complete(); }
 
   cargarRanking(): void {

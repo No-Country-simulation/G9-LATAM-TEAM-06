@@ -45,8 +45,11 @@
   line-height: 1.1;
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 160ms ease, border-color 160ms ease,
-    box-shadow 160ms ease, transform 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 
   i {
     flex: 0 0 auto;
@@ -140,8 +143,12 @@ label.accion-ui {
 .presets button {
   min-height: 34px;
   font-weight: 650;
-  transition: background-color 150ms ease, border-color 150ms ease,
-    color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
 
   &:hover,
   &:focus-visible {
@@ -602,7 +609,7 @@ app-simulador-ahorro {
   .btn:focus-visible,
   a:focus-visible,
   button:focus-visible,
-  [role='button']:focus-visible {
+  [role="button"]:focus-visible {
     outline: 3px solid rgba(67, 211, 148, 0.32);
     outline-offset: 2px;
   }
@@ -629,7 +636,11 @@ app-simulador-ahorro {
   .hero-inicio {
     border: 1px solid rgba(74, 222, 128, 0.26);
     background:
-      radial-gradient(circle at 86% 18%, rgba(110, 231, 183, 0.16), transparent 24%),
+      radial-gradient(
+        circle at 86% 18%,
+        rgba(110, 231, 183, 0.16),
+        transparent 24%
+      ),
       linear-gradient(135deg, #0b3d28 0%, #10613b 48%, #159a57 100%);
     box-shadow: 0 20px 44px rgba(0, 0, 0, 0.28);
   }
@@ -656,7 +667,8 @@ app-simulador-ahorro {
   }
 
   .tarjeta-metrica,
-  .panel-dashboard,
+  .panel-dashboard-evolucion,
+  .panel-dashboard-perfil,
   .estado-panel {
     border-color: var(--energiai-borde);
     background: linear-gradient(145deg, #1b2228, #171d22);
