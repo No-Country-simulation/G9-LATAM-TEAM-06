@@ -8,6 +8,7 @@ import { ComparacionPeriodosComponent } from './features/comparacion-periodos/co
 import { ProcesamientoCsvComponent } from './features/procesamiento-csv/procesamiento-csv.component';
 import { RankingEficienciaComponent } from './features/ranking-eficiencia/ranking-eficiencia.component';
 import { SimuladorAhorroComponent } from './features/simulador-ahorro/simulador-ahorro.component';
+import { VerificarCorreoComponent } from './features/verificar-correo/verificar-correo.component';
 
 export const routes: Routes = [
   {
@@ -21,6 +22,7 @@ export const routes: Routes = [
       { path: 'procesamiento-csv', component: ProcesamientoCsvComponent },
       { path: 'ranking', component: RankingEficienciaComponent },
       { path: 'simulador', component: SimuladorAhorroComponent },
+      { path: 'verificar-correo', component: VerificarCorreoComponent },
     ],
   },
   { path: '**', redirectTo: '' },

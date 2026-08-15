@@ -4,18 +4,6 @@
   icon="pe-7s-notebook"
 >
   <div class="acciones-historial d-flex gap-2">
-    @if (ocultoLocalmente()) {
-      <button
-        type="button"
-        class="btn accion-historial accion-restaurar"
-        (click)="restaurarHistorial()"
-        [disabled]="cargando()"
-        title="Volver a mostrar los análisis conservados en la base de datos"
-      >
-        <i class="pe-7s-look"></i>
-        Restaurar historial
-      </button>
-    }
     <a
       class="btn accion-historial accion-comparar"
       routerLink="/comparacion"
@@ -29,13 +17,13 @@
     </a>
     <button
       type="button"
-      class="btn accion-historial accion-ocultar"
-      (click)="ocultarHistorial()"
-      [disabled]="cargando() || historial().length === 0"
-      title="Ocultar los análisis en este navegador sin borrarlos de la base de datos"
+      class="btn accion-historial accion-borrar"
+      (click)="borrarHistorial()"
+      [disabled]="borrando() || historial().length === 0"
+      title="Borrar definitivamente los análisis de esta sesión"
     >
-      <i class="pe-7s-close-circle"></i>
-      Ocultar historial
+      <i class="pe-7s-trash"></i>
+      {{ borrando() ? 'Borrando...' : 'Borrar historial' }}
     </button>
     <button
       type="button"
@@ -50,13 +38,6 @@
   </div>
 </app-page-title>
 
-@if (ocultoLocalmente()) {
-  <div class="alert alert-info d-flex align-items-center gap-2 mb-3">
-    <i class="pe-7s-info"></i>
-    <span>Los análisis anteriores están ocultos solamente en este navegador. Continúan guardados en la base de datos.</span>
-  </div>
-}
-
 @if (errorSignal()) {
   <div class="alert alert-danger d-flex align-items-center gap-2 mb-3">
     <i class="pe-7s-close-circle"></i>
@@ -70,12 +51,8 @@
       <i class="pe-7s-rocket text-secondary" style="font-size: 40px"></i>
       <h4 class="mt-3">No hay análisis guardados</h4>
       <p class="text-muted mb-4">
-        @if (ocultoLocalmente()) {
-          Puedes restaurar el historial anterior o realizar un análisis nuevo.
-        } @else {
-          Realiza tu primer cálculo en el apartado de <b>Análisis General</b>
-          para que aparezca aquí.
-        }
+        Realiza tu primer cálculo en el apartado de <b>Análisis General</b>
+        para que aparezca aquí.
       </p>
       <a class="btn btn-primary btn-shadow" routerLink="/analisis-general">
         <i class="pe-7s-edit me-2"></i>

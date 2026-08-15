@@ -25,6 +25,7 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api-docs/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/analisis-energetico/**").hasRole("API_CLIENTE")
+                .requestMatchers("/verificacion/**").hasRole("API_CLIENTE")
                 .anyRequest().denyAll()
             )
             

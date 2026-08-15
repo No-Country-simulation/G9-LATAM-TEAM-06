@@ -60,4 +60,33 @@ describe('UsuarioService', () => {
     expect(errorCorreoUsuario('ñandú@dominio.com')).not.toBe('');
     expect(errorCorreoUsuario('alguien@sub.dominio.com')).toBe('');
   });
+
+  it('marca el correo como verificado y persiste el estado', () => {
+    const servicio = TestBed.inject(UsuarioService);
+    expect(servicio.esVerificado()).toBeFalse();
+    servicio.marcarVerificado('Persona@Ejemplo.COM');
+    expect(servicio.esVerificado()).toBeTrue();
+    expect(servicio.usuarioActual).toBe('persona@ejemplo.com');
+    expect(localStorage.getItem('energiai_usuario_verificado')).toBe('1');
+  });
+
+  it('recupera el estado verificado al volver a crear el servicio', () => {
+    const servicio = TestBed.inject(UsuarioService);
+    servicio.marcarVerificado('persona@ejemplo.com');
+    TestBed.resetTestingModule();
+    const nuevo = TestBed.inject(UsuarioService);
+    expect(nuevo.esVerificado()).toBeTrue();
+    expect(nuevo.usuarioActual).toBe('persona@ejemplo.com');
+  });
+
+  it('al limpiar vuelve a invitado y conserva el historial local', () => {
+    const servicio = TestBed.inject(UsuarioService);
+    servicio.marcarVerificado('persona@ejemplo.com');
+    localStorage.setItem('energiai_historial_invitado', '[{"id":1}]');
+    servicio.limpiar();
+    expect(servicio.esVerificado()).toBeFalse();
+    expect(servicio.usuarioActual).toBe('invitado');
+    expect(localStorage.getItem('energiai_usuario_verificado')).toBeNull();
+    expect(localStorage.getItem('energiai_historial_invitado')).toBe('[{"id":1}]');
+  });
 });

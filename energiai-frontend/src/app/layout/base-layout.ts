@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 import { ThemeOptions } from '../core/services/theme-options';
+import { SesionService } from '../core/services/sesion.service';
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { FooterComponent } from './footer/footer.component';
@@ -41,8 +42,13 @@ import { FooterComponent } from './footer/footer.component';
   `,
   styles: [],
 })
-export class BaseLayoutComponent {
+export class BaseLayoutComponent implements OnInit {
   readonly globals = inject(ThemeOptions);
+  private readonly sesionService = inject(SesionService);
+
+  ngOnInit(): void {
+    this.sesionService.iniciar();
+  }
 
   cerrarMenuMovil(): void {
     this.globals.toggleSidebarMobile.set(false);

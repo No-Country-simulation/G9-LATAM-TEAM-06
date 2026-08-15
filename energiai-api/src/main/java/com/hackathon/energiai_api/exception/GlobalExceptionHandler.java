@@ -103,6 +103,18 @@ public class GlobalExceptionHandler {
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
         }
 
+        @ExceptionHandler(VerificacionCorreoException.class)
+        public ResponseEntity<Map<String, Object>> handleVerificacionCorreoException(VerificacionCorreoException ex) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("estado", "error");
+                response.put("codigo", ex.getCodigo());
+                response.put("mensaje", ex.getMessage());
+
+                logger.warn("Error en verificación de correo [{}]: {}", ex.getCodigo(), ex.getMessage());
+
+                return ResponseEntity.status(ex.getEstado()).body(response);
+        }
+
         @ExceptionHandler(Exception.class)
         public ResponseEntity<Map<String, Object>> handlerGenericException(Exception ex) {
                 Map<String, Object> response = new HashMap<>();

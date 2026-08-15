@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { HistorialResponse } from '../../core/models/historial-response';
+import { UsuarioService } from '../../core/services/usuario.service';
 import { RankingEficienciaComponent } from './ranking-eficiencia.component';
 
 describe('RankingEficienciaComponent', () => {
@@ -11,11 +12,13 @@ describe('RankingEficienciaComponent', () => {
   let http: HttpTestingController;
 
   beforeEach(async () => {
-    localStorage.removeItem('energiai_usuario');
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [RankingEficienciaComponent],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
+    // Usuario verificado para ejercitar la consulta al servidor.
+    TestBed.inject(UsuarioService).marcarVerificado('persona@ejemplo.com');
     fixture = TestBed.createComponent(RankingEficienciaComponent);
     componente = fixture.componentInstance;
     http = TestBed.inject(HttpTestingController);

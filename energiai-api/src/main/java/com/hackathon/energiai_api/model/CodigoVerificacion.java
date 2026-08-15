@@ -15,29 +15,38 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "codigos_verificacion")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Usuario {
+public class CodigoVerificacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email", nullable = false, length = 100, unique = true)
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
 
-    @Column(name = "creado_en", insertable = false, updatable = false)
+    @Column(name = "codigo_hash", nullable = false, length = 64)
+    private String codigoHash;
+
+    @Column(name = "ip_origen", nullable = false, length = 45)
+    private String ipOrigen;
+
+    @Column(name = "creado_en", nullable = false)
     private LocalDateTime creadoEn;
 
-    @Column(name = "contador_analisis", nullable = false)
-    @Builder.Default
-    private Integer contadorAnalisis = 0;
+    @Column(name = "expira_en", nullable = false)
+    private LocalDateTime expiraEn;
 
-    @Column(name = "verificado", nullable = false)
+    @Column(name = "intentos", nullable = false)
     @Builder.Default
-    private Boolean verificado = false;
+    private Integer intentos = 0;
+
+    @Column(name = "usado", nullable = false)
+    @Builder.Default
+    private Boolean usado = false;
 }

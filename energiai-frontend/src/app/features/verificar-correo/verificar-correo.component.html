@@ -1,0 +1,106 @@
+<app-page-title
+  heading="Acceder con correo"
+  subheading="Te enviaremos un código de verificación para confirmar tu correo."
+  icon="pe-7s-mail"
+>
+</app-page-title>
+
+<div class="main-card mb-3 card">
+  <div class="card-body">
+    @if (paso() === 'correo') {
+      <form (ngSubmit)="enviarCodigo()" class="verificacion-form">
+        <div class="mb-3">
+          <label class="form-label" for="correo-verificacion">Tu correo:</label>
+          <input
+            id="correo-verificacion"
+            type="email"
+            class="form-control"
+            placeholder="correo@ejemplo.com"
+            [(ngModel)]="correo"
+            name="correo"
+            autocomplete="email"
+            [attr.aria-invalid]="!!error()"
+          />
+        </div>
+
+        @if (error()) {
+          <div class="alert alert-danger" role="alert">{{ error() }}</div>
+        }
+
+        <button
+          type="submit"
+          class="btn btn-primary btn-shadow"
+          [disabled]="cargando()"
+        >
+          <i class="pe-7s-mail me-2"></i>
+          {{ cargando() ? 'Enviando...' : 'Enviar código' }}
+        </button>
+      </form>
+    } @else {
+      <form
+        (ngSubmit)="verificar(codigoIngresado)"
+        class="verificacion-form"
+      >
+        <div class="mb-3">
+          <p class="text-muted mb-2">
+            Enviamos un código de 6 dígitos a <strong>{{ correo }}</strong
+            >. Verifica tu bandeja de entrada (y la carpeta de spam).
+          </p>
+          <label class="form-label" for="codigo-verificacion">Código de verificación:</label>
+          <input
+            id="codigo-verificacion"
+            type="text"
+            inputmode="numeric"
+            class="form-control"
+            placeholder="000000"
+            [(ngModel)]="codigoIngresado"
+            name="codigo"
+            maxlength="6"
+            autocomplete="one-time-code"
+            [attr.aria-invalid]="!!error()"
+          />
+        </div>
+
+        @if (error()) {
+          <div class="alert alert-danger" role="alert">{{ error() }}</div>
+        }
+        @if (codigoAgotado()) {
+          <div class="alert alert-warning" role="alert">
+            ¿Quieres solicitar un código nuevo?
+          </div>
+        }
+
+        <div class="d-flex gap-2 flex-wrap">
+          @if (!codigoAgotado()) {
+            <button
+              type="submit"
+              class="btn btn-primary btn-shadow"
+              [disabled]="cargando()"
+            >
+              <i class="pe-7s-check me-2"></i>
+              {{ cargando() ? 'Verificando...' : 'Verificar código' }}
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="btn btn-primary btn-shadow"
+              (click)="solicitarOtroCodigo()"
+              [disabled]="cargando()"
+            >
+              <i class="pe-7s-refresh-2 me-2"></i>
+              Solicitar otro código
+            </button>
+          }
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="volverComoInvitado()"
+            [disabled]="cargando()"
+          >
+            Volver como invitado
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

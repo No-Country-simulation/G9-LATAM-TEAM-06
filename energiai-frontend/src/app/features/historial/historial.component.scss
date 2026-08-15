@@ -68,17 +68,16 @@
   }
 }
 
-.accion-restaurar {
-  color: #fff;
-  background: #078b4a;
-  border: 1px solid #078346;
-  box-shadow: 0 0.35rem 0.8rem rgba(7, 139, 74, 0.24);
+.accion-borrar {
+  color: #b42318;
+  background: #fff1f0;
+  border-color: #f97066;
 
   &:hover,
   &:focus-visible {
-    color: #fff;
-    background: #066f3c;
-    border-color: #066f3c;
+    color: #912018;
+    background: #ffded9;
+    border-color: #f04438;
   }
 }
 
@@ -92,19 +91,6 @@
     color: #075f38;
     background: #d7f2e3;
     border-color: #3eae73;
-  }
-}
-
-.accion-ocultar {
-  color: #a23d08;
-  background: #fff1e7;
-  border-color: #f39a67;
-
-  &:hover,
-  &:focus-visible {
-    color: #853005;
-    background: #ffe1cf;
-    border-color: #e97838;
   }
 }
 

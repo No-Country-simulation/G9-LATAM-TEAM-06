@@ -71,8 +71,7 @@ class AnalisisServiceTest {
         );
         when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
         when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of("Test rec"));
-        when(usuarioRepository.findByEmail("user1")).thenReturn(Optional.empty());
-        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.findByEmail("user1")).thenReturn(Optional.of(usuarioVerificado("user1")));
         when(usuarioRepository.incrementarContador(any())).thenReturn(1);
         when(usuarioRepository.obtenerContadorAnalisis(any())).thenReturn(1);
         when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> {
@@ -110,8 +109,7 @@ class AnalisisServiceTest {
         );
         when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
         when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of());
-        when(usuarioRepository.findByEmail("persona@correo.com")).thenReturn(Optional.empty());
-        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.findByEmail("persona@correo.com")).thenReturn(Optional.of(usuarioVerificado("persona@correo.com")));
         when(usuarioRepository.incrementarContador(any())).thenReturn(4);
         when(usuarioRepository.obtenerContadorAnalisis(any())).thenReturn(4);
         when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -140,8 +138,7 @@ class AnalisisServiceTest {
         );
         when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
         when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of());
-        when(usuarioRepository.findByEmail("persona@correo.com")).thenReturn(Optional.empty());
-        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.findByEmail("persona@correo.com")).thenReturn(Optional.of(usuarioVerificado("persona@correo.com")));
         when(usuarioRepository.incrementarContador(any())).thenReturn(0);
         when(usuarioRepository.obtenerContadorAnalisis(any())).thenReturn(1);
         when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -171,7 +168,7 @@ class AnalisisServiceTest {
         when(calculoService.calcularCostoMensual(400)).thenReturn(BigDecimal.valueOf(300.00));
         when(recomendacionService.generarRecomendaciones(any(), eq(modeloResponse)))
                 .thenReturn(List.of("Rec del modelo"));
-        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.findByEmail("user1")).thenReturn(Optional.of(usuarioVerificado("user1")));
         when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> {
             Analisis a = inv.getArgument(0);
             a.setId(1L);
@@ -203,7 +200,7 @@ class AnalisisServiceTest {
         when(integracionDsService.obtenerRespuestaCompleta(any())).thenReturn(modeloResponse);
         when(calculoService.calcularCostoMensual(400)).thenReturn(BigDecimal.valueOf(300.00));
         when(recomendacionService.generarRecomendaciones(any(), eq(modeloResponse))).thenReturn(List.of());
-        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.findByEmail("user1")).thenReturn(Optional.of(usuarioVerificado("user1")));
         when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -228,8 +225,7 @@ class AnalisisServiceTest {
         );
         when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
         when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of());
-        when(usuarioRepository.findByEmail("user1")).thenReturn(Optional.empty());
-        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioRepository.findByEmail("user1")).thenReturn(Optional.of(usuarioVerificado("user1")));
         when(usuarioRepository.obtenerContadorAnalisis(any())).thenReturn(7);
         when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -322,5 +318,60 @@ class AnalisisServiceTest {
 
         assertThat(eliminados).isEqualTo(3L);
         verify(analisisRepository).deleteByUsuarioId("usuario@correo.com");
+    }
+
+    @Test
+    void analizar_comoInvitado_debeCalcularSinPersistirEnBD() {
+        // Given
+        AnalisisRequest request = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                4, null, null, null, null, null,
+                "invitado", null, null, null, null, null
+        );
+
+        when(integracionDsService.obtenerRespuestaCompleta(any())).thenReturn(null);
+        when(integracionDsService.fallbackPrediccion(any())).thenReturn(
+                new IntegracionDsService.PrediccionDs("Moderado", BigDecimal.valueOf(0.60))
+        );
+        when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
+        when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of("Test rec"));
+
+        // When
+        AnalisisResponse resultado = analisisService.analizar(request);
+
+        // Then
+        assertThat(resultado.categoria()).isEqualTo("Moderado");
+        assertThat(resultado.nombre_o_numero_analisis()).isNull();
+        verify(analisisRepository, never()).save(any(Analisis.class));
+        verify(usuarioRepository, never()).incrementarContador(any());
+    }
+
+    @Test
+    void analizar_conCorreoNoVerificado_debeRechazarse() {
+        // Given
+        AnalisisRequest request = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                4, null, null, null, null, null,
+                "persona@correo.com", null, null, null, null, null
+        );
+
+        when(integracionDsService.obtenerRespuestaCompleta(any())).thenReturn(null);
+        when(integracionDsService.fallbackPrediccion(any())).thenReturn(
+                new IntegracionDsService.PrediccionDs("Moderado", BigDecimal.valueOf(0.60))
+        );
+        when(calculoService.calcularCostoMensual(250)).thenReturn(BigDecimal.valueOf(187.50));
+        when(recomendacionService.generarRecomendaciones(any(), eq(null))).thenReturn(List.of());
+        when(usuarioRepository.findByEmail("persona@correo.com"))
+                .thenReturn(Optional.of(Usuario.builder().email("persona@correo.com").verificado(false).build()));
+
+        // When / Then
+        assertThatThrownBy(() -> analisisService.analizar(request))
+                .isInstanceOf(com.hackathon.energiai_api.exception.VerificacionCorreoException.class)
+                .hasMessageContaining("verificar");
+        verify(analisisRepository, never()).save(any(Analisis.class));
+    }
+
+    private Usuario usuarioVerificado(String email) {
+        return Usuario.builder().id(1L).email(email).verificado(true).build();
     }
 }

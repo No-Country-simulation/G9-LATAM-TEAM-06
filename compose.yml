@@ -45,6 +45,14 @@ services:
       - API_KEY_SECRET_FILE=/run/secrets/api_key_secret
       - DB_PASSWORD_FILE=/run/secrets/db_password
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost,http://localhost:80,http://localhost:8080,http://127.0.0.1,http://127.0.0.1:80,http://127.0.0.1:8080}
+      - MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_FROM=${MAIL_FROM:-no-responder@energiai.app}
+      - VERIFICACION_TTL_MINUTOS=${VERIFICACION_TTL_MINUTOS:-10}
+      - VERIFICACION_MAX_INTENTOS=${VERIFICACION_MAX_INTENTOS:-3}
+      - VERIFICACION_RATE_LIMIT_POR_HORA=${VERIFICACION_RATE_LIMIT_POR_HORA:-5}
     networks:
       - energiai_net
     depends_on:

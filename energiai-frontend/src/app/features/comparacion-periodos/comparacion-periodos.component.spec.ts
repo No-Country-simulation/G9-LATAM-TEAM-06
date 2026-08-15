@@ -6,6 +6,7 @@ import {
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { HistorialResponse } from '../../core/models/historial-response';
+import { UsuarioService } from '../../core/services/usuario.service';
 import { ComparacionPeriodosComponent } from './comparacion-periodos.component';
 
 const PERIODO_NUEVO: HistorialResponse = {
@@ -44,7 +45,7 @@ describe('ComparacionPeriodosComponent', () => {
   let http: HttpTestingController;
 
   beforeEach(async () => {
-    localStorage.removeItem('energiai_usuario');
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [ComparacionPeriodosComponent],
       providers: [
@@ -53,6 +54,9 @@ describe('ComparacionPeriodosComponent', () => {
         provideRouter([]),
       ],
     }).compileComponents();
+
+    // Usuario verificado para ejercitar la consulta al servidor.
+    TestBed.inject(UsuarioService).marcarVerificado('persona@ejemplo.com');
 
     fixture = TestBed.createComponent(ComparacionPeriodosComponent);
     componente = fixture.componentInstance;

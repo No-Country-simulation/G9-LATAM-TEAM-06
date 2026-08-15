@@ -32,7 +32,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
   readonly errorSignal = signal<string>('');
   readonly tieneMas = signal(false);
   readonly pagina = signal(0);
-  readonly ocultoLocalmente = signal(false);
+  readonly borrando = signal(false);
 
   private readonly destruir$ = new Subject<void>();
   private suscripcionActual: Subscription | undefined;
@@ -47,18 +47,10 @@ export class HistorialComponent implements OnInit, OnDestroy {
   );
 
   ngOnInit(): void {
-    this.ocultoLocalmente.set(
-      this.analisisService.historialOcultoLocalmente(this.usuarioActual()),
-    );
     this.cargarHistorial(0, false);
     this.usuarioService.cambioUsuario
       .pipe(takeUntil(this.destruir$))
-      .subscribe(() => {
-        this.ocultoLocalmente.set(
-          this.analisisService.historialOcultoLocalmente(this.usuarioActual()),
-        );
-        this.cargarHistorial(0, false);
-      });
+      .subscribe(() => this.cargarHistorial(0, false));
   }
 
   ngOnDestroy(): void {
@@ -103,26 +95,29 @@ export class HistorialComponent implements OnInit, OnDestroy {
     this.cargarHistorial(0, false);
   }
 
-  ocultarHistorial(): void {
+  borrarHistorial(): void {
     const confirmar = window.confirm(
-      `¿Deseas ocultar en este navegador el historial de ${this.usuarioActual()}? Los registros seguirán guardados en la base de datos.`,
+      `¿Seguro que deseas borrar todo el historial de ${this.usuarioActual()}? Esta acción no se puede deshacer.`,
     );
     if (!confirmar) {
       return;
     }
 
-    const ultimoId = Math.max(...this.historial().map((item) => item.id));
-    this.analisisService.ocultarHistorialLocal(this.usuarioActual(), ultimoId);
-    this.historial.set([]);
-    this.pagina.set(0);
-    this.tieneMas.set(false);
-    this.ocultoLocalmente.set(true);
-  }
-
-  restaurarHistorial(): void {
-    this.analisisService.restaurarHistorialLocal(this.usuarioActual());
-    this.ocultoLocalmente.set(false);
-    this.cargarHistorial(0, false);
+    this.borrando.set(true);
+    this.analisisService
+      .borrarHistorial(this.usuarioActual())
+      .pipe(finalize(() => this.borrando.set(false)))
+      .subscribe({
+        next: () => {
+          this.historial.set([]);
+          this.pagina.set(0);
+          this.tieneMas.set(false);
+        },
+        error: () =>
+          this.errorSignal.set(
+            'No se pudo borrar el historial. Intenta nuevamente.',
+          ),
+      });
   }
 
   private mapearItem(item: HistorialResponse): ItemHistorial {

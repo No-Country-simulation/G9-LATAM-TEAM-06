@@ -151,8 +151,24 @@ public class AnalisisService {
         }
 
         String usuarioNormalizado = normalizarUsuario(request.usuarioId());
-        Usuario usuario = obtenerOCrearUsuario(usuarioNormalizado);
-        String nombreAnalisis = resolverNombreAnalisis(request.nombre_o_numero_analisis(), usuario);
+        boolean esInvitado = "invitado".equals(usuarioNormalizado);
+
+        Usuario usuario = null;
+        String nombreAnalisis = null;
+        if (!esInvitado) {
+            usuario = usuarioRepository.findByEmail(usuarioNormalizado)
+                    .orElseThrow(() -> new com.hackathon.energiai_api.exception.VerificacionCorreoException(
+                            "CORREO_NO_VERIFICADO",
+                            "Debes verificar el correo antes de guardar análisis.",
+                            org.springframework.http.HttpStatus.FORBIDDEN));
+            if (!Boolean.TRUE.equals(usuario.getVerificado())) {
+                throw new com.hackathon.energiai_api.exception.VerificacionCorreoException(
+                        "CORREO_NO_VERIFICADO",
+                        "Debes verificar el correo antes de guardar análisis.",
+                        org.springframework.http.HttpStatus.FORBIDDEN);
+            }
+            nombreAnalisis = resolverNombreAnalisis(request.nombre_o_numero_analisis(), usuario);
+        }
 
         Analisis analisis = Analisis.builder()
                 .usuarioId(usuarioNormalizado)
@@ -182,7 +198,9 @@ public class AnalisisService {
                 .advertenciasJson(serializar(advertencias))
                 .build();
 
-        analisisRepository.save(analisis);
+        if (!esInvitado) {
+            analisisRepository.save(analisis);
+        }
 
         return new AnalisisResponse(
                 prediccion.categoria(),
@@ -218,9 +236,13 @@ public class AnalisisService {
 
     @Transactional(readOnly = true)
     public Page<HistorialResponse> listarPorUsuario(String usuarioId, String categoria, Pageable pageable) {
-        Page<Analisis> resultados;
         String usuarioNormalizado = normalizarUsuario(usuarioId);
+        if ("invitado".equals(usuarioNormalizado)) {
+            // El historial de invitados vive en el navegador (localStorage), no en la BD.
+            return org.springframework.data.domain.Page.empty(pageable);
+        }
 
+        Page<Analisis> resultados;
         if (categoria != null && !categoria.isBlank()) {
             resultados = analisisRepository.findByUsuarioIdAndCategoria(usuarioNormalizado, categoria, pageable);
         } else {
@@ -344,7 +366,11 @@ public class AnalisisService {
 
     @Transactional
     public long borrarHistorialPorUsuario(String usuarioId) {
-        return analisisRepository.deleteByUsuarioId(normalizarUsuario(usuarioId));
+        String usuarioNormalizado = normalizarUsuario(usuarioId);
+        if ("invitado".equals(usuarioNormalizado)) {
+            return 0L;
+        }
+        return analisisRepository.deleteByUsuarioId(usuarioNormalizado);
     }
 
     private List<String> obtenerRecomendacionesGuardadas(Analisis analisis, AnalisisRequest request) {
@@ -401,14 +427,6 @@ public class AnalisisService {
             return "invitado";
         }
         return usuarioId.trim().toLowerCase();
-    }
-
-    private Usuario obtenerOCrearUsuario(String email) {
-        return usuarioRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    Usuario nuevo = Usuario.builder().email(email).build();
-                    return usuarioRepository.save(nuevo);
-                });
     }
 
     private String resolverNombreAnalisis(String nombreSolicitado, Usuario usuario) {

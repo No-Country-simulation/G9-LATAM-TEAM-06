@@ -8,7 +8,7 @@ describe('AnalisisGeneralComponent', () => {
   let componente: AnalisisGeneralComponent;
 
   beforeEach(async () => {
-    localStorage.removeItem('energiai_usuario');
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [AnalisisGeneralComponent],
       providers: [
@@ -17,6 +17,9 @@ describe('AnalisisGeneralComponent', () => {
         UsuarioService,
       ],
     }).compileComponents();
+
+    // Garantiza sesión de invitado (sin correo verificado).
+    TestBed.inject(UsuarioService).limpiar();
 
     const fixture = TestBed.createComponent(AnalisisGeneralComponent);
     componente = fixture.componentInstance;

@@ -1,19 +1,13 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { NgTemplateOutlet, NgClass } from '@angular/common';
 
-import {
-  MAXIMO_CORREO_USUARIO,
-  UsuarioService,
-  errorCorreoUsuario,
-  normalizarCorreoUsuario,
-} from '../../core/services/usuario.service';
+import { UsuarioService } from '../../core/services/usuario.service';
 import { ThemeOptions } from '../../core/services/theme-options';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, FormsModule, NgTemplateOutlet, NgClass],
+  imports: [RouterLink, NgTemplateOutlet, NgClass],
   template: `
     <div class="app-header header-shadow">
       <div class="app-header__content">
@@ -32,7 +26,7 @@ import { ThemeOptions } from '../../core/services/theme-options';
         </div>
         <div class="app-header-right">
           <ng-container
-            *ngTemplateOutlet="menuUsuario; context: { idInput: 'correo-sesion-header' }"
+            *ngTemplateOutlet="menuUsuario"
           ></ng-container>
         </div>
       </div>
@@ -51,18 +45,24 @@ import { ThemeOptions } from '../../core/services/theme-options';
       </div>
       <div class="app-header__menu">
         <ng-container
-          *ngTemplateOutlet="menuUsuario; context: { idInput: 'correo-sesion-movil' }"
+          *ngTemplateOutlet="menuUsuario"
         ></ng-container>
       </div>
     </div>
 
-    <ng-template #menuUsuario let-idInput="idInput">
+    <ng-template #menuUsuario>
       <div class="header-btn-lg d-flex align-items-center dropdown">
         <div class="widget-content-left me-2">
           <div class="widget-heading">
             {{ usuarioService.usuario() || 'Invitado' }}
           </div>
-          <div class="widget-subheading">Sesión activa</div>
+          <div class="widget-subheading">
+            @if (usuarioService.esVerificado()) {
+              Sesión verificada
+            } @else {
+              Sesión invitado
+            }
+          </div>
         </div>
         <button
           type="button"
@@ -81,6 +81,13 @@ import { ThemeOptions } from '../../core/services/theme-options';
             <h6 class="mb-0">
               {{ usuarioService.usuario() || 'Modo Invitado' }}
             </h6>
+            <small class="text-muted">
+              @if (usuarioService.esVerificado()) {
+                Correo verificado
+              } @else {
+                Tus análisis se guardan solo en este navegador.
+              }
+            </small>
           </div>
           <div class="dropdown-divider"></div>
           <button
@@ -93,36 +100,17 @@ import { ThemeOptions } from '../../core/services/theme-options';
             {{ globals.modoOscuro() ? 'Modo claro' : 'Modo oscuro' }}
           </button>
           <div class="dropdown-divider"></div>
-          <div class="px-3 py-2">
-            <label class="form-label small mb-1 d-block" [for]="idInput">
-              Identifícate con tu correo
-            </label>
-            <input
-              [id]="idInput"
-              type="email"
-              class="form-control form-control-sm"
-              placeholder="correo@ejemplo.com"
-              [(ngModel)]="correoSesion"
-              [attr.maxlength]="maximoCorreo"
-              [class.is-invalid]="!!errorCorreo"
-              [attr.aria-invalid]="!!errorCorreo"
-              (ngModelChange)="validarCorreoEnVivo()"
-              (keydown.enter)="guardarUsuario()"
-              autocomplete="email"
-            />
-            @if (errorCorreo) {
-              <div class="invalid-feedback d-block">{{ errorCorreo }}</div>
-            }
+          @if (!usuarioService.esVerificado()) {
             <button
               type="button"
-              class="btn btn-sm btn-primary w-100 mt-2"
-              (click)="guardarUsuario()"
+              class="dropdown-item"
+              (click)="accederConCorreo()"
             >
-              <i class="pe-7s-check me-1"></i>
-              {{ etiquetaBotonUsuario() }}
+              <i class="pe-7s-mail me-2"></i>
+              Acceder con correo
             </button>
-          </div>
-          <div class="dropdown-divider"></div>
+            <div class="dropdown-divider"></div>
+          }
           <button type="button" class="dropdown-item text-danger" (click)="salir()">
             <i class="pe-7s-close-circle me-2"></i>
             Salir
@@ -156,14 +144,7 @@ import { ThemeOptions } from '../../core/services/theme-options';
 export class HeaderComponent {
   readonly usuarioService = inject(UsuarioService);
   readonly globals = inject(ThemeOptions);
-  readonly maximoCorreo = MAXIMO_CORREO_USUARIO;
-
-  correoSesion = '';
-  errorCorreo = '';
-
-  constructor() {
-    this.correoSesion = this.usuarioService.usuario();
-  }
+  private readonly router = inject(Router);
 
   inicial(): string {
     const usuario = this.usuarioService.usuario();
@@ -184,31 +165,11 @@ export class HeaderComponent {
     this.globals.toggleSidebarMobile.set(!this.globals.toggleSidebarMobile());
   }
 
+  accederConCorreo(): void {
+    this.router.navigate(['/verificar-correo']);
+  }
+
   salir(): void {
     this.usuarioService.limpiar();
-    this.correoSesion = '';
-    this.errorCorreo = '';
-  }
-
-  guardarUsuario(): void {
-    const correo = normalizarCorreoUsuario(this.correoSesion);
-    const error = errorCorreoUsuario(correo);
-    if (error) {
-      this.errorCorreo = error;
-      return;
-    }
-    this.errorCorreo = '';
-    this.correoSesion = correo;
-    this.usuarioService.setUsuario(correo);
-  }
-
-  validarCorreoEnVivo(): void {
-    if (this.errorCorreo) {
-      this.errorCorreo = errorCorreoUsuario(this.correoSesion);
-    }
-  }
-
-  etiquetaBotonUsuario(): string {
-    return this.usuarioService.usuario() ? 'Cambiar usuario' : 'Guardar';
   }
 }

@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { UsuarioService } from '../../core/services/usuario.service';
 import { ProcesamientoCsvComponent } from './procesamiento-csv.component';
 
 const CSV_VALIDO = [
@@ -16,11 +17,13 @@ describe('ProcesamientoCsvComponent', () => {
   let http: HttpTestingController;
 
   beforeEach(async () => {
-    localStorage.removeItem('energiai_usuario');
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [ProcesamientoCsvComponent],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
+    // Garantiza sesión de invitado (sin correo verificado).
+    TestBed.inject(UsuarioService).limpiar();
     fixture = TestBed.createComponent(ProcesamientoCsvComponent);
     componente = fixture.componentInstance;
     http = TestBed.inject(HttpTestingController);
