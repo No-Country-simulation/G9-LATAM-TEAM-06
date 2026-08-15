@@ -126,13 +126,13 @@ describe('AnalisisGeneralComponent', () => {
     http.verify();
   });
 
-  it('debe rechazar más de dos decimales en variables continuas', () => {
+  it('debe rechazar más de dos decimales en variables continuas y no enteros en consumo previo', () => {
     componente.formulario.get('area_m2')?.setValue(85.123);
     componente.formulario.get('consumo_mes_anterior_kwh')?.setValue(230.999);
 
     expect(componente.formulario.invalid).toBeTrue();
     expect(componente.mensajesCampo('area_m2').join(' ')).toContain('máximo 2 decimales');
-    expect(componente.mensajesCampo('consumo_mes_anterior_kwh').join(' ')).toContain('máximo 2 decimales');
+    expect(componente.mensajesCampo('consumo_mes_anterior_kwh').join(' ')).toContain('número entero');
   });
 
   it('debe enviar la solicitud al endpoint correcto y guardar el resultado', () => {

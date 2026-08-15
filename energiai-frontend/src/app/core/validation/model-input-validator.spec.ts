@@ -48,13 +48,20 @@ describe('validarEntradaModelo', () => {
     expect(problemas.some((item) => item.campo === 'area_m2' && item.codigo === 'rango')).toBeTrue();
   });
 
-  it('limita variables continuas a dos decimales', () => {
+  it('limita variables continuas a dos decimales y exige enteros en consumo previo', () => {
     const problemas = validarEntradaModelo({
       ...entradaValida(),
       area_m2: 85.123,
       consumo_mes_anterior_kwh: 230.999,
     });
-    expect(problemas.filter((item) => item.codigo === 'decimales').length).toBe(2);
+    expect(problemas.filter((item) => item.codigo === 'decimales').length).toBe(1);
+    expect(
+      problemas.some(
+        (item) =>
+          item.campo === 'consumo_mes_anterior_kwh' &&
+          item.codigo === 'entero',
+      ),
+    ).toBeTrue();
   });
 
   it('rechaza distribuciones incoherentes o duplicados contradictorios', () => {

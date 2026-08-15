@@ -55,7 +55,7 @@ export function validarEntradaModelo(
     { campo: 'cantidad_personas', etiqueta: 'Cantidad de personas', minimo: limites.personas.min, maximo: limites.personas.max, entero: true },
     { campo: 'area_m2', etiqueta: 'Área', minimo: limites.area.min, maximo: limites.area.max, decimales: 2 },
     { campo: 'horas_aire_acondicionado', etiqueta: 'Horas de aire acondicionado', minimo: HORAS_AIRE_ACONDICIONADO.min, maximo: HORAS_AIRE_ACONDICIONADO.max, entero: true },
-    { campo: 'consumo_mes_anterior_kwh', etiqueta: 'Consumo del mes anterior', minimo: limites.consumoAnterior.min, maximo: limites.consumoAnterior.max, decimales: 2 },
+    { campo: 'consumo_mes_anterior_kwh', etiqueta: 'Consumo del mes anterior', minimo: limites.consumoAnterior.min, maximo: limites.consumoAnterior.max, entero: true },
     { campo: 'dias_facturados', etiqueta: 'Días facturados', minimo: DIAS_FACTURADOS.min, maximo: DIAS_FACTURADOS.max, entero: true },
   ];
 

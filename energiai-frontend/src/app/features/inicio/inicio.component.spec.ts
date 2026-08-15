@@ -110,6 +110,7 @@ describe('InicioComponent', () => {
     const elemento = fixture.nativeElement as HTMLElement;
     expect(elemento.querySelectorAll('.tarjeta-metrica').length).toBe(4);
     expect(elemento.querySelector('.grafica-linea')).toBeTruthy();
+    expect(elemento.querySelector('.accion-hero')).toBeTruthy();
     expect(elemento.textContent).toContain('Consumo alto detectado');
     expect(elemento.textContent).toContain('Distribución de resultados');
   });
@@ -133,6 +134,7 @@ describe('InicioComponent', () => {
       'Tu seguimiento comienza con el primer análisis',
     );
     expect(elemento.querySelector('.grafica-linea')).toBeNull();
+    expect(elemento.querySelector('.accion-hero')).toBeNull();
   });
 
   it('muestra un error recuperable si falla la consulta', () => {

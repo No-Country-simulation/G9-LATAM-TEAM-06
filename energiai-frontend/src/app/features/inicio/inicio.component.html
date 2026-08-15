@@ -11,14 +11,16 @@
       Sigue tu evolución, detecta patrones de alto consumo y recibe acciones
       concretas para mejorar tu eficiencia energética.
     </p>
-    <button
-      type="button"
-      class="btn btn-lg accion-inicio accion-hero"
-      (click)="irAAnalisisGeneral()"
-    >
-      <i class="fas fa-plus" aria-hidden="true"></i>
-      Nuevo análisis
-    </button>
+    @if (historial().length) {
+      <button
+        type="button"
+        class="btn btn-lg accion-inicio accion-hero"
+        (click)="irAAnalisisGeneral()"
+      >
+        <i class="fas fa-plus" aria-hidden="true"></i>
+        Nuevo análisis
+      </button>
+    }
   </div>
   <div class="hero-decoracion" aria-hidden="true">
     <i class="pe-7s-graph2"></i>
