@@ -7,6 +7,7 @@ import {
   HistorialInvitadoService,
 } from '../../core/services/historial-invitado.service';
 import { UsuarioService } from '../../core/services/usuario.service';
+import { errorCorreoUsuario } from '../../core/services/usuario.service';
 import {
   VerificacionService,
   ErrorVerificacion,
@@ -30,6 +31,7 @@ export class VerificarCorreoComponent {
   readonly cargando = signal(false);
   readonly mensaje = signal('');
   readonly error = signal('');
+  readonly errorCampoCorreo = signal('');
   readonly intentos = signal(0);
   readonly codigoAgotado = signal(false);
 
@@ -38,10 +40,12 @@ export class VerificarCorreoComponent {
 
   enviarCodigo(): void {
     const correo = this.correo.trim().toLowerCase();
-    if (!correo) {
-      this.error.set('Ingresa un correo válido.');
+    const errorValidacion = errorCorreoUsuario(correo);
+    if (errorValidacion) {
+      this.errorCampoCorreo.set(errorValidacion);
       return;
     }
+    this.errorCampoCorreo.set('');
     this.error.set('');
     this.cargando.set(true);
     this.verificacionService
@@ -62,7 +66,7 @@ export class VerificarCorreoComponent {
   verificar(codigo: string): void {
     const valor = (codigo ?? '').trim();
     if (valor.length !== 6) {
-      this.error.set('El código debe tener 6 dígitos.');
+      this.error.set('El código debe tener exactamente 6 dígitos.');
       return;
     }
     this.error.set('');
@@ -95,21 +99,67 @@ export class VerificarCorreoComponent {
   private mostrarError(err: unknown): void {
     const error = err as { error?: ErrorVerificacion } | undefined;
     const detalle = error?.error;
-    if (detalle?.codigo === 'CODIGO_INCORRECTO') {
-      const restantes = Math.max(0, MAXIMO_INTENTOS - (this.intentos() + 1));
-      this.intentos.set(this.intentos() + 1);
-      this.error.set(
-        `Código incorrecto. Te quedan ${restantes} intento(s).`,
-      );
-      return;
+    const codigo = detalle?.codigo ?? 'DESCONOCIDO';
+
+    switch (codigo) {
+      case 'CODIGO_INCORRECTO': {
+        const restantes = Math.max(0, MAXIMO_INTENTOS - (this.intentos() + 1));
+        this.intentos.set(this.intentos() + 1);
+        this.error.set(
+          `Código incorrecto. Te quedan ${restantes} intento(s).`,
+        );
+        return;
+      }
+      case 'CODIGO_AGOTADO':
+        this.codigoAgotado.set(true);
+        this.error.set(
+          detalle?.mensaje ??
+            'Agotaste los intentos. Solicita un código nuevo.',
+        );
+        return;
+      case 'CODIGO_EXPIRADO':
+        this.codigoAgotado.set(true);
+        this.error.set(
+          detalle?.mensaje ??
+            'El código expiró. Solicita uno nuevo.',
+        );
+        return;
+      case 'CODIGO_NO_ENCONTRADO':
+        this.codigoAgotado.set(true);
+        this.error.set(
+          detalle?.mensaje ??
+            'No hay un código pendiente para este correo. Solicita uno nuevo.',
+        );
+        return;
+      case 'RATE_LIMIT_SUPERADO':
+        this.error.set(
+          'Se enviaron demasiados códigos desde este dispositivo. Espera un poco e inténtalo de nuevo.',
+        );
+        return;
+      case 'SMTP_NO_CONFIGURADO':
+        this.error.set(
+          'El servicio de correo no está disponible por ahora. Intenta más tarde.',
+        );
+        return;
+      case 'ENVIO_CORREO_FALLIDO':
+        this.error.set(
+          'No se pudo enviar el correo. Revisa que la dirección sea correcta y que exista, o inténtalo de nuevo.',
+        );
+        return;
+      case 'VALIDATION_ERROR': {
+        const detalles = (detalle as unknown as { detalles?: Record<string, string> })?.detalles;
+        const mensajeCampo = detalles ? Object.values(detalles).join(' ') : '';
+        this.errorCampoCorreo.set(
+          mensajeCampo || 'Revisa la dirección de correo: no tiene un formato válido.',
+        );
+        return;
+      }
+      default:
+        this.error.set(
+          detalle?.mensaje ??
+            'No se pudo completar la verificación. Intenta nuevamente.',
+        );
+        return;
     }
-    if (detalle?.codigo === 'CODIGO_AGOTADO' || detalle?.codigo === 'CODIGO_EXPIRADO') {
-      this.codigoAgotado.set(true);
-      this.error.set(
-        detalle.mensaje ?? 'Agotaste los intentos. Solicita un código nuevo.',
-      );
-      return;
-    }
-    this.error.set(detalle?.mensaje ?? 'No se pudo completar la verificación. Intenta más tarde.');
   }
 }

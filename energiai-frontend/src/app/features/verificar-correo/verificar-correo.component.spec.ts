@@ -101,4 +101,65 @@ describe('VerificarCorreoComponent', () => {
     componente.volverComoInvitado();
     expect(navegar).toHaveBeenCalledWith(['/']);
   });
+
+  it('rechaza una dirección mal escrita sin llamar al servidor', () => {
+    componente.correo = 'correo-sin-dominio';
+    componente.enviarCodigo();
+    expect(componente.errorCampoCorreo()).toContain('válido');
+    http.expectNone(() => true);
+  });
+
+  it('muestra el mensaje del servidor cuando la validación de correo falla', () => {
+    componente.correo = 'correo-sin-dominio';
+    componente.enviarCodigo();
+    http.expectNone(() => true);
+  });
+
+  it('traduce un fallo de envío con un mensaje claro', () => {
+    componente.correo = 'persona@ejemplo.com';
+    componente.enviarCodigo();
+
+    const solicitud = http.expectOne((req) => req.method === 'POST' && req.url.includes('/verificacion/codigo'));
+    solicitud.flush(
+      { codigo: 'ENVIO_CORREO_FALLIDO', mensaje: 'No se pudo enviar el código de verificación. Intenta más tarde.' },
+      { status: 502, statusText: 'Bad Gateway' },
+    );
+
+    expect(componente.error()).toContain('No se pudo enviar el correo');
+    expect(componente.error()).toContain('exista');
+  });
+
+  it('traduce el límite de solicitudes por IP', () => {
+    componente.correo = 'persona@ejemplo.com';
+    componente.enviarCodigo();
+
+    const solicitud = http.expectOne((req) => req.method === 'POST' && req.url.includes('/verificacion/codigo'));
+    solicitud.flush(
+      { codigo: 'RATE_LIMIT_SUPERADO', mensaje: 'Demasiadas solicitudes', reintentosRestantes: 0 },
+      { status: 429, statusText: 'Too Many Requests' },
+    );
+
+    expect(componente.error()).toContain('demasiados códigos');
+  });
+
+  it('valida el código de 6 dígitos antes de llamar al servidor', () => {
+    componente.correo = 'persona@ejemplo.com';
+    componente.verificar('123');
+    expect(componente.error()).toContain('6 dígitos');
+    http.expectNone(() => true);
+  });
+
+  it('ofrece solicitar otro código cuando no hay código pendiente', () => {
+    componente.correo = 'persona@ejemplo.com';
+    componente.verificar('123456');
+
+    const solicitud = http.expectOne((req) => req.method === 'POST' && req.url.includes('/verificacion/verificar'));
+    solicitud.flush(
+      { codigo: 'CODIGO_NO_ENCONTRADO', mensaje: 'No hay un código pendiente' },
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+    expect(componente.codigoAgotado()).toBeTrue();
+    expect(componente.error()).toContain('No hay un código pendiente');
+  });
 });

@@ -15,12 +15,16 @@
             id="correo-verificacion"
             type="email"
             class="form-control"
+            [class.is-invalid]="!!errorCampoCorreo()"
             placeholder="correo@ejemplo.com"
             [(ngModel)]="correo"
             name="correo"
             autocomplete="email"
-            [attr.aria-invalid]="!!error()"
+            [attr.aria-invalid]="!!errorCampoCorreo()"
           />
+          @if (errorCampoCorreo()) {
+            <div class="invalid-feedback d-block">{{ errorCampoCorreo() }}</div>
+          }
         </div>
 
         @if (error()) {
