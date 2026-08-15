@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { NgTemplateOutlet, NgClass } from '@angular/common';
 
 import { UsuarioService } from '../../core/services/usuario.service';
@@ -7,7 +7,7 @@ import { ThemeOptions } from '../../core/services/theme-options';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, NgTemplateOutlet, NgClass],
+  imports: [NgTemplateOutlet, NgClass],
   template: `
     <div class="app-header header-shadow">
       <div class="app-header__content">
