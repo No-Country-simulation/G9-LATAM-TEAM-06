@@ -57,6 +57,14 @@ export class CsvAnalisisService {
     if (registros.length < 2) {
       return { filas: [], erroresGlobales: ['El CSV debe incluir encabezados y al menos una fila de datos.'] };
     }
+    if (registros[0].length === 1 && /[,;]/.test(registros[0][0])) {
+      return {
+        filas: [],
+        erroresGlobales: [
+          'El archivo tiene cada fila guardada como una sola celda entre comillas. Descarga una plantilla nueva y conserva su separador al editarla.',
+        ],
+      };
+    }
 
     const encabezados = registros[0].map((valor) => valor.trim().toLowerCase());
     const erroresGlobales = this.validarEncabezados(encabezados);
@@ -97,12 +105,22 @@ export class CsvAnalisisService {
   }
 
   plantilla(): string {
-    return [
-      COLUMNAS_CSV.join(','),
-      '250,false,8,Casa,4,2,3,3,,,,,',
-      '650,true,12,Comercio,8,4,5,3,6,120,4,580,30',
-      '180,false,6,Apartamento,2,1,2,3,2,75,0,210,30',
-    ].join('\r\n');
+    const filas = [
+      [...COLUMNAS_CSV],
+      ['250', 'false', '8', 'Casa', '4', '2', '3', '3', '4', '120', '0', '230', '30'],
+      ['650', 'true', '12', 'Comercio', '8', '4', '5', '3', '6', '180', '4', '580', '30'],
+      ['180', 'false', '6', 'Apartamento', '2', '1', '2', '3', '2', '75', '0', '210', '30'],
+    ];
+
+    // UTF-8 con BOM y punto y coma evita que Excel en configuraciones regionales
+    // hispanas abra toda la fila en una sola columna y la corrompa al guardarla.
+    return `\uFEFF${filas.map((fila) => fila.map((valor) => this.escaparCampoCsv(valor, ';')).join(';')).join('\r\n')}`;
+  }
+
+  private escaparCampoCsv(valor: string, separador: string): string {
+    return valor.includes(separador) || /["\r\n]/.test(valor)
+      ? `"${valor.replace(/"/g, '""')}"`
+      : valor;
   }
 
   private convertirFila(numeroFila: number, valores: Record<string, string>): FilaAnalisisCsv {

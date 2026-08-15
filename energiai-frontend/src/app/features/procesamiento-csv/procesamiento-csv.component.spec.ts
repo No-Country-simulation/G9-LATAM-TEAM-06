@@ -2,7 +2,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+<<<<<<< Updated upstream
 import { UsuarioService } from '../../core/services/usuario.service';
+=======
+import { CsvAnalisisService } from '../../core/services/csv-analisis.service';
+>>>>>>> Stashed changes
 import { ProcesamientoCsvComponent } from './procesamiento-csv.component';
 
 const CSV_VALIDO = [
@@ -70,6 +74,29 @@ describe('ProcesamientoCsvComponent', () => {
 
     componente.cargarContenido('comillas.csv', CSV_VALIDO + '\n"250,false');
     expect(componente.erroresGlobales().join(' ')).toContain('comilla sin cerrar');
+  });
+
+  it('genera una plantilla compatible con Excel y que el analizador puede leer', () => {
+    const servicio = TestBed.inject(CsvAnalisisService);
+    const plantilla = servicio.plantilla();
+    const resultado = servicio.parsear(plantilla);
+
+    expect(plantilla.startsWith('\uFEFF')).toBeTrue();
+    expect(plantilla.split('\r\n')[0]).toContain(';');
+    expect(resultado.erroresGlobales).toEqual([]);
+    expect(resultado.filas.length).toBe(3);
+    expect(resultado.filas.every((fila) => fila.datos !== null)).toBeTrue();
+  });
+
+  it('explica cuando Excel guardó cada fila como una sola celda', () => {
+    const corrupto = CSV_VALIDO
+      .split('\n')
+      .map((fila) => `"${fila}"`)
+      .join('\r\n');
+
+    componente.cargarContenido('corrupto.csv', corrupto);
+
+    expect(componente.erroresGlobales().join(' ')).toContain('una sola celda');
   });
 });
 
