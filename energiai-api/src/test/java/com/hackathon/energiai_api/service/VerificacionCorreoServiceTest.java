@@ -56,7 +56,7 @@ class VerificacionCorreoServiceTest {
     @Test
     void solicitarCodigo_cuandoHayLugar_debeGenerarEnviarYGuardarCodigo() {
         when(codigoRepository.countByIpOrigenAndCreadoEnAfter(anyString(), any(LocalDateTime.class))).thenReturn(0L);
-        when(codigoRepository.findByEmailAndUsadoFalse("persona@correo.com")).thenReturn(Optional.empty());
+        when(codigoRepository.findByEmail("persona@correo.com")).thenReturn(Optional.empty());
         when(codigoRepository.save(any(CodigoVerificacion.class))).thenAnswer(inv -> inv.getArgument(0));
 
         VerificacionResponse respuesta = servicio.solicitarCodigo("Persona@Correo.com", "10.0.0.1");
@@ -65,6 +65,32 @@ class VerificacionCorreoServiceTest {
         assertThat(respuesta.verificado()).isFalse();
         assertThat(respuesta.reintentosRestantes()).isEqualTo(3);
         verify(codigoRepository).save(any(CodigoVerificacion.class));
+        verify(javaMailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
+    }
+
+    @Test
+    void solicitarCodigo_cuandoYaExisteRegistroPrevios_debeActualizarSinInsertar() {
+        CodigoVerificacion previo = CodigoVerificacion.builder()
+                .id(1L)
+                .email("persona@correo.com")
+                .codigoHash("hash-anterior")
+                .ipOrigen("10.0.0.1")
+                .creadoEn(LocalDateTime.now().minusHours(1))
+                .expiraEn(LocalDateTime.now().minusMinutes(10))
+                .intentos(3)
+                .usado(true)
+                .build();
+        when(codigoRepository.countByIpOrigenAndCreadoEnAfter(anyString(), any(LocalDateTime.class))).thenReturn(0L);
+        when(codigoRepository.findByEmail("persona@correo.com")).thenReturn(Optional.of(previo));
+        when(codigoRepository.save(any(CodigoVerificacion.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        VerificacionResponse respuesta = servicio.solicitarCodigo("persona@correo.com", "10.0.0.1");
+
+        assertThat(respuesta.verificado()).isFalse();
+        assertThat(previo.getUsado()).isFalse();
+        assertThat(previo.getIntentos()).isEqualTo(0);
+        assertThat(previo.getCodigoHash()).isNotEqualTo("hash-anterior");
+        verify(codigoRepository).save(previo);
         verify(javaMailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
     }
 

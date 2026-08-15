@@ -64,7 +64,7 @@ public class VerificacionCorreoService {
         String hash = hashCodigo(normalizado, codigo);
 
         LocalDateTime ahora = LocalDateTime.now();
-        CodigoVerificacion registro = codigoRepository.findByEmailAndUsadoFalse(normalizado)
+        CodigoVerificacion registro = codigoRepository.findByEmail(normalizado)
                 .orElseGet(() -> CodigoVerificacion.builder()
                         .email(normalizado)
                         .build());
@@ -159,9 +159,9 @@ public class VerificacionCorreoService {
             mensaje.setTo(email);
             mensaje.setSubject("Código de verificación — EnergiAI");
             mensaje.setText(
-                    "Hola,\n\nTu código de verificación para EnergiAI es: " + codigo
-                            + "\n\nEl código expira en " + ttlMinutos + " minutos y tienes "
-                            + maxIntentos + " intentos para ingresarlo.\n\nSi no solicitaste este correo, ignóralo.");
+                    "Hola,\n\nTu código de verificación es: " + codigo
+                            + "\n\nEl código expira en " + ttlMinutos
+                            + " minutos. Si no solicitaste este correo, por favor ignóralo.");
             sender.send(mensaje);
         } catch (Exception ex) {
             logger.error("Error al enviar el correo a {}: {}", email, ex.getMessage());

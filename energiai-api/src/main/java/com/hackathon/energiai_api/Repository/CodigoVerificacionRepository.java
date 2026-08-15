@@ -13,5 +13,7 @@ public interface CodigoVerificacionRepository extends JpaRepository<CodigoVerifi
 
     Optional<CodigoVerificacion> findByEmailAndUsadoFalse(String email);
 
+    Optional<CodigoVerificacion> findByEmail(String email);
+
     long countByIpOrigenAndCreadoEnAfter(String ipOrigen, LocalDateTime desde);
 }
