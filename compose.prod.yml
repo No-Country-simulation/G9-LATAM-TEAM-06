@@ -5,6 +5,7 @@ services:
       args:
         API_KEY_SECRET: ${API_KEY_SECRET_PROD}
     container_name: energiai_frontend
+    restart: unless-stopped
     ports:
       - "80:80"
     networks:
@@ -15,6 +16,7 @@ services:
   modelo-api:
     build: ./modelo-api
     container_name: modelo_energia_api
+    restart: unless-stopped
     # Puerto NO publicado: solo accesible internamente por energiai-api (red energiai_net).
     networks:
       - energiai_net
@@ -34,6 +36,7 @@ services:
   energiai-api:
     build: ./energiai-api
     container_name: energiai_api
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
@@ -49,7 +52,7 @@ services:
       - energiai_net
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       modelo-api:
         condition: service_healthy
     secrets:
@@ -59,6 +62,7 @@ services:
   db:
     image: mysql:9.7
     container_name: mysql_energiai
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: energiai
@@ -70,6 +74,12 @@ services:
       - energiai_net
     secrets:
       - db_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 volumes:
   mysql_data:
