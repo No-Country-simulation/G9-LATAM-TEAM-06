@@ -20,6 +20,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query("update Usuario u set u.contadorAnalisis = u.contadorAnalisis + 1 where u.id = :id")
     int incrementarContador(@Param("id") Long id);
 
+    /** Reinicia el contador correlativo de análisis de un usuario. */
+    @Modifying
+    @Query("update Usuario u set u.contadorAnalisis = 0 where u.id = :id")
+    int resetearContador(@Param("id") Long id);
+
     @Query("select u.contadorAnalisis from Usuario u where u.id = :id")
     Integer obtenerContadorAnalisis(@Param("id") Long id);
 }

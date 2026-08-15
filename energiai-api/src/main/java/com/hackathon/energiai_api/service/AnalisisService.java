@@ -370,7 +370,13 @@ public class AnalisisService {
         if ("invitado".equals(usuarioNormalizado)) {
             return 0L;
         }
-        return analisisRepository.deleteByUsuarioId(usuarioNormalizado);
+        long eliminados = analisisRepository.deleteByUsuarioId(usuarioNormalizado);
+        if (eliminados > 0) {
+            // Al borrar todo el historial se reinicia la numeración ("Análisis 1" de nuevo).
+            usuarioRepository.findByEmail(usuarioNormalizado)
+                    .ifPresent(usuario -> usuarioRepository.resetearContador(usuario.getId()));
+        }
+        return eliminados;
     }
 
     private List<String> obtenerRecomendacionesGuardadas(Analisis analisis, AnalisisRequest request) {

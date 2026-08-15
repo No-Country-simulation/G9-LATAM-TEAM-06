@@ -313,11 +313,24 @@ class AnalisisServiceTest {
     @Test
     void borrarHistorialPorUsuario_debeEliminarRegistrosPersistidos() {
         when(analisisRepository.deleteByUsuarioId("usuario@correo.com")).thenReturn(3L);
+        when(usuarioRepository.findByEmail("usuario@correo.com")).thenReturn(
+                Optional.of(usuarioVerificado("usuario@correo.com")));
 
         long eliminados = analisisService.borrarHistorialPorUsuario(" Usuario@Correo.com ");
 
         assertThat(eliminados).isEqualTo(3L);
         verify(analisisRepository).deleteByUsuarioId("usuario@correo.com");
+        verify(usuarioRepository).resetearContador(any());
+    }
+
+    @Test
+    void borrarHistorialPorUsuario_sinRegistros_noReiniciaContador() {
+        when(analisisRepository.deleteByUsuarioId("usuario@correo.com")).thenReturn(0L);
+
+        long eliminados = analisisService.borrarHistorialPorUsuario("usuario@correo.com");
+
+        assertThat(eliminados).isZero();
+        verify(usuarioRepository, never()).resetearContador(any());
     }
 
     @Test
