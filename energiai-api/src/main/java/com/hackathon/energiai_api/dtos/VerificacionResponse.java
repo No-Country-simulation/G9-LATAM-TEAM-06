@@ -1,4 +1,4 @@
-package com.hackathon.energiai_api.DTOs;
+package com.hackathon.energiai_api.dtos;
 
 public record VerificacionResponse(
         String email,

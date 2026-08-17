@@ -1,6 +1,6 @@
 package com.hackathon.energiai_api.service;
 
-import com.hackathon.energiai_api.DTOs.VerificacionResponse;
+import com.hackathon.energiai_api.dtos.VerificacionResponse;
 import com.hackathon.energiai_api.exception.VerificacionCorreoException;
 import com.hackathon.energiai_api.model.CodigoVerificacion;
 import com.hackathon.energiai_api.model.Usuario;

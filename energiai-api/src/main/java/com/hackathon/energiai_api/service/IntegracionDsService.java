@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.hackathon.energiai_api.DTOs.AnalisisRequest;
-import com.hackathon.energiai_api.DTOs.ModeloApiRequest;
-import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
+import com.hackathon.energiai_api.dtos.AnalisisRequest;
+import com.hackathon.energiai_api.dtos.ModeloApiRequest;
+import com.hackathon.energiai_api.dtos.ModeloApiResponse;
 import com.hackathon.energiai_api.exception.ModeloApiException;
 
 import lombok.RequiredArgsConstructor;

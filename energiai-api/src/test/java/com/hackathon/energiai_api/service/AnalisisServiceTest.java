@@ -1,10 +1,10 @@
 package com.hackathon.energiai_api.service;
 
-import com.hackathon.energiai_api.DTOs.AnalisisRequest;
-import com.hackathon.energiai_api.DTOs.AnalisisResponse;
-import com.hackathon.energiai_api.DTOs.HistorialResponse;
-import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
-import com.hackathon.energiai_api.DTOs.RecomendacionModelo;
+import com.hackathon.energiai_api.dtos.AnalisisRequest;
+import com.hackathon.energiai_api.dtos.AnalisisResponse;
+import com.hackathon.energiai_api.dtos.HistorialResponse;
+import com.hackathon.energiai_api.dtos.ModeloApiResponse;
+import com.hackathon.energiai_api.dtos.RecomendacionModelo;
 import com.hackathon.energiai_api.exception.ServicioAnalisisException;
 import com.hackathon.energiai_api.model.Analisis;
 import com.hackathon.energiai_api.model.Usuario;

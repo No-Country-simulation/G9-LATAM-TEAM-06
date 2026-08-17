@@ -1,17 +1,24 @@
-package com.hackathon.energiai_api.DTOs;
+package com.hackathon.energiai_api.dtos;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-public record AnalisisResponse(
+public record HistorialResponse(
+        Long id,
+        LocalDateTime creadoEn,
+        String usuario,
+        Integer consumoKwh,
+        String tipoInmueble,
+        Integer cantidadEquipos,
+        Integer horasAltoConsumo,
+        Boolean usoHorarioPico,
         String categoria,
         BigDecimal probabilidad,
-        List<String> recomendaciones,
         BigDecimal costo_estimado_mensual,
+        List<String> recomendaciones,
         Map<String, Integer> clasificacion_equipos,
-        String nivel_analisis,
-        List<String> campos_imputados,
         List<RecomendacionModelo> recomendaciones_detalle,
         String origen_prediccion,
         String modelo_version,

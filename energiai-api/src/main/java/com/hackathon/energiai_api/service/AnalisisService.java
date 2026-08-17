@@ -1,33 +1,26 @@
 package com.hackathon.energiai_api.service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.LinkedHashMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hackathon.energiai_api.dtos.*;
+import com.hackathon.energiai_api.exception.ServicioAnalisisException;
+import com.hackathon.energiai_api.model.Analisis;
+import com.hackathon.energiai_api.model.Usuario;
+import com.hackathon.energiai_api.repository.AnalisisRepository;
+import com.hackathon.energiai_api.repository.UsuarioRepository;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hackathon.energiai_api.DTOs.AnalisisRequest;
-import com.hackathon.energiai_api.DTOs.AnalisisResponse;
-import com.hackathon.energiai_api.DTOs.HistorialResponse;
-import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
-import com.hackathon.energiai_api.DTOs.RecomendacionModelo;
-import com.hackathon.energiai_api.exception.ServicioAnalisisException;
-import com.hackathon.energiai_api.model.Analisis;
-import com.hackathon.energiai_api.model.Usuario;
-import com.hackathon.energiai_api.repository.AnalisisRepository;
-import com.hackathon.energiai_api.repository.UsuarioRepository;
-
-import lombok.RequiredArgsConstructor;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor

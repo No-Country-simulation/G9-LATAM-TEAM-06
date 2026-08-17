@@ -1,8 +1,8 @@
 package com.hackathon.energiai_api.service;
 
-import com.hackathon.energiai_api.DTOs.AnalisisRequest;
-import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
-import com.hackathon.energiai_api.DTOs.RecomendacionModelo;
+import com.hackathon.energiai_api.dtos.AnalisisRequest;
+import com.hackathon.energiai_api.dtos.ModeloApiResponse;
+import com.hackathon.energiai_api.dtos.RecomendacionModelo;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

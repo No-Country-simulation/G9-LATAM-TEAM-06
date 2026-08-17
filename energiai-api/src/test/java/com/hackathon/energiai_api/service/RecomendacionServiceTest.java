@@ -1,8 +1,8 @@
 package com.hackathon.energiai_api.service;
 
-import com.hackathon.energiai_api.DTOs.AnalisisRequest;
-import com.hackathon.energiai_api.DTOs.ModeloApiResponse;
-import com.hackathon.energiai_api.DTOs.RecomendacionModelo;
+import com.hackathon.energiai_api.dtos.AnalisisRequest;
+import com.hackathon.energiai_api.dtos.ModeloApiResponse;
+import com.hackathon.energiai_api.dtos.RecomendacionModelo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

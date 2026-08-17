@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.validation.annotation.Validated;
 
-import com.hackathon.energiai_api.DTOs.AnalisisRequest;
-import com.hackathon.energiai_api.DTOs.AnalisisResponse;
-import com.hackathon.energiai_api.DTOs.HistorialResponse;
+import com.hackathon.energiai_api.dtos.AnalisisRequest;
+import com.hackathon.energiai_api.dtos.AnalisisResponse;
+import com.hackathon.energiai_api.dtos.HistorialResponse;
 import com.hackathon.energiai_api.service.AnalisisService;
 
 import jakarta.validation.Valid;

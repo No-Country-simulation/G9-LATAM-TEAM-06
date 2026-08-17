@@ -1,4 +1,4 @@
-package com.hackathon.energiai_api.DTOs;
+package com.hackathon.energiai_api.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

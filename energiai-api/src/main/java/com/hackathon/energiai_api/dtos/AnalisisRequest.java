@@ -1,4 +1,4 @@
-package com.hackathon.energiai_api.DTOs;
+package com.hackathon.energiai_api.dtos;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMax;

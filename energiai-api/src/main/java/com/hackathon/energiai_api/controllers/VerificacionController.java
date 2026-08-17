@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hackathon.energiai_api.DTOs.SolicitarCodigoRequest;
-import com.hackathon.energiai_api.DTOs.VerificacionResponse;
-import com.hackathon.energiai_api.DTOs.VerificarCodigoRequest;
+import com.hackathon.energiai_api.dtos.SolicitarCodigoRequest;
+import com.hackathon.energiai_api.dtos.VerificacionResponse;
+import com.hackathon.energiai_api.dtos.VerificarCodigoRequest;
 import com.hackathon.energiai_api.service.VerificacionCorreoService;
 
 import jakarta.servlet.http.HttpServletRequest;
