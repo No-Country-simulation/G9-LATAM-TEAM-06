@@ -29,6 +29,7 @@ jobs:
           cache: maven
       - run: ./mvnw test
         working-directory: energiai-api
+      - run: docker build -t energiai-api:test energiai-api
 
   frontend:
     runs-on: ubuntu-latest
@@ -39,7 +40,37 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: energiai-frontend/package-lock.json
+      - uses: browser-actions/setup-chrome@v1
       - run: npm ci
+        working-directory: energiai-frontend
+      - run: npm run lint
+        working-directory: energiai-frontend
+      - run: npm run test -- --watch=false --browsers=ChromeHeadless
         working-directory: energiai-frontend
       - run: npm run build
         working-directory: energiai-frontend
+      - run: docker build -t energiai-frontend:test energiai-frontend
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Crear secrets placeholder para validar el compose
+        run: |
+          mkdir -p secrets
+          echo "placeholder-ci" > secrets/api_key_secret.txt
+          echo "placeholder-ci" > secrets/db_password.txt
+          echo "placeholder-ci" > secrets/api_key_secret_prod.txt
+          echo "placeholder-ci" > secrets/db_password_prod.txt
+      - name: Validar compose de desarrollo
+        run: docker compose -f compose.yml config --quiet
+        env:
+          DB_USERNAME: energiai_app
+          DB_ROOT_PASSWORD: placeholder-root
+          API_KEY_SECRET: placeholder-ci
+      - name: Validar compose de producción
+        run: docker compose -f compose.prod.yml config --quiet
+        env:
+          DB_USERNAME: energiai_app
+          DB_ROOT_PASSWORD: placeholder-root
+          API_KEY_SECRET_PROD: placeholder-ci

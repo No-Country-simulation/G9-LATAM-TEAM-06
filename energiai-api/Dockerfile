@@ -15,6 +15,11 @@ WORKDIR /app
 # Crear usuario no root por seguridad
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
+# curl para el healthcheck de la API
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /app/target/energiai-api-*.jar app.jar
 
 # Cambiar permisos

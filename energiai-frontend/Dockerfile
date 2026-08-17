@@ -17,7 +17,7 @@ RUN if [ -n "$API_KEY_SECRET" ]; then \
 RUN npm run build
 
 # Runtime stage
-FROM nginx:alpine
+FROM nginx:1.27.3-alpine
 COPY --from=builder /app/dist/energiai-frontend/browser /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 

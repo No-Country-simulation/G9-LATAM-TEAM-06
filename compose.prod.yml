@@ -12,6 +12,12 @@ services:
       - energiai_net
     depends_on:
       - energiai-api
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   modelo-api:
     build: ./modelo-api
@@ -47,7 +53,7 @@ services:
       - MODELO_API_FALLBACK_ENABLED=false
       - API_KEY_SECRET_FILE=/run/secrets/api_key_secret
       - DB_PASSWORD_FILE=/run/secrets/db_password
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://hackaton.mobilix.com.mx,https://energiai.vercel.app,http://localhost,http://localhost:8080}
     networks:
       - energiai_net
     depends_on:
@@ -58,13 +64,19 @@ services:
     secrets:
       - api_key_secret
       - db_password
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   db:
     image: mysql:9.7
     container_name: mysql_energiai
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: energiai
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD_FILE: /run/secrets/db_password
@@ -75,7 +87,7 @@ services:
     secrets:
       - db_password
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
