@@ -178,3 +178,8 @@ CONTEXTO.md
 AGENTS.md
 EnergiAI.pdf
 docker-compose.override.yml
+
+# Documentacion interna y listas de tareas (no versionar)
+docs/
+[0-9].*.txt
+readme.md
