@@ -1,4 +1,31 @@
 services:
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: caddy_energiai
+    restart: unless-stopped
+    # Única entrada pública: HTTPS (443) y redirección (80).
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - CADDY_DOMAIN=${CADDY_DOMAIN:-}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - energiai_net
+    depends_on:
+      - energiai-frontend
+    secrets:
+      - api_key_secret
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   energiai-frontend:
     build:
       context: ./energiai-frontend
@@ -6,8 +33,7 @@ services:
         API_KEY_SECRET: ${API_KEY_SECRET_PROD}
     container_name: energiai_frontend
     restart: unless-stopped
-    ports:
-      - "80:80"
+    # Sin puerto publicado: solo accesible internamente a través de Caddy.
     networks:
       - energiai_net
     depends_on:
@@ -43,8 +69,7 @@ services:
     build: ./energiai-api
     container_name: energiai_api
     restart: unless-stopped
-    ports:
-      - "8080:8080"
+    # Sin puerto publicado: solo accesible internamente a través de Caddy.
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/energiai
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
@@ -53,7 +78,7 @@ services:
       - MODELO_API_FALLBACK_ENABLED=false
       - API_KEY_SECRET_FILE=/run/secrets/api_key_secret
       - DB_PASSWORD_FILE=/run/secrets/db_password
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://hackaton.mobilix.com.mx,https://energiai.vercel.app,http://localhost,http://localhost:8080}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://energiai-06.navmx.com,http://localhost,http://localhost:8080}
     networks:
       - energiai_net
     depends_on:
@@ -95,6 +120,8 @@ services:
 
 volumes:
   mysql_data:
+  caddy_data:
+  caddy_config:
 networks:
   energiai_net:
 

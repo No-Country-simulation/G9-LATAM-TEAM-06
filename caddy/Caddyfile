@@ -1,0 +1,21 @@
+# Gateway TLS de EnergiAI (producción).
+#
+# Es la entrada única del stack: termina HTTPS y reenvía todo a nginx del
+# frontend, que sirve los estáticos y proxya /analisis-energetico y
+# /verificacion a la API (mismo origen, sin CORS).
+#
+# La API key se inyecta aquí (server-side) desde el Docker secret, para no
+# exponerla en el bundle del navegador.
+#
+# Notas:
+#  - El sitio usa el dominio por defecto; con CADDY_DOMAIN se puede cambiar.
+#  - Para probar solo por IP (sin HTTPS) reemplazar la dirección del sitio
+#    por `:80` mientras el registro A no exista.
+
+{$CADDY_DOMAIN:energiai-06.navmx.com} {
+	encode gzip
+
+	reverse_proxy energiai-frontend:80 {
+		header_up X-API-KEY "{file /run/secrets/api_key_secret | strings.TrimSpace}"
+	}
+}
