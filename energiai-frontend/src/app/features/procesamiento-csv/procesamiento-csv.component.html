@@ -94,7 +94,7 @@
     @if (!procesando()) {
       <div class="resumen-resultado"><div class="resultado-ok"><i class="pe-7s-check"></i><strong>{{ exitosas() }}</strong><span>Guardados</span></div><div class="resultado-fallo"><i class="pe-7s-attention"></i><strong>{{ fallidas() }}</strong><span>No procesados</span></div><a class="btn accion-ui accion-ui-secundaria" routerLink="/historial"><i class="pe-7s-notebook"></i> Ver historial</a></div>
       @if (resultados().length) {
-        <div class="chips-resultados">@for (item of resultados(); track item.fila) {<span [class.fallo]="item.estado === 'error'">Fila {{ item.fila }} · {{ item.estado === 'exitoso' ? item.categoria + ' · $' + (item.costo ?? 0).toFixed(2) : item.mensaje }}</span>}</div>
+        <div class="chips-resultados">@for (item of resultados(); track item.fila) {<span [class.fallo]="item.estado === 'error'">Fila {{ item.fila }} · {{ item.estado === 'exitoso' ? item.categoria + ' · ' + formatearMoneda(item.costo) : item.mensaje }}</span>}</div>
       }
     }
   </section>

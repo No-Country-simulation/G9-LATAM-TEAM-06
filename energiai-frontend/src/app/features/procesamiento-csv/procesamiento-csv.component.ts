@@ -9,6 +9,7 @@ import {
 } from '../../core/services/csv-analisis.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { PageTitleComponent } from '../../layout/page-title';
+import * as formato from '../../core/util/formato';
 
 interface ResultadoProcesado {
   fila: number;
@@ -123,6 +124,10 @@ export class ProcesamientoCsvComponent {
         finalize(() => this.procesando.set(false)),
       )
       .subscribe();
+  }
+
+  formatearMoneda(valor: number | undefined): string {
+    return formato.formatearMoneda(valor);
   }
 
   descargarPlantilla(): void {

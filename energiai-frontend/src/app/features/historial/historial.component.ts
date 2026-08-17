@@ -4,6 +4,7 @@ import { finalize, Subject, Subscription, takeUntil, tap } from 'rxjs';
 import { AnalisisService } from '../../core/services/analisis.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { HistorialResponse } from '../../core/models/historial-response';
+import * as formato from '../../core/util/formato';
 import { PageTitleComponent } from '../../layout/page-title';
 
 interface ItemHistorial {
@@ -124,7 +125,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
     return {
       id: item.id,
       nombre: item.nombre_o_numero_analisis ?? `Análisis #${item.id}`,
-      fecha: new Date(item.creadoEn).toLocaleString(),
+      fecha: formato.formatearFechaHora(item.creadoEn),
       categoria: item.categoria,
       consumoKwh: item.consumoKwh,
       tipoInmueble: item.tipoInmueble,
@@ -135,29 +136,14 @@ export class HistorialComponent implements OnInit, OnDestroy {
   }
 
   formatearProbabilidad(probabilidad: number): string {
-    const valor = Number(probabilidad);
-    return Number.isFinite(valor) ? `${Math.round(valor * 100)}%` : '—';
+    return formato.formatearProbabilidad(probabilidad);
   }
 
   formatearCosto(costo: number): string {
-    const monto = Number(costo).toLocaleString('es-PE', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    return `R$ ${monto}`;
+    return formato.formatearMoneda(costo);
   }
 
   claseCategoria(categoria: string): string {
-    const valor = (categoria ?? '').toLowerCase();
-    if (valor.includes('ineficiente')) {
-      return 'bg-danger';
-    }
-    if (valor.includes('moderado') || valor.includes('medio') || valor.includes('normal')) {
-      return 'bg-warning text-white';
-    }
-    if (valor.includes('eficiente')) {
-      return 'bg-success';
-    }
-    return 'bg-danger';
+    return formato.claseCategoriaBootstrap(categoria);
   }
 }

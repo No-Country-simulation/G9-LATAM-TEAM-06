@@ -3,6 +3,7 @@ import {
   AnalisisResponse,
   RecomendacionDetalle,
 } from '../../../core/models/analisis-response';
+import * as formato from '../../../core/util/formato';
 
 @Component({
   selector: 'app-resultado-analisis',
@@ -40,30 +41,15 @@ export class ResultadoAnalisisComponent {
   });
 
   formatearProbabilidad(probabilidad: number | undefined): string {
-    const valor = Number(probabilidad ?? 0);
-    return `${(valor * 100).toFixed(0)}%`;
+    return formato.formatearProbabilidad(probabilidad);
   }
 
   formatearCosto(costo: number | undefined): string {
-    const monto = Number(costo ?? 0).toLocaleString('es-PE', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    return `R$ ${monto}`;
+    return formato.formatearMoneda(costo);
   }
 
   claseCategoria(): string {
-    const valor = (this.resultado().categoria ?? '').toLowerCase();
-    if (valor.includes('ineficiente')) {
-      return 'bg-danger';
-    }
-    if (valor.includes('moderado') || valor.includes('medio') || valor.includes('normal')) {
-      return 'bg-warning text-white';
-    }
-    if (valor.includes('eficiente')) {
-      return 'bg-success';
-    }
-    return 'bg-danger';
+    return formato.claseCategoriaBootstrap(this.resultado().categoria);
   }
 
   etiquetaNivel(): string {

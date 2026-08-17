@@ -6,6 +6,7 @@ import { HistorialResponse } from '../../core/models/historial-response';
 import { AnalisisService } from '../../core/services/analisis.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { PageTitleComponent } from '../../layout/page-title';
+import * as formato from '../../core/util/formato';
 
 @Component({
   selector: 'app-simulador-ahorro',
@@ -72,8 +73,9 @@ export class SimuladorAhorroComponent implements OnInit, OnDestroy {
   }
   anchoConsumo(valor: number): number { const maximo = Math.max(Number(this.base()?.consumoKwh ?? 0), 1); return Math.max(3, Math.min(100, valor / maximo * 100)); }
   etiquetaAnalisis(item: HistorialResponse): string { return `${item.nombre_o_numero_analisis ?? `Análisis #${item.id}`} · ${this.formatearFecha(item.creadoEn)} · ${this.formatearNumero(item.consumoKwh, 0)} kWh · ${item.categoria}`; }
-  formatearFecha(fecha: string): string { return new Intl.DateTimeFormat('es-MX', { day:'2-digit', month:'short', year:'numeric' }).format(new Date(fecha)); }
-  formatearNumero(valor: number, decimales = 1): string { return Number(valor ?? 0).toLocaleString('es-MX', { minimumFractionDigits:decimales, maximumFractionDigits:decimales }); }
+  formatearFecha(fecha: string): string { return formato.formatearFecha(fecha); }
+  formatearNumero(valor: number, decimales = 1): string { return formato.formatearNumero(valor, decimales); }
+  formatearMoneda(valor: number): string { return formato.formatearMoneda(valor); }
 
   private enteroLimitado(valor: unknown, minimo: number, maximo: number): number {
     const numero = Number(valor);

@@ -44,7 +44,7 @@
     <section class="tabla-panel">
       <div class="tabla-contenedor"><table><thead><tr><th>Posición</th><th>Análisis</th><th>Clasificación</th><th>Consumo</th><th>Intensidad</th><th>Costo estimado</th></tr></thead><tbody>
         @for (item of ranking(); track item.id) {
-          <tr><td><strong class="posicion">{{ medalla(item.posicion) }}</strong></td><td><strong>#{{ item.id }} · {{ item.tipoInmueble }}</strong><small>{{ formatearFecha(item.creadoEn) }} · {{ item.cantidadEquipos }} equipos</small></td><td><span class="categoria" [class]="claseCategoria(item.categoria)">{{ item.categoria }}</span></td><td>{{ formatearNumero(item.consumoKwh, 0) }} kWh</td><td><strong>{{ formatearNumero(item.intensidad) }}</strong> kWh/equipo</td><td>${{ formatearNumero(item.costo_estimado_mensual, 2) }}</td></tr>
+          <tr><td><strong class="posicion">{{ medalla(item.posicion) }}</strong></td><td><strong>#{{ item.id }} · {{ item.tipoInmueble }}</strong><small>{{ formatearFecha(item.creadoEn) }} · {{ item.cantidadEquipos }} equipos</small></td><td><span class="categoria" [class]="claseCategoria(item.categoria)">{{ item.categoria }}</span></td><td>{{ formatearNumero(item.consumoKwh, 0) }} kWh</td><td><strong>{{ formatearNumero(item.intensidad) }}</strong> kWh/equipo</td><td>{{ formatearMoneda(item.costo_estimado_mensual) }}</td></tr>
         }
       </tbody></table></div>
     </section>

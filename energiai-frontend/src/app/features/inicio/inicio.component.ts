@@ -11,6 +11,7 @@ import { Subject, finalize, takeUntil } from "rxjs";
 import { HistorialResponse } from "../../core/models/historial-response";
 import { AnalisisService } from "../../core/services/analisis.service";
 import { UsuarioService } from "../../core/services/usuario.service";
+import * as formato from "../../core/util/formato";
 
 interface DistribucionCategoria {
   etiqueta: string;
@@ -240,10 +241,7 @@ export class InicioComponent implements OnInit, OnDestroy {
   }
 
   fechaCorta(fecha: string): string {
-    return new Intl.DateTimeFormat("es-MX", {
-      day: "2-digit",
-      month: "short",
-    }).format(new Date(fecha));
+    return formato.formatearFechaCorta(fecha);
   }
 
   rangoGrafica(): string {
@@ -263,21 +261,22 @@ export class InicioComponent implements OnInit, OnDestroy {
   }
 
   claseCategoria(categoria: string): string {
-    const tipo = this.tipoCategoria(categoria);
-    if (tipo === "eficiente") {
+    const nivel = formato.nivelCategoria(categoria);
+    if (nivel === 3) {
       return "estado-eficiente";
     }
-    if (tipo === "moderado") {
+    if (nivel === 2) {
       return "estado-moderado";
     }
     return "estado-ineficiente";
   }
 
   formatearNumero(valor: number, decimales = 1): string {
-    return Number(valor ?? 0).toLocaleString("es-MX", {
-      minimumFractionDigits: decimales,
-      maximumFractionDigits: decimales,
-    });
+    return formato.formatearNumero(valor, decimales);
+  }
+
+  formatearMoneda(valor: number): string {
+    return formato.formatearMoneda(valor);
   }
 
   formatearVariacion(): string {

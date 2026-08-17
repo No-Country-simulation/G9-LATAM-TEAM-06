@@ -28,13 +28,13 @@
 
     <section class="resultados-panel">
       <div class="panel-titulo"><span class="sobrelinea">Proyección mensual</span><h2>Tu escenario de ahorro</h2><p>Calculado únicamente con los kWh reducidos y la tarifa estimada de tu análisis.</p></div>
-      <div class="ahorro-principal"><span>Ahorro mensual estimado</span><strong>${{ formatearNumero(ahorroMensual(), 2) }}</strong><small>${{ formatearNumero(ahorroAnual(), 2) }} al año si mantienes el hábito</small></div>
+      <div class="ahorro-principal"><span>Ahorro mensual estimado</span><strong>{{ formatearMoneda(ahorroMensual()) }}</strong><small>{{ formatearMoneda(ahorroAnual()) }} al año si mantienes el hábito</small></div>
       <div class="metricas"><article><i class="pe-7s-graph3"></i><div><strong>{{ formatearNumero(kwhAhorrados(), 0) }} kWh</strong><span>menos al mes</span></div></article><article><i class="pe-7s-angle-down-circle"></i><div><strong>{{ reduccionConsumo() }}%</strong><span>meta de reducción</span></div></article></div>
       <div class="comparacion-consumo">
         <div class="barra-fila"><span>Consumo actual</span><div><i [style.width.%]="anchoConsumo(base()?.consumoKwh ?? 0)"></i></div><strong>{{ formatearNumero(base()?.consumoKwh ?? 0, 0) }} kWh</strong></div>
         <div class="barra-fila proyectado"><span>Proyectado</span><div><i [style.width.%]="anchoConsumo(consumoProyectado())"></i></div><strong>{{ formatearNumero(consumoProyectado(), 0) }} kWh</strong></div>
       </div>
-      <div class="costos"><div><span>Costo actual</span><strong>${{ formatearNumero(base()?.costo_estimado_mensual ?? 0, 2) }}</strong></div><i class="pe-7s-right-arrow"></i><div><span>Costo proyectado</span><strong>${{ formatearNumero(costoProyectado(), 2) }}</strong></div></div>
+      <div class="costos"><div><span>Costo actual</span><strong>{{ formatearMoneda(base()?.costo_estimado_mensual ?? 0) }}</strong></div><i class="pe-7s-right-arrow"></i><div><span>Costo proyectado</span><strong>{{ formatearMoneda(costoProyectado()) }}</strong></div></div>
     </section>
   </div>
 }

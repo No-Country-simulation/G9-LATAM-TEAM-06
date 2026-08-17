@@ -13,6 +13,7 @@ import { HistorialResponse } from '../../core/models/historial-response';
 import { AnalisisService } from '../../core/services/analisis.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { PageTitleComponent } from '../../layout/page-title';
+import * as formato from '../../core/util/formato';
 
 interface FilaComparacion {
   etiqueta: string;
@@ -125,11 +126,11 @@ export class ComparacionPeriodosComponent implements OnInit, OnDestroy {
       comparado.consumoKwh,
     );
     const categoriaMejoro =
-      this.nivelCategoria(comparado.categoria) >
-      this.nivelCategoria(base.categoria);
+      formato.nivelCategoria(comparado.categoria) >
+      formato.nivelCategoria(base.categoria);
     const categoriaEmpeoro =
-      this.nivelCategoria(comparado.categoria) <
-      this.nivelCategoria(base.categoria);
+      formato.nivelCategoria(comparado.categoria) <
+      formato.nivelCategoria(base.categoria);
 
     if (diferencia < 0 || categoriaMejoro) {
       return {
@@ -235,21 +236,11 @@ export class ComparacionPeriodosComponent implements OnInit, OnDestroy {
   }
 
   formatearFecha(fecha: string): string {
-    return new Intl.DateTimeFormat('es-MX', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    }).format(new Date(fecha));
+    return formato.formatearFechaHora(fecha);
   }
 
   formatearNumero(valor: number, decimales = 1): string {
-    return Number(valor ?? 0).toLocaleString('es-MX', {
-      minimumFractionDigits: decimales,
-      maximumFractionDigits: decimales,
-    });
+    return formato.formatearNumero(valor, decimales);
   }
 
   textoVariacion(fila: FilaComparacion): string {
@@ -288,7 +279,7 @@ export class ComparacionPeriodosComponent implements OnInit, OnDestroy {
   }
 
   claseCategoria(categoria: string): string {
-    const nivel = this.nivelCategoria(categoria);
+    const nivel = formato.nivelCategoria(categoria);
     if (nivel === 3) {
       return 'categoria-eficiente';
     }
@@ -305,8 +296,8 @@ export class ComparacionPeriodosComponent implements OnInit, OnDestroy {
       return '';
     }
     const cambio =
-      this.nivelCategoria(comparado.categoria) -
-      this.nivelCategoria(base.categoria);
+      formato.nivelCategoria(comparado.categoria) -
+      formato.nivelCategoria(base.categoria);
     if (cambio > 0) {
       return 'Mejoró';
     }
@@ -323,8 +314,8 @@ export class ComparacionPeriodosComponent implements OnInit, OnDestroy {
       return 'variacion-neutra';
     }
     const cambio =
-      this.nivelCategoria(comparado.categoria) -
-      this.nivelCategoria(base.categoria);
+      formato.nivelCategoria(comparado.categoria) -
+      formato.nivelCategoria(base.categoria);
     return cambio > 0
       ? 'variacion-favorable'
       : cambio < 0
@@ -375,23 +366,5 @@ export class ComparacionPeriodosComponent implements OnInit, OnDestroy {
       return null;
     }
     return ((Number(comparado) - valorBase) / valorBase) * 100;
-  }
-
-  private nivelCategoria(categoria: string): number {
-    const valor = (categoria ?? '').toLowerCase();
-    if (valor.includes('ineficiente')) {
-      return 1;
-    }
-    if (
-      valor.includes('moderado') ||
-      valor.includes('medio') ||
-      valor.includes('normal')
-    ) {
-      return 2;
-    }
-    if (valor.includes('eficiente')) {
-      return 3;
-    }
-    return 2;
   }
 }

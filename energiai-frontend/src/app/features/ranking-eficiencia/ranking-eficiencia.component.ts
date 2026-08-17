@@ -6,6 +6,7 @@ import { HistorialResponse } from '../../core/models/historial-response';
 import { AnalisisService } from '../../core/services/analisis.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { PageTitleComponent } from '../../layout/page-title';
+import * as formato from '../../core/util/formato';
 
 interface PosicionRanking extends HistorialResponse {
   posicion: number;
@@ -44,7 +45,7 @@ export class RankingEficienciaComponent implements OnInit, OnDestroy {
         intensidad: Number(item.consumoKwh) / Math.max(Number(item.cantidadEquipos), 1),
       }))
       .sort((a, b) =>
-        this.nivelCategoria(b.categoria) - this.nivelCategoria(a.categoria) ||
+        formato.nivelCategoria(b.categoria) - formato.nivelCategoria(a.categoria) ||
         a.intensidad - b.intensidad ||
         Number(a.consumoKwh) - Number(b.consumoKwh) ||
         b.id - a.id,
@@ -85,23 +86,19 @@ export class RankingEficienciaComponent implements OnInit, OnDestroy {
   medalla(posicion: number): string { return ['🥇', '🥈', '🥉'][posicion - 1] ?? `#${posicion}`; }
 
   claseCategoria(categoria: string): string {
-    const nivel = this.nivelCategoria(categoria);
+    const nivel = formato.nivelCategoria(categoria);
     return nivel === 3 ? 'eficiente' : nivel === 2 ? 'moderado' : 'ineficiente';
   }
 
   formatearFecha(fecha: string): string {
-    return new Intl.DateTimeFormat('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(fecha));
+    return formato.formatearFecha(fecha);
   }
 
   formatearNumero(valor: number, decimales = 1): string {
-    return Number(valor ?? 0).toLocaleString('es-MX', { minimumFractionDigits: decimales, maximumFractionDigits: decimales });
+    return formato.formatearNumero(valor, decimales);
   }
 
-  private nivelCategoria(categoria: string): number {
-    const valor = (categoria ?? '').toLowerCase();
-    if (valor.includes('ineficiente')) return 1;
-    if (valor.includes('moderado') || valor.includes('medio') || valor.includes('normal')) return 2;
-    if (valor.includes('eficiente')) return 3;
-    return 2;
+  formatearMoneda(valor: number): string {
+    return formato.formatearMoneda(valor);
   }
 }
