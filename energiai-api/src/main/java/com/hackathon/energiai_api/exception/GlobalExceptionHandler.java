@@ -79,6 +79,18 @@ public class GlobalExceptionHandler {
                 );
         }
 
+        @ExceptionHandler(RecursoNoEncontradoException.class)
+        public ResponseEntity<Map<String, Object>> handleRecursoNoEncontrado(RecursoNoEncontradoException ex) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("estado", "error");
+                response.put("codigo", "RECURSO_NO_ENCONTRADO");
+                response.put("mensaje", ex.getMessage());
+
+                logger.warn("Recurso no encontrado: {}", ex.getMessage());
+
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
         @ExceptionHandler(ServicioAnalisisException.class)
         public ResponseEntity<Map<String, Object>> handleServicioAnalisisException(ServicioAnalisisException ex) {
                 Map<String, Object> response = new HashMap<>();

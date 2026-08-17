@@ -10,6 +10,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import com.hackathon.energiai_api.catalogo.CatalogoElectrodomesticos;
+
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Locale;
@@ -95,24 +97,10 @@ public record AnalisisRequest(
     public static final String REGEX_USUARIO_VALIDO =
             "invitado|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+";
 
-    private static final Set<String> EQUIPOS_ALTO = Set.of(
-            "aire_acondicionado", "calefactor", "secadora", "horno_electrico", "ducha_electrica"
-    );
-    private static final Set<String> EQUIPOS_MEDIO = Set.of(
-            "lavadora", "lavavajillas", "plancha", "microondas", "bomba_agua"
-    );
-    private static final Set<String> EQUIPOS_BAJO = Set.of(
-            "nevera", "freezer", "televisor", "computadora", "iluminacion_led", "router", "cargador_celular"
-    );
-    private static final Set<String> EQUIPOS_PERMITIDOS;
-
-    static {
-        Set<String> permitidos = new HashSet<>();
-        permitidos.addAll(EQUIPOS_ALTO);
-        permitidos.addAll(EQUIPOS_MEDIO);
-        permitidos.addAll(EQUIPOS_BAJO);
-        EQUIPOS_PERMITIDOS = Set.copyOf(permitidos);
-    }
+    private static final Set<String> EQUIPOS_ALTO = CatalogoElectrodomesticos.EQUIPOS_ALTO;
+    private static final Set<String> EQUIPOS_MEDIO = CatalogoElectrodomesticos.EQUIPOS_MEDIO;
+    private static final Set<String> EQUIPOS_BAJO = CatalogoElectrodomesticos.EQUIPOS_BAJO;
+    private static final Set<String> EQUIPOS_PERMITIDOS = CatalogoElectrodomesticos.EQUIPOS_PERMITIDOS;
 
     @AssertTrue(message = "La distribución de equipos debe estar completa, ser no negativa y sumar la cantidad total")
     public boolean isDistribucionEquiposValida() {

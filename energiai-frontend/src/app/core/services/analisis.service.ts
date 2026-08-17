@@ -56,8 +56,9 @@ export class AnalisisService {
       );
   }
 
-  obtenerPorId(id: number): Observable<AnalisisResponse> {
-    return this.http.get<AnalisisResponse>(`${environment.apiUrl}${RUTA_BASE}/${id}`);
+  obtenerPorId(id: number, usuarioId: string): Observable<AnalisisResponse> {
+    const params = new HttpParams().set('usuarioId', usuarioId || 'invitado');
+    return this.http.get<AnalisisResponse>(`${environment.apiUrl}${RUTA_BASE}/${id}`, { params });
   }
 
   listarPorUsuario(

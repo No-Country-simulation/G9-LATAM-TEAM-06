@@ -5,6 +5,7 @@ import com.hackathon.energiai_api.dtos.AnalisisResponse;
 import com.hackathon.energiai_api.dtos.HistorialResponse;
 import com.hackathon.energiai_api.dtos.ModeloApiResponse;
 import com.hackathon.energiai_api.dtos.RecomendacionModelo;
+import com.hackathon.energiai_api.exception.RecursoNoEncontradoException;
 import com.hackathon.energiai_api.exception.ServicioAnalisisException;
 import com.hackathon.energiai_api.model.Analisis;
 import com.hackathon.energiai_api.model.Usuario;
@@ -259,7 +260,7 @@ class AnalisisServiceTest {
         when(recomendacionService.generarRecomendaciones(any())).thenReturn(List.of("Test"));
 
         // When
-        AnalisisResponse resultado = analisisService.obtenerPorId(1L);
+        AnalisisResponse resultado = analisisService.obtenerPorId(1L, "user1");
 
         // Then
         assertThat(resultado.categoria()).isEqualTo("Moderado");
@@ -267,11 +268,34 @@ class AnalisisServiceTest {
     }
 
     @Test
+    void obtenerPorId_deOtroUsuario_debeLanzarExcepcion() {
+        // Given
+        Analisis analisis = Analisis.builder()
+                .id(1L)
+                .usuarioId("user1")
+                .consumoKwh(250)
+                .usoHorarioPico(true)
+                .cantidadEquipos(5)
+                .tipoInmueble("Casa")
+                .horasAltoConsumo(6)
+                .categoria("Moderado")
+                .probabilidad(BigDecimal.valueOf(0.60))
+                .costo_estimado_mensual(BigDecimal.valueOf(187.50))
+                .build();
+        when(analisisRepository.findById(1L)).thenReturn(Optional.of(analisis));
+
+        // When/Then: otro usuario no puede leer el análisis de user1
+        assertThatThrownBy(() -> analisisService.obtenerPorId(1L, "otro@correo.com"))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessageContaining("no encontrado");
+    }
+
+    @Test
     void obtenerPorId_conIdInexistente_debeLanzarExcepcion() {
         when(analisisRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> analisisService.obtenerPorId(999L))
-                .isInstanceOf(ServicioAnalisisException.class)
+        assertThatThrownBy(() -> analisisService.obtenerPorId(999L, "user1"))
+                .isInstanceOf(RecursoNoEncontradoException.class)
                 .hasMessageContaining("no encontrado");
     }
 

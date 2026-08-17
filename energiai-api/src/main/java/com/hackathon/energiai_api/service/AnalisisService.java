@@ -1,7 +1,9 @@
 package com.hackathon.energiai_api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hackathon.energiai_api.catalogo.CatalogoElectrodomesticos;
 import com.hackathon.energiai_api.dtos.*;
+import com.hackathon.energiai_api.exception.RecursoNoEncontradoException;
 import com.hackathon.energiai_api.exception.ServicioAnalisisException;
 import com.hackathon.energiai_api.model.Analisis;
 import com.hackathon.energiai_api.model.Usuario;
@@ -33,27 +35,6 @@ public class AnalisisService {
     private final AnalisisRepository analisisRepository;
     private final UsuarioRepository usuarioRepository;
     private final ObjectMapper objectMapper;
-
-    // Catálogo de clasificación de electrodomésticos
-    private static final Map<String, String> CATEGORIA_POR_ELECTRODOMESTICO = Map.ofEntries(
-        Map.entry("aire_acondicionado", "ALTO"),
-        Map.entry("calefactor", "ALTO"),
-        Map.entry("secadora", "ALTO"),
-        Map.entry("horno_electrico", "ALTO"),
-        Map.entry("ducha_electrica", "ALTO"),
-        Map.entry("lavadora", "MEDIO"),
-        Map.entry("lavavajillas", "MEDIO"),
-        Map.entry("plancha", "MEDIO"),
-        Map.entry("microondas", "MEDIO"),
-        Map.entry("bomba_agua", "MEDIO"),
-        Map.entry("nevera", "BAJO"),
-        Map.entry("freezer", "BAJO"),
-        Map.entry("televisor", "BAJO"),
-        Map.entry("computadora", "BAJO"),
-        Map.entry("iluminacion_led", "BAJO"),
-        Map.entry("router", "BAJO"),
-        Map.entry("cargador_celular", "BAJO")
-    );
 
     @Transactional
     public AnalisisResponse analizar(
@@ -117,8 +98,9 @@ public class AnalisisService {
             for (Map.Entry<String, Integer> entry : request.electrodomesticos().entrySet()) {
                 String electro = entry.getKey().toLowerCase().trim();
                 int cantidad = entry.getValue();
-                String categoria = CATEGORIA_POR_ELECTRODOMESTICO.getOrDefault(electro, "BAJO");
-                conteo.merge(categoria.toLowerCase(), cantidad, Integer::sum);
+                CatalogoElectrodomesticos.Categoria categoria = CatalogoElectrodomesticos.CATEGORIA_POR_NOMBRE
+                        .getOrDefault(electro, CatalogoElectrodomesticos.Categoria.BAJO);
+                conteo.merge(categoria.etiqueta(), cantidad, Integer::sum);
             }
 
             // Serializar a JSON
@@ -212,19 +194,26 @@ public class AnalisisService {
     }
 
     @Transactional(readOnly = true)
-    public AnalisisResponse obtenerPorId(Long id) {
-        Analisis analisis = analisisRepository.findById(id)
-                .orElseThrow(() -> new ServicioAnalisisException("Análisis no encontrado con ID: " + id));
-
+    public AnalisisResponse obtenerPorId(Long id, String usuarioId) {
+        Analisis analisis = obtenerAnalisisDeUsuario(id, usuarioId);
         return mapToResponseDTO(analisis);
     }
 
     @Transactional(readOnly = true)
-    public HistorialResponse obtenerHistorialPorId(Long id) {
-        Analisis analisis = analisisRepository.findById(id)
-                .orElseThrow(() -> new ServicioAnalisisException("Análisis no encontrado con ID: " + id));
-
+    public HistorialResponse obtenerHistorialPorId(Long id, String usuarioId) {
+        Analisis analisis = obtenerAnalisisDeUsuario(id, usuarioId);
         return mapToHistorialResponse(analisis);
+    }
+
+    /** Recupera un análisis verificando que pertenezca al usuario solicitante (previene acceso cruzado). */
+    private Analisis obtenerAnalisisDeUsuario(Long id, String usuarioId) {
+        Analisis analisis = analisisRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Análisis no encontrado con ID: " + id));
+        String usuarioNormalizado = normalizarUsuario(usuarioId);
+        if (!analisis.getUsuarioId().equals(usuarioNormalizado)) {
+            throw new RecursoNoEncontradoException("Análisis no encontrado con ID: " + id);
+        }
+        return analisis;
     }
 
     @Transactional(readOnly = true)

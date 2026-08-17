@@ -49,16 +49,26 @@ public class AnalisisController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AnalisisResponse> obtenerAnalisis(
-            @PathVariable @Positive Long id) {
+            @PathVariable @Positive Long id,
+            @RequestParam
+            @NotBlank(message = "El identificador de usuario es obligatorio")
+            @Size(max = 100, message = "El identificador de usuario no puede superar 100 caracteres")
+            @Pattern(regexp = AnalisisRequest.REGEX_USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
+            String usuarioId) {
 
-        return ResponseEntity.ok(analisisService.obtenerPorId(id));
+        return ResponseEntity.ok(analisisService.obtenerPorId(id, usuarioId));
     }
 
     @GetMapping("/historial/{id}")
     public ResponseEntity<HistorialResponse> obtenerHistorialPorId(
-            @PathVariable @Positive Long id) {
+            @PathVariable @Positive Long id,
+            @RequestParam
+            @NotBlank(message = "El identificador de usuario es obligatorio")
+            @Size(max = 100, message = "El identificador de usuario no puede superar 100 caracteres")
+            @Pattern(regexp = AnalisisRequest.REGEX_USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
+            String usuarioId) {
 
-        return ResponseEntity.ok(analisisService.obtenerHistorialPorId(id));
+        return ResponseEntity.ok(analisisService.obtenerHistorialPorId(id, usuarioId));
     }
 
     @GetMapping

@@ -2,6 +2,8 @@ package com.hackathon.energiai_api.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.util.function.Predicate;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import com.hackathon.energiai_api.exception.ModeloApiException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.util.retry.Retry;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,11 @@ public class IntegracionDsService {
 
     @Value("${modelo-api.fallback-enabled:true}")
     private boolean fallbackEnabled;
+
+    /** Reintentos ante fallas transitorias (5xx, timeout, conexión). No reintenta errores 4xx. */
+    private static final int REINTENTOS_MAX = 2;
+    private static final Duration BACKOFF_INICIAL = Duration.ofMillis(500);
+    private static final Duration BACKOFF_MAXIMO = Duration.ofSeconds(3);
 
     public record PrediccionDs(String categoria, BigDecimal probabilidad) {
     }
@@ -58,6 +66,12 @@ public class IntegracionDsService {
                     .bodyValue(modeloRequest)
                     .retrieve()
                     .bodyToMono(ModeloApiResponse.class)
+                    .retryWhen(Retry.backoff(REINTENTOS_MAX, BACKOFF_INICIAL)
+                            .maxBackoff(BACKOFF_MAXIMO)
+                            .filter(errorReintentable())
+                            .onRetryExhaustedThrow((spec, signal) -> signal.failure()))
+                    .doOnError(error -> log.warn(
+                            "Falló la llamada a modelo-api tras {} reintentos: {}", REINTENTOS_MAX, error.getMessage()))
                     .block();
         } catch (WebClientResponseException e) {
             log.error("Error HTTP llamando a modelo-api: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -80,6 +94,12 @@ public class IntegracionDsService {
             throw new ModeloApiException("El servicio de modelos no devolvió una categoría válida");
         }
         return null;
+    }
+
+    /** Solo reintenta fallas transitorias: errores 5xx, timeout y de conexión. Un 4xx es definitivo. */
+    private static Predicate<Throwable> errorReintentable() {
+        return error -> !(error instanceof WebClientResponseException ex
+                && ex.getStatusCode().is4xxClientError());
     }
 
     private ModeloApiRequest buildModeloRequest(AnalisisRequest request) {

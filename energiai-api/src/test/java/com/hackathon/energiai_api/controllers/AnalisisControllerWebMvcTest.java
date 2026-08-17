@@ -104,7 +104,7 @@ class AnalisisControllerWebMvcTest {
 
     @Test
     void obtenerAnalisis_casoExitoso_debeRetornar200() throws Exception {
-        when(analisisService.obtenerPorId(1L)).thenReturn(new AnalisisResponse(
+        when(analisisService.obtenerPorId(eq(1L), eq(USUARIO_VALIDO))).thenReturn(new AnalisisResponse(
                 "Moderado", BigDecimal.valueOf(0.60),
                 List.of(), BigDecimal.valueOf(187.50),
                 Map.of("alto", 0, "medio", 0, "bajo", 0),
@@ -116,6 +116,7 @@ class AnalisisControllerWebMvcTest {
         // When/Then
         mockMvc.perform(get("/analisis-energetico/1")
                 .header("X-API-KEY", API_KEY_VALIDA)
+                .param("usuarioId", USUARIO_VALIDO)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.categoria").value("Moderado"));
