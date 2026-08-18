@@ -20,7 +20,9 @@ services:
     secrets:
       - api_key_secret
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      # Caddy responde 308 (redirect a HTTPS) en http://localhost/, lo que rompe
+      # el wget; se verifica el proceso en lugar del HTTP.
+      test: ["CMD", "pgrep", "caddy"]
       interval: 10s
       timeout: 5s
       retries: 5
