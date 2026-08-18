@@ -4,8 +4,9 @@
 # frontend, que sirve los estáticos y proxya /analisis-energetico y
 # /verificacion a la API (mismo origen, sin CORS).
 #
-# La API key se inyecta aquí (server-side) desde el Docker secret, para no
-# exponerla en el bundle del navegador.
+# La API key se inyecta aquí (server-side) desde la variable de entorno
+# CADDY_API_KEY (cargada desde API_KEY_SECRET_PROD en compose.prod.yml),
+# para no exponerla en el bundle del navegador.
 #
 # Notas:
 #  - El sitio usa el dominio por defecto; con CADDY_DOMAIN se puede cambiar.
@@ -16,6 +17,6 @@
 	encode gzip
 
 	reverse_proxy energiai-frontend:80 {
-		header_up X-API-KEY "{file /run/secrets/api_key_secret | strings.TrimSpace}"
+		header_up X-API-KEY "{env.CADDY_API_KEY}"
 	}
 }
