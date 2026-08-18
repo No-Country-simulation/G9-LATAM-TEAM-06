@@ -41,7 +41,8 @@ services:
     depends_on:
       - energiai-api
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      # nginx escucha solo IPv4; "localhost" puede resolver a ::1 y el wget falla.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
       interval: 10s
       timeout: 5s
       retries: 5
