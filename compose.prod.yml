@@ -9,6 +9,7 @@ services:
       - "443:443"
     environment:
       - CADDY_DOMAIN=${CADDY_DOMAIN:-}
+      - CADDY_API_KEY=${API_KEY_SECRET_PROD:-}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
