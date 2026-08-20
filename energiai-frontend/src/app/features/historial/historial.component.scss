@@ -22,7 +22,7 @@
 }
 
 .rayo-consumo {
-  color: #ffc107;
+  color: var(--ambar-500);
 }
 .acciones-historial {
   flex-wrap: wrap;
@@ -69,41 +69,82 @@
 }
 
 .accion-borrar {
-  color: #b42318;
-  background: #fff1f0;
-  border-color: #f97066;
+  color: var(--peligro-texto);
+  background: var(--peligro-fondo-suave);
+  border-color: var(--rojo-300);
 
   &:hover,
   &:focus-visible {
-    color: #912018;
-    background: #ffded9;
-    border-color: #f04438;
+    color: var(--peligro-texto-fuerte);
+    background: var(--peligro-fondo);
+    border-color: var(--rojo-400);
+  }
+}
+
+.accion-borrar-seleccion {
+  color: var(--peligro-texto);
+  background: var(--peligro-fondo-suave);
+  border-color: var(--peligro-borde);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--peligro-texto-fuerte);
+    background: var(--peligro-fondo);
+    border-color: var(--peligro-borde-fuerte);
+  }
+}
+
+.col-seleccion {
+  width: 42px;
+  text-align: center;
+}
+
+.seleccion-check {
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--verde-600);
+}
+
+.fila-seleccionada {
+  background-color: var(--verde-100) !important;
+}
+
+.accion-resumen {
+  color: var(--teal-600);
+  background: var(--teal-100);
+  border-color: var(--teal-400);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--teal-700);
+    background: var(--teal-100);
+    border-color: var(--teal-500);
   }
 }
 
 .accion-comparar {
-  color: #087443;
-  background: #e9f8f0;
-  border-color: #69c594;
+  color: var(--acento-texto);
+  background: var(--acento-suave-medio);
+  border-color: var(--acento-borde);
 
   &:hover,
   &:focus-visible {
-    color: #075f38;
-    background: #d7f2e3;
-    border-color: #3eae73;
+    color: var(--acento-texto-hover);
+    background: var(--acento-suave-intenso);
+    border-color: var(--acento-borde-fuerte);
   }
 }
 
 .accion-actualizar {
-  color: #fff;
-  background: #37414b;
-  border-color: #2c343c;
+  color:var(--texto-inverso);
+  background: var(--neutro-boton);
+  border-color: var(--neutro-boton-borde);
 
   &:hover,
   &:focus-visible {
-    color: #fff;
-    background: #252d34;
-    border-color: #20272d;
+    color:var(--texto-inverso);
+    background: var(--neutro-boton-hover);
+    border-color: var(--neutro-boton-borde-hover);
   }
 }
 

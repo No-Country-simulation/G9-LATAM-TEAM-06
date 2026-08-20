@@ -2,6 +2,9 @@ package com.hackathon.energiai_api.controllers;
 
 import com.hackathon.energiai_api.dtos.AnalisisRequest;
 import com.hackathon.energiai_api.dtos.AnalisisResponse;
+import com.hackathon.energiai_api.dtos.AnalisisMigracionItem;
+import com.hackathon.energiai_api.dtos.HistorialResponse;
+import com.hackathon.energiai_api.dtos.MigracionAnalisisRequest;
 import com.hackathon.energiai_api.filter.ApiKeyAuthenticationFilter;
 import com.hackathon.energiai_api.service.AnalisisService;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -133,6 +137,74 @@ class AnalisisControllerWebMvcTest {
                 .param("usuarioId", USUARIO_VALIDO)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void borrarSeleccion_casoExitoso_debeRetornar204() throws Exception {
+        when(analisisService.borrarPorIds(eq(USUARIO_VALIDO), eq(List.of(3L, 7L))))
+                .thenReturn(2L);
+
+        mockMvc.perform(delete("/analisis-energetico/seleccion")
+                .header("X-API-KEY", API_KEY_VALIDA)
+                .param("usuarioId", USUARIO_VALIDO)
+                .param("ids", "3,7"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void borrarSeleccion_sinAPIKey_debeRetornar401() throws Exception {
+        mockMvc.perform(delete("/analisis-energetico/seleccion")
+                .param("usuarioId", USUARIO_VALIDO)
+                .param("ids", "3,7"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void borrarSeleccion_conIdsVacios_debeRetornar400() throws Exception {
+        mockMvc.perform(delete("/analisis-energetico/seleccion")
+                .header("X-API-KEY", API_KEY_VALIDA)
+                .param("usuarioId", USUARIO_VALIDO)
+                .param("ids", ""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void migrarAnalisis_casoExitoso_debeRetornar201() throws Exception {
+        // Given
+        AnalisisRequest solicitud = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                4, null, null, null, null, null,
+                "invitado", null, null, 2, 1, 2
+        );
+        AnalisisMigracionItem item = new AnalisisMigracionItem(
+                solicitud, "Moderado", BigDecimal.valueOf(0.60),
+                BigDecimal.valueOf(187.50), List.of("Test rec"),
+                Map.of("alto", 2, "medio", 1, "bajo", 2),
+                "parcial", List.of(), List.of(),
+                "modelo_ml", "3.0.0", List.of()
+        );
+        MigracionAnalisisRequest request = new MigracionAnalisisRequest(
+                USUARIO_VALIDO, List.of(item));
+
+        HistorialResponse historial = new HistorialResponse(
+                10L, null, USUARIO_VALIDO,
+                250, "Casa", 5, 6, true,
+                "Moderado", BigDecimal.valueOf(0.60),
+                BigDecimal.valueOf(187.50), List.of("Test rec"),
+                Map.of("alto", 2, "medio", 1, "bajo", 2),
+                List.of(), "modelo_ml", "3.0.0",
+                List.of(), "Análisis 1"
+        );
+        when(analisisService.migrarAnalisis(any())).thenReturn(List.of(historial));
+
+        // When/Then
+        mockMvc.perform(post("/analisis-energetico/migrar")
+                .header("X-API-KEY", API_KEY_VALIDA)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$[0].categoria").value("Moderado"))
+                .andExpect(jsonPath("$[0].nombre_o_numero_analisis").value("Análisis 1"));
     }
 
     // Helper method to convert object to JSON

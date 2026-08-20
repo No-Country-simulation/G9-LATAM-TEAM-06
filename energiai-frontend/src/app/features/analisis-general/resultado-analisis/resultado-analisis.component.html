@@ -18,7 +18,7 @@
             </div>
             <!--
             <div class="widget-description opacity-8">
-              Probabilidad: {{ formatearProbabilidad(resultado().probabilidad) }}
+              Confianza del análisis: {{ formatearProbabilidad(resultado().probabilidad) }}
             </div>
             -->
           </div>
@@ -115,7 +115,7 @@
             <div class="recomendacion-cabecera">
               <span>{{ recomendacion.texto }}</span>
               @if (recomendacion.confianza !== null) {
-                <span class="confianza" title="Confianza estimada del recomendador">
+                <span class="confianza" title="Confianza de la recomendación: se calcula con un modelo distinto al de la categoría energética, por eso no coincide con la confianza del análisis">
                   {{ formatearProbabilidad(recomendacion.confianza) }} confianza
                 </span>
               }

@@ -5,12 +5,17 @@ import { HistorialResponse } from '../models/historial-response';
 
 const CLAVE_HISTORIAL_INVITADO = 'energiai_historial_invitado';
 
+/** Item local que conserva la solicitud completa para poder migrarla a la BD. */
+export interface HistorialInvitadoItem extends HistorialResponse {
+  solicitud: AnalisisRequest;
+}
+
 function mapearAHistorial(
   solicitud: AnalisisRequest,
   respuesta: AnalisisResponse,
   id: number,
   creadoEn: string,
-): HistorialResponse {
+): HistorialInvitadoItem {
   return {
     id,
     creadoEn,
@@ -30,6 +35,7 @@ function mapearAHistorial(
     modelo_version: respuesta.modelo_version,
     advertencias: respuesta.advertencias,
     nombre_o_numero_analisis: respuesta.nombre_o_numero_analisis,
+    solicitud,
   };
 }
 
@@ -54,23 +60,34 @@ export class HistorialInvitadoService {
     localStorage.removeItem(CLAVE_HISTORIAL_INVITADO);
   }
 
+  borrarPorIds(ids: number[]): void {
+    const aBorrar = new Set(ids);
+    const restantes = this.cargar().filter((item) => !aBorrar.has(item.id));
+    localStorage.setItem(CLAVE_HISTORIAL_INVITADO, JSON.stringify(restantes));
+  }
+
   siguienteNumeroAnalisis(): number {
     return this.cargar().length + 1;
   }
 
-  private siguienteId(registros: HistorialResponse[]): number {
+  /** Devuelve los análisis locales en orden cronológico (más antiguos primero) listos para migrar. */
+  listarParaMigracion(): HistorialInvitadoItem[] {
+    return [...this.cargar()].sort((a, b) => a.id - b.id);
+  }
+
+  private siguienteId(registros: HistorialInvitadoItem[]): number {
     const maximo = registros.reduce((mayor, item) => Math.max(mayor, item.id), 0);
     return maximo + 1;
   }
 
-  private cargar(): HistorialResponse[] {
+  private cargar(): HistorialInvitadoItem[] {
     const guardado = localStorage.getItem(CLAVE_HISTORIAL_INVITADO);
     if (!guardado) {
       return [];
     }
     try {
       const valor = JSON.parse(guardado) as unknown;
-      return Array.isArray(valor) ? (valor as HistorialResponse[]) : [];
+      return Array.isArray(valor) ? (valor as HistorialInvitadoItem[]) : [];
     } catch {
       localStorage.removeItem(CLAVE_HISTORIAL_INVITADO);
       return [];

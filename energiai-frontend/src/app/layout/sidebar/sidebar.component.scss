@@ -72,38 +72,43 @@
 }
 
 .icono-inicio {
-  --color-icono: #16875f;
-  --fondo-icono: #e7f8f0;
+  --color-icono: var(--texto-inverso);
+  --fondo-icono: var(--marca-verde);
+}
+
+.icono-resumen {
+  --color-icono: var(--texto-inverso);
+  --fondo-icono: var(--marca-teal);
 }
 
 .icono-analisis {
-  --color-icono: #2563eb;
-  --fondo-icono: #eaf2ff;
+  --color-icono: var(--texto-inverso);
+  --fondo-icono: var(--marca-azul-icono);
 }
 
 .icono-historial {
-  --color-icono: #7c3aed;
-  --fondo-icono: #f1ebff;
+  --color-icono: var(--texto-inverso);
+  --fondo-icono: var(--marca-violeta-icono);
 }
 
 .icono-comparacion {
-  --color-icono: #0284c7;
-  --fondo-icono: #e6f6fd;
+  --color-icono: var(--texto-inverso);
+  --fondo-icono: var(--marca-azul-icono);
 }
 
 .icono-csv {
-  --color-icono: #0f8f83;
-  --fondo-icono: #e4f8f5;
+  --color-icono: var(--texto-inverso);
+  --fondo-icono: var(--marca-teal);
 }
 
 .icono-ranking {
-  --color-icono: #c87900;
-  --fondo-icono: #fff5dc;
+  --color-icono: var(--texto-inverso);
+  --fondo-icono: var(--marca-oro-icono);
 }
 
 .icono-simulador {
-  --color-icono: #c24170;
-  --fondo-icono: #fff0f5;
+  --color-icono: var(--texto-inverso);
+  --fondo-icono: var(--marca-rosado-icono);
 }
 
 // Al colapsar el sidebar (closed-sidebar), la regla del theme (left:50%) empata

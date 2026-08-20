@@ -9,6 +9,7 @@ import { ProcesamientoCsvComponent } from './features/procesamiento-csv/procesam
 import { RankingEficienciaComponent } from './features/ranking-eficiencia/ranking-eficiencia.component';
 import { SimuladorAhorroComponent } from './features/simulador-ahorro/simulador-ahorro.component';
 import { VerificarCorreoComponent } from './features/verificar-correo/verificar-correo.component';
+import { ResumenPersonalComponent } from './features/inicio/resumen-personal.component';
 
 export const routes: Routes = [
   {
@@ -16,6 +17,7 @@ export const routes: Routes = [
     component: BaseLayoutComponent,
     children: [
       { path: '', pathMatch: 'full', component: InicioComponent, title: 'EnergiAI' },
+      { path: 'resumen', component: ResumenPersonalComponent, title: 'Resumen personal | EnergiAI' },
       { path: 'analisis-general', component: AnalisisGeneralComponent, title: 'Análisis energético | EnergiAI' },
       { path: 'historial', component: HistorialComponent, title: 'Historial | EnergiAI' },
       { path: 'comparacion', component: ComparacionPeriodosComponent, title: 'Comparación de periodos | EnergiAI' },

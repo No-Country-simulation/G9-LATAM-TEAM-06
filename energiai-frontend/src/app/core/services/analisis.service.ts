@@ -12,7 +12,10 @@ import {
   normalizarCorreoUsuario,
 } from './usuario.service';
 import { UsuarioService } from './usuario.service';
-import { HistorialInvitadoService } from './historial-invitado.service';
+import {
+  HistorialInvitadoService,
+  HistorialInvitadoItem,
+} from './historial-invitado.service';
 import { HistorialLocalService } from './historial-local.service';
 
 const RUTA_BASE = '/analisis-energetico';
@@ -94,6 +97,71 @@ export class AnalisisService {
     }
     const params = new HttpParams().set('usuarioId', usuarioId || 'invitado');
     return this.http.delete<void>(`${environment.apiUrl}${RUTA_BASE}`, { params });
+  }
+
+  borrarSeleccion(usuarioId: string, ids: number[]): Observable<void> {
+    const esInvitado = !this.usuarioService.esVerificado();
+    if (esInvitado) {
+      this.historialInvitado.borrarPorIds(ids);
+      return of(undefined);
+    }
+    const params = new HttpParams()
+      .set('usuarioId', usuarioId || 'invitado')
+      .set('ids', ids.join(','));
+    return this.http.delete<void>(
+      `${environment.apiUrl}${RUTA_BASE}/seleccion`,
+      { params },
+    );
+  }
+
+  migrarHistorial(usuarioId: string): Observable<HistorialResponse[]> {
+    const items = this.historialInvitado.listarParaMigracion();
+    if (!items.length) {
+      return of([]);
+    }
+    const body = {
+      usuarioId,
+      analisis: items.map((item) => this.mapearParaMigracion(item)),
+    };
+    return this.http.post<HistorialResponse[]>(
+      `${environment.apiUrl}${RUTA_BASE}/migrar`,
+      body,
+    );
+  }
+
+  private mapearParaMigracion(item: HistorialInvitadoItem): unknown {
+    return {
+      solicitud: item.solicitud ?? this.reconstruirSolicitud(item),
+      categoria: item.categoria,
+      probabilidad: item.probabilidad,
+      costo_estimado_mensual: item.costo_estimado_mensual,
+      recomendaciones: item.recomendaciones,
+      clasificacion_equipos: item.clasificacion_equipos,
+      recomendaciones_detalle: item.recomendaciones_detalle,
+      origen_prediccion: item.origen_prediccion,
+      modelo_version: item.modelo_version,
+      advertencias: item.advertencias,
+    };
+  }
+
+  /** Reconstruye la solicitud mínima para registros locales antiguos sin ella guardada. */
+  private reconstruirSolicitud(item: HistorialResponse): AnalisisRequest {
+    const clasificacion = item.clasificacion_equipos ?? {};
+    const alto = clasificacion['alto'] ?? 0;
+    const medio = clasificacion['medio'] ?? 0;
+    const bajo = clasificacion['bajo'] ?? 0;
+    return {
+      consumo_kwh: item.consumoKwh,
+      uso_horario_pico: item.usoHorarioPico,
+      cantidad_equipos: item.cantidadEquipos,
+      tipo_inmueble: item.tipoInmueble as AnalisisRequest['tipo_inmueble'],
+      horas_alto_consumo: item.horasAltoConsumo,
+      usuarioId: 'invitado',
+      nombre_o_numero_analisis: item.nombre_o_numero_analisis,
+      dispositivos_alto: alto,
+      dispositivos_medio: medio,
+      dispositivos_bajo: bajo,
+    };
   }
 
   private paginarInvitados(

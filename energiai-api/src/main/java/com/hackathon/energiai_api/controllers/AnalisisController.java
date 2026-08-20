@@ -19,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import com.hackathon.energiai_api.dtos.AnalisisRequest;
 import com.hackathon.energiai_api.dtos.AnalisisResponse;
 import com.hackathon.energiai_api.dtos.HistorialResponse;
+import com.hackathon.energiai_api.dtos.MigracionAnalisisRequest;
 import com.hackathon.energiai_api.service.AnalisisService;
 
 import jakarta.validation.Valid;
@@ -27,6 +28,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/analisis-energetico")
@@ -45,6 +48,17 @@ public class AnalisisController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PostMapping("/migrar")
+    public ResponseEntity<List<HistorialResponse>> migrarAnalisis(
+            @Valid @RequestBody MigracionAnalisisRequest request) {
+
+        List<HistorialResponse> migrados = analisisService.migrarAnalisis(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(migrados);
     }
 
     @GetMapping("/{id}")
@@ -95,6 +109,22 @@ public class AnalisisController {
             @Pattern(regexp = AnalisisRequest.REGEX_USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
             String usuarioId) {
         analisisService.borrarHistorialPorUsuario(usuarioId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/seleccion")
+    public ResponseEntity<Void> borrarSeleccion(
+            @RequestParam
+            @NotBlank(message = "El identificador de usuario es obligatorio")
+            @Size(max = 100, message = "El identificador de usuario no puede superar 100 caracteres")
+            @Pattern(regexp = AnalisisRequest.REGEX_USUARIO_VALIDO, message = "El usuario debe ser un correo válido o invitado")
+            String usuarioId,
+            @RequestParam(required = false)
+            List<@Positive(message = "Los identificadores deben ser positivos") Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        analisisService.borrarPorIds(usuarioId, ids);
         return ResponseEntity.noContent().build();
     }
 }

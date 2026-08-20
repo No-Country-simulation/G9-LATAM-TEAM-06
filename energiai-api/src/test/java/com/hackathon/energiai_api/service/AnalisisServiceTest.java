@@ -2,7 +2,9 @@ package com.hackathon.energiai_api.service;
 
 import com.hackathon.energiai_api.dtos.AnalisisRequest;
 import com.hackathon.energiai_api.dtos.AnalisisResponse;
+import com.hackathon.energiai_api.dtos.AnalisisMigracionItem;
 import com.hackathon.energiai_api.dtos.HistorialResponse;
+import com.hackathon.energiai_api.dtos.MigracionAnalisisRequest;
 import com.hackathon.energiai_api.dtos.ModeloApiResponse;
 import com.hackathon.energiai_api.dtos.RecomendacionModelo;
 import com.hackathon.energiai_api.exception.RecursoNoEncontradoException;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -358,6 +361,47 @@ class AnalisisServiceTest {
     }
 
     @Test
+    void borrarPorIds_debeEliminarSoloLosIdsDelUsuario() {
+        when(analisisRepository.deleteByUsuarioIdAndIdIn("usuario@correo.com", List.of(3L, 7L)))
+                .thenReturn(2L);
+
+        long eliminados = analisisService.borrarPorIds(
+                " Usuario@Correo.com ", List.of(3L, 7L));
+
+        assertThat(eliminados).isEqualTo(2L);
+        verify(analisisRepository).deleteByUsuarioIdAndIdIn("usuario@correo.com", List.of(3L, 7L));
+        verify(usuarioRepository, never()).resetearContador(any());
+    }
+
+    @Test
+    void borrarPorIds_conIdsNulosONegativos_losIgnora() {
+        when(analisisRepository.deleteByUsuarioIdAndIdIn("usuario@correo.com", List.of(5L)))
+                .thenReturn(1L);
+
+        long eliminados = analisisService.borrarPorIds(
+                "usuario@correo.com", Arrays.asList(5L, null, 0L, -2L, 5L));
+
+        assertThat(eliminados).isEqualTo(1L);
+        verify(analisisRepository).deleteByUsuarioIdAndIdIn("usuario@correo.com", List.of(5L));
+    }
+
+    @Test
+    void borrarPorIds_conListaVacia_noTocaLaBaseDeDatos() {
+        long eliminados = analisisService.borrarPorIds("usuario@correo.com", List.of());
+
+        assertThat(eliminados).isZero();
+        verify(analisisRepository, never()).deleteByUsuarioIdAndIdIn(any(), any());
+    }
+
+    @Test
+    void borrarPorIds_comoInvitado_noTocaLaBaseDeDatos() {
+        long eliminados = analisisService.borrarPorIds("invitado", List.of(1L, 2L));
+
+        assertThat(eliminados).isZero();
+        verify(analisisRepository, never()).deleteByUsuarioIdAndIdIn(any(), any());
+    }
+
+    @Test
     void analizar_comoInvitado_debeCalcularSinPersistirEnBD() {
         // Given
         AnalisisRequest request = new AnalisisRequest(
@@ -410,5 +454,145 @@ class AnalisisServiceTest {
 
     private Usuario usuarioVerificado(String email) {
         return Usuario.builder().id(1L).email(email).verificado(true).build();
+    }
+
+    @Test
+    void migrarAnalisis_conUsuarioVerificado_debePersistirSinLlamarAlModelo() {
+        // Given
+        AnalisisRequest solicitud = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                4, null, null, null, null, null,
+                "invitado", null, null, 2, 1, 2
+        );
+        AnalisisMigracionItem item = new AnalisisMigracionItem(
+                solicitud,
+                "Moderado",
+                BigDecimal.valueOf(0.60),
+                BigDecimal.valueOf(187.50),
+                List.of("Reducir horas de alto consumo"),
+                Map.of("alto", 2, "medio", 1, "bajo", 2),
+                "parcial",
+                List.of(),
+                List.of(new RecomendacionModelo("rec_1", "Reducir horas de alto consumo", 0.9)),
+                "modelo_ml",
+                "3.0.0",
+                List.of()
+        );
+        MigracionAnalisisRequest request = new MigracionAnalisisRequest(
+                "persona@correo.com", List.of(item));
+
+        when(usuarioRepository.findByEmail("persona@correo.com"))
+                .thenReturn(Optional.of(usuarioVerificado("persona@correo.com")));
+        when(usuarioRepository.incrementarContador(any())).thenReturn(1);
+        when(usuarioRepository.obtenerContadorAnalisis(any())).thenReturn(1);
+        when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> {
+            Analisis a = inv.getArgument(0);
+            a.setId(10L);
+            a.setCreadoEn(LocalDateTime.now());
+            return a;
+        });
+
+        // When
+        List<HistorialResponse> migrados = analisisService.migrarAnalisis(request);
+
+        // Then
+        assertThat(migrados).hasSize(1);
+        HistorialResponse resultado = migrados.get(0);
+        assertThat(resultado.categoria()).isEqualTo("Moderado");
+        assertThat(resultado.nombre_o_numero_analisis()).isEqualTo("Análisis 1");
+        assertThat(resultado.origen_prediccion()).isEqualTo("modelo_ml");
+        assertThat(resultado.modelo_version()).isEqualTo("3.0.0");
+        verify(analisisRepository).save(any(Analisis.class));
+        verify(integracionDsService, never()).obtenerRespuestaCompleta(any());
+    }
+
+    @Test
+    void migrarAnalisis_conNombrePersonalizadoEnSolicitud_debeConservarElNombre() {
+        // Given
+        AnalisisRequest solicitud = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                4, null, null, null, null, null,
+                "invitado", "Mi consumo de julio", null, 2, 1, 2
+        );
+        AnalisisMigracionItem item = new AnalisisMigracionItem(
+                solicitud,
+                "Eficiente",
+                BigDecimal.valueOf(0.80),
+                BigDecimal.valueOf(187.50),
+                List.of(),
+                Map.of("alto", 2, "medio", 1, "bajo", 2),
+                "parcial",
+                List.of(),
+                List.of(),
+                "modelo_ml",
+                "3.0.0",
+                List.of()
+        );
+        MigracionAnalisisRequest request = new MigracionAnalisisRequest(
+                "persona@correo.com", List.of(item));
+
+        when(usuarioRepository.findByEmail("persona@correo.com"))
+                .thenReturn(Optional.of(usuarioVerificado("persona@correo.com")));
+        when(analisisRepository.save(any(Analisis.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        List<HistorialResponse> migrados = analisisService.migrarAnalisis(request);
+
+        // Then
+        assertThat(migrados.get(0).nombre_o_numero_analisis()).isEqualTo("Mi consumo de julio");
+        verify(usuarioRepository).incrementarContador(any());
+    }
+
+    @Test
+    void migrarAnalisis_comoInvitado_debeRechazarse() {
+        // Given
+        AnalisisRequest solicitud = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                null, null, null, null, null, null,
+                "invitado", null, null, 2, 1, 2
+        );
+        AnalisisMigracionItem item = new AnalisisMigracionItem(
+                solicitud, "Moderado", BigDecimal.valueOf(0.60),
+                BigDecimal.valueOf(187.50), List.of(),
+                Map.of("alto", 2, "medio", 1, "bajo", 2),
+                "basico", List.of(), List.of(),
+                "modelo_ml", "3.0.0", List.of()
+        );
+        MigracionAnalisisRequest request = new MigracionAnalisisRequest(
+                "invitado", List.of(item));
+
+        // When / Then
+        assertThatThrownBy(() -> analisisService.migrarAnalisis(request))
+                .isInstanceOf(com.hackathon.energiai_api.exception.VerificacionCorreoException.class)
+                .hasMessageContaining("verificar");
+        verify(analisisRepository, never()).save(any(Analisis.class));
+    }
+
+    @Test
+    void migrarAnalisis_conCorreoNoVerificado_debeRechazarse() {
+        // Given
+        AnalisisRequest solicitud = new AnalisisRequest(
+                250, true, 5, "Casa", 6,
+                null, null, null, null, null, null,
+                "invitado", null, null, 2, 1, 2
+        );
+        AnalisisMigracionItem item = new AnalisisMigracionItem(
+                solicitud, "Moderado", BigDecimal.valueOf(0.60),
+                BigDecimal.valueOf(187.50), List.of(),
+                Map.of("alto", 2, "medio", 1, "bajo", 2),
+                "basico", List.of(), List.of(),
+                "modelo_ml", "3.0.0", List.of()
+        );
+        MigracionAnalisisRequest request = new MigracionAnalisisRequest(
+                "persona@correo.com", List.of(item));
+
+        when(usuarioRepository.findByEmail("persona@correo.com"))
+                .thenReturn(Optional.of(Usuario.builder().email("persona@correo.com").verificado(false).build()));
+
+        // When / Then
+        assertThatThrownBy(() -> analisisService.migrarAnalisis(request))
+                .isInstanceOf(com.hackathon.energiai_api.exception.VerificacionCorreoException.class)
+                .hasMessageContaining("verificar");
+        verify(analisisRepository, never()).save(any(Analisis.class));
     }
 }

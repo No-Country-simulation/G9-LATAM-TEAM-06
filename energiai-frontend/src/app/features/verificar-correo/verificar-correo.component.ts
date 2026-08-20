@@ -1,11 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, switchMap } from 'rxjs';
 import { PageTitleComponent } from '../../layout/page-title';
 import {
   HistorialInvitadoService,
 } from '../../core/services/historial-invitado.service';
+import { AnalisisService } from '../../core/services/analisis.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { errorCorreoUsuario } from '../../core/services/usuario.service';
 import {
@@ -25,6 +26,7 @@ export class VerificarCorreoComponent {
   private readonly router = inject(Router);
   private readonly verificacionService = inject(VerificacionService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly analisisService = inject(AnalisisService);
   private readonly historialInvitado = inject(HistorialInvitadoService);
 
   readonly paso = signal<'correo' | 'codigo'>('correo');
@@ -73,15 +75,26 @@ export class VerificarCorreoComponent {
     this.cargando.set(true);
     this.verificacionService
       .verificarCodigo(this.correo, valor)
-      .pipe(finalize(() => this.cargando.set(false)))
+      .pipe(
+        finalize(() => this.cargando.set(false)),
+        switchMap(() => {
+          // Al verificar con éxito se migran los análisis de invitado (localStorage) a la BD.
+          this.usuarioService.marcarVerificado(this.correo);
+          return this.analisisService.migrarHistorial(this.correo);
+        }),
+      )
       .subscribe({
         next: () => {
-          // Al verificar con éxito se borra el historial local (invitado) para no dejar basura.
+          // Si la migración se completa (o no había nada local) se elimina la copia local.
           this.historialInvitado.borrarTodo();
-          this.usuarioService.marcarVerificado(this.correo);
           this.router.navigate(['/']);
         },
-        error: (err) => this.mostrarError(err),
+        error: (err) => {
+          // La verificación ya se completó: se navega a inicio conservando los datos
+          // locales por si la migración puede reintentarse en otro momento.
+          this.mostrarError(err);
+          this.router.navigate(['/']);
+        },
       });
   }
 
