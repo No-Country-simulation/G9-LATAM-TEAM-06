@@ -5,6 +5,14 @@
 >
   <div class="acciones-historial d-flex gap-2">
     <a
+      class="btn accion-historial accion-resumen"
+      routerLink="/resumen"
+      title="Ver el resumen personal con indicadores y evolución"
+    >
+      <i class="pe-7s-note2"></i>
+      Ir al resumen
+    </a>
+    <a
       class="btn accion-historial accion-comparar"
       routerLink="/comparacion"
       [class.disabled]="historial().length < 2"
@@ -24,6 +32,17 @@
     >
       <i class="pe-7s-trash"></i>
       {{ borrando() ? 'Borrando...' : 'Borrar historial' }}
+    </button>
+    <button
+      type="button"
+      class="btn accion-historial accion-borrar-seleccion"
+      (click)="borrarSeleccionados()"
+      [disabled]="borrando() || cantidadSeleccionados() === 0"
+      [class.d-none]="cantidadSeleccionados() === 0"
+      title="Borrar los análisis seleccionados"
+    >
+      <i class="pe-7s-trash"></i>
+      Borrar seleccionados ({{ cantidadSeleccionados() }})
     </button>
     <button
       type="button"
@@ -54,7 +73,7 @@
         Realiza tu primer cálculo en el apartado de <b>Análisis General</b>
         para que aparezca aquí.
       </p>
-      <a class="btn btn-primary btn-shadow" routerLink="/analisis-general">
+      <a class="btn accion-ui accion-ui-principal btn-shadow" routerLink="/analisis-general">
         <i class="pe-7s-edit me-2"></i>
         Ir a Análisis General
       </a>
@@ -67,6 +86,16 @@
         <table class="table table-hover table-striped tabla-energiai mb-0">
           <thead>
             <tr>
+              <th scope="col" class="col-seleccion">
+                <input
+                  type="checkbox"
+                  class="form-check-input seleccion-check"
+                  [checked]="todosSeleccionados()"
+                  [disabled]="historial().length === 0"
+                  (change)="alternarSeleccionTodos()"
+                  aria-label="Seleccionar todos los análisis"
+                />
+              </th>
               <th scope="col">Análisis</th>
               <th scope="col">Fecha</th>
               <th scope="col">Categoría</th>
@@ -78,7 +107,16 @@
           </thead>
           <tbody>
             @for (item of historial(); track item.id) {
-              <tr>
+              <tr [class.fila-seleccionada]="seleccionados().has(item.id)">
+                <td class="col-seleccion">
+                  <input
+                    type="checkbox"
+                    class="form-check-input seleccion-check"
+                    [checked]="seleccionados().has(item.id)"
+                    (change)="alternarSeleccion(item.id)"
+                    [attr.aria-label]="'Seleccionar ' + item.nombre"
+                  />
+                </td>
                 <td>
                   <i class="pe-7s-note2 me-1 text-muted"></i>
                   <span class="fw-semibold">{{ item.nombre }}</span>
@@ -92,7 +130,9 @@
                     {{ item.categoria }}
                   </span>
                   <small class="d-block text-muted">
-                    <!-- Prob.: {{ formatearProbabilidad(item.probabilidad) }} -->
+                    <span title="Confianza del análisis: qué tan seguro está el modelo de la categoría energética">
+                      Confianza del análisis: {{ formatearProbabilidad(item.probabilidad) }}
+                    </span>
                   </small>
                 </td>
                 <td>
@@ -114,7 +154,7 @@
       <div class="card-footer altura-paginacion d-flex align-items-center justify-content-end">
         <button
           type="button"
-          class="btn btn-primary"
+          class="btn accion-ui accion-ui-secundaria"
           (click)="cargarMas()"
           [disabled]="cargando()"
         >

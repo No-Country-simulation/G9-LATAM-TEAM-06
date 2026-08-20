@@ -4,7 +4,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { HistorialResponse } from '../../core/models/historial-response';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { InicioComponent } from './inicio.component';
@@ -24,40 +24,13 @@ const HISTORIAL: HistorialResponse[] = [
     costo_estimado_mensual: 180,
     recomendaciones: ['Reducir el uso durante horarios pico'],
   },
-  {
-    id: 2,
-    creadoEn: '2026-07-13T10:00:00Z',
-    usuario: 'invitado',
-    consumoKwh: 600,
-    tipoInmueble: 'Casa',
-    cantidadEquipos: 10,
-    horasAltoConsumo: 6,
-    usoHorarioPico: false,
-    categoria: 'Moderado',
-    probabilidad: 0.8,
-    costo_estimado_mensual: 120,
-    recomendaciones: ['Monitorear el consumo'],
-  },
-  {
-    id: 1,
-    creadoEn: '2026-06-13T10:00:00Z',
-    usuario: 'invitado',
-    consumoKwh: 300,
-    tipoInmueble: 'Casa',
-    cantidadEquipos: 8,
-    horasAltoConsumo: 3,
-    usoHorarioPico: false,
-    categoria: 'Eficiente',
-    probabilidad: 0.87,
-    costo_estimado_mensual: 60,
-    recomendaciones: ['Mantener hábitos'],
-  },
 ];
 
 describe('InicioComponent', () => {
   let fixture: ComponentFixture<InicioComponent>;
   let componente: InicioComponent;
   let http: HttpTestingController;
+  let router: Router;
 
   beforeEach(async () => {
     localStorage.clear();
@@ -70,12 +43,12 @@ describe('InicioComponent', () => {
       ],
     }).compileComponents();
 
-    // Usuario verificado para ejercitar la consulta al servidor.
     TestBed.inject(UsuarioService).marcarVerificado('persona@ejemplo.com');
 
     fixture = TestBed.createComponent(InicioComponent);
     componente = fixture.componentInstance;
     http = TestBed.inject(HttpTestingController);
+    router = TestBed.inject(Router);
     fixture.detectChanges();
   });
 
@@ -83,48 +56,12 @@ describe('InicioComponent', () => {
     http.verify();
   });
 
-  it('calcula indicadores, distribución, tendencia y alertas desde el historial', () => {
-    const solicitud = http.expectOne(
-      (req) => req.method === 'GET' && req.url.includes('/analisis-energetico'),
-    );
-    expect(solicitud.request.params.get('size')).toBe('30');
-    solicitud.flush({
-      content: HISTORIAL,
-      totalElements: 3,
-      totalPages: 1,
-      size: 30,
-      number: 0,
-      numberOfElements: 3,
-      first: true,
-      last: true,
-      empty: false,
-    });
-    fixture.detectChanges();
-
-    expect(componente.promedioConsumo()).toBe(600);
-    expect(componente.promedioCosto()).toBe(120);
-    expect(componente.porcentajeEficiente()).toBe(33);
-    expect(componente.variacionReciente()).toBe(50);
-    expect(componente.distribucion().map((item) => item.cantidad)).toEqual([
-      1, 1, 1,
-    ]);
-    expect(componente.alertas().length).toBe(3);
-    expect(componente.puntosGrafica()).not.toBe('');
-
-    const elemento = fixture.nativeElement as HTMLElement;
-    expect(elemento.querySelectorAll('.tarjeta-metrica').length).toBe(4);
-    expect(elemento.querySelector('.grafica-linea')).toBeTruthy();
-    expect(elemento.querySelector('.accion-hero')).toBeTruthy();
-    expect(elemento.textContent).toContain('Consumo alto detectado');
-    expect(elemento.textContent).toContain('Distribución de resultados');
-  });
-
-  it('muestra un estado vacío con una acción principal cuando no hay análisis', () => {
+  it('muestra la guía con botón central cuando no hay análisis', () => {
     http.expectOne((req) => req.method === 'GET').flush({
       content: [],
       totalElements: 0,
       totalPages: 0,
-      size: 30,
+      size: 1,
       number: 0,
       numberOfElements: 0,
       first: true,
@@ -134,24 +71,74 @@ describe('InicioComponent', () => {
     fixture.detectChanges();
 
     const elemento = fixture.nativeElement as HTMLElement;
-    expect(elemento.textContent).toContain(
-      'Tu seguimiento comienza con el primer análisis',
-    );
-    expect(elemento.querySelector('.grafica-linea')).toBeNull();
-    expect(elemento.querySelector('.accion-hero')).toBeNull();
+    expect(elemento.querySelector('.hero-inicio')).toBeTruthy();
+    expect(elemento.querySelector('.que-es-bloque')).toBeTruthy();
+    expect(elemento.textContent).toContain('Qué es EnergiAI');
+    expect(elemento.querySelectorAll('.tarjeta-info').length).toBe(5);
+    expect(elemento.querySelector('.accion-hero')).toBeTruthy();
+    expect(elemento.textContent).toContain('Empezar');
+    expect(elemento.textContent).toContain('Convierte tus datos');
+    expect(elemento.textContent).toContain('Resumen personal');
   });
 
-  it('muestra un error recuperable si falla la consulta', () => {
-    http.expectOne((req) => req.method === 'GET').flush(
-      { mensaje: 'Error' },
-      { status: 503, statusText: 'Service Unavailable' },
-    );
+  it('muestra el botón Empezar en el hero, la ficha del último análisis y oculta la guía cuando hay análisis', () => {
+    http.expectOne((req) => req.method === 'GET').flush({
+      content: HISTORIAL,
+      totalElements: 1,
+      totalPages: 1,
+      size: 1,
+      number: 0,
+      numberOfElements: 1,
+      first: true,
+      last: true,
+      empty: false,
+    });
     fixture.detectChanges();
 
     const elemento = fixture.nativeElement as HTMLElement;
-    expect(elemento.textContent).toContain(
-      'No fue posible actualizar el dashboard',
-    );
-    expect(elemento.querySelector('.estado-error button')).toBeTruthy();
+    expect(elemento.querySelector('.accion-hero')).toBeTruthy();
+    expect(elemento.querySelector('.guia-inicio')).toBeFalsy();
+    expect(elemento.querySelector('.que-es-bloque')).toBeTruthy();
+    expect(elemento.querySelector('.ultimo-analisis')).toBeTruthy();
+    expect(elemento.textContent).toContain('Tu último análisis');
+    expect(elemento.textContent).toContain('Ineficiente');
+    expect(elemento.textContent).toContain('Ver mi resumen personal');
+    expect(elemento.textContent).toContain('Ver resumen completo');
+    const enlace = elemento.querySelector('.link-resumen') as HTMLElement;
+    expect(enlace.getAttribute('routerlink')).toBe('/resumen');
+  });
+
+  it('navega a /resumen al invocar verResumen', () => {
+    http.expectOne((req) => req.method === 'GET').flush({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      size: 1,
+      number: 0,
+      numberOfElements: 0,
+      first: true,
+      last: true,
+      empty: true,
+    });
+    const navegar = spyOn(router, 'navigate');
+    componente.verResumen();
+    expect(navegar).toHaveBeenCalledWith(['/resumen']);
+  });
+
+  it('navega a /analisis-general al invocar irAAnalisisGeneral', () => {
+    http.expectOne((req) => req.method === 'GET').flush({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      size: 1,
+      number: 0,
+      numberOfElements: 0,
+      first: true,
+      last: true,
+      empty: true,
+    });
+    const navegar = spyOn(router, 'navigate');
+    componente.irAAnalisisGeneral();
+    expect(navegar).toHaveBeenCalledWith(['/analisis-general']);
   });
 });

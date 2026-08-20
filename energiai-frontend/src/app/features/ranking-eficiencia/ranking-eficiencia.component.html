@@ -1,5 +1,5 @@
 <app-page-title heading="Ranking de eficiencia energética" subheading="Identifica tus análisis más eficientes con criterios transparentes" icon="pe-7s-cup">
-  <a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general"><i class="pe-7s-plus"></i> Nuevo análisis</a>
+  <a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general"><app-triple-star aria-hidden="true"></app-triple-star> Nuevo análisis</a>
 </app-page-title>
 
 @if (cargando()) {
@@ -7,7 +7,7 @@
 } @else if (errorSignal()) {
   <section class="estado error" role="alert"><i class="pe-7s-cloud"></i><h2>No pudimos cargar tus datos</h2><p>{{ errorSignal() }}</p><button class="btn accion-ui accion-ui-principal" (click)="cargarRanking()"><i class="pe-7s-refresh-2"></i> Intentar nuevamente</button></section>
 } @else if (!historial().length) {
-  <section class="estado"><i class="pe-7s-medal"></i><h2>Aún no hay análisis para comparar</h2><p>Crea tu primer análisis y comienza a medir tu eficiencia.</p><a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general"><i class="pe-7s-plus"></i> Crear análisis</a></section>
+  <section class="estado"><i class="pe-7s-medal"></i><h2>Aún no hay análisis para comparar</h2><p>Crea tu primer análisis y comienza a medir tu eficiencia.</p><a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general"><app-triple-star aria-hidden="true"></app-triple-star> Crear análisis</a></section>
 } @else {
   <section class="ranking-hero">
     <div><span class="sobrelinea">Tu mejor resultado</span><h2>{{ mejorRegistro()!.categoria }}</h2><p>El registro #{{ mejorRegistro()!.id }} lidera por su clasificación e intensidad de consumo.</p></div>

@@ -40,6 +40,9 @@ describe('AnalisisGeneralComponent', () => {
   });
 
   it('debe ser válido cuando la suma de dispositivos iguala la cantidad de equipos', () => {
+    componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('tipo_inmueble')?.setValue('Casa');
+    componente.formulario.get('horas_alto_consumo')?.setValue(6);
     componente.formulario.get('cantidad_equipos')?.setValue(5);
     componente.formulario.get('dispositivos_alto')?.setValue(2);
     componente.formulario.get('dispositivos_medio')?.setValue(1);
@@ -61,6 +64,7 @@ describe('AnalisisGeneralComponent', () => {
   it('debe aceptar un consumo bajo para comercio dentro del rango general', () => {
     componente.formulario.get('tipo_inmueble')?.setValue('Comercio');
     componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('horas_alto_consumo')?.setValue(6);
     componente.formulario.get('cantidad_equipos')?.setValue(10);
     componente.formulario.get('dispositivos_alto')?.setValue(2);
     componente.formulario.get('dispositivos_medio')?.setValue(4);
@@ -71,6 +75,8 @@ describe('AnalisisGeneralComponent', () => {
   });
 
   it('debe rechazar decimales en campos entrenados como enteros', () => {
+    componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('tipo_inmueble')?.setValue('Casa');
     componente.formulario.get('horas_alto_consumo')?.setValue(4.5);
 
     expect(componente.formulario.invalid).toBeTrue();
@@ -78,6 +84,12 @@ describe('AnalisisGeneralComponent', () => {
   });
 
   it('debe aceptar 24 horas de alto consumo y rechazar 25', () => {
+    componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('tipo_inmueble')?.setValue('Casa');
+    componente.formulario.get('cantidad_equipos')?.setValue(5);
+    componente.formulario.get('dispositivos_alto')?.setValue(2);
+    componente.formulario.get('dispositivos_medio')?.setValue(1);
+    componente.formulario.get('dispositivos_bajo')?.setValue(2);
     componente.formulario.get('horas_alto_consumo')?.setValue(24);
     expect(componente.formulario.valid).toBeTrue();
 
@@ -86,6 +98,9 @@ describe('AnalisisGeneralComponent', () => {
   });
 
   it('debe aceptar más de nueve equipos de alto consumo cuando no superan el total', () => {
+    componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('tipo_inmueble')?.setValue('Casa');
+    componente.formulario.get('horas_alto_consumo')?.setValue(6);
     componente.formulario.get('cantidad_equipos')?.setValue(20);
     componente.formulario.get('dispositivos_alto')?.setValue(10);
     componente.formulario.get('dispositivos_medio')?.setValue(5);
@@ -107,6 +122,8 @@ describe('AnalisisGeneralComponent', () => {
   });
 
   it('debe aplicar el dominio específico al cambiar el tipo de inmueble', () => {
+    componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('horas_alto_consumo')?.setValue(6);
     componente.formulario.get('tipo_inmueble')?.setValue('Apartamento');
     componente.formulario.get('cantidad_personas')?.setValue(8);
     componente.formulario.get('area_m2')?.setValue(181);
@@ -130,6 +147,9 @@ describe('AnalisisGeneralComponent', () => {
   });
 
   it('debe rechazar más de dos decimales en variables continuas y no enteros en consumo previo', () => {
+    componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('tipo_inmueble')?.setValue('Casa');
+    componente.formulario.get('horas_alto_consumo')?.setValue(6);
     componente.formulario.get('area_m2')?.setValue(85.123);
     componente.formulario.get('consumo_mes_anterior_kwh')?.setValue(230.999);
 
@@ -142,6 +162,8 @@ describe('AnalisisGeneralComponent', () => {
     const http = TestBed.inject(HttpTestingController);
 
     componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('tipo_inmueble')?.setValue('Casa');
+    componente.formulario.get('horas_alto_consumo')?.setValue(6);
     componente.formulario.get('cantidad_equipos')?.setValue(3);
     componente.formulario.get('dispositivos_alto')?.setValue(1);
     componente.formulario.get('dispositivos_medio')?.setValue(1);
@@ -171,6 +193,13 @@ describe('AnalisisGeneralComponent', () => {
 
   it('envía el nombre opcional recortado y lo omite cuando queda vacío', () => {
     const http = TestBed.inject(HttpTestingController);
+    componente.formulario.get('consumo_kwh')?.setValue(250);
+    componente.formulario.get('tipo_inmueble')?.setValue('Casa');
+    componente.formulario.get('horas_alto_consumo')?.setValue(6);
+    componente.formulario.get('cantidad_equipos')?.setValue(3);
+    componente.formulario.get('dispositivos_alto')?.setValue(1);
+    componente.formulario.get('dispositivos_medio')?.setValue(1);
+    componente.formulario.get('dispositivos_bajo')?.setValue(1);
 
     componente.formulario.get('nombre_o_numero_analisis')?.setValue('  Mi consumo de julio  ');
     componente.enviar();

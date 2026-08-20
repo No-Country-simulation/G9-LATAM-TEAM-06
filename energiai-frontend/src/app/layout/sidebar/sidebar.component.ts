@@ -32,6 +32,12 @@ export class SidebarComponent {
       colorIcono: "icono-inicio",
     },
     {
+      etiqueta: "Resumen",
+      ruta: "/resumen",
+      icono: "pe-7s-note2",
+      colorIcono: "icono-resumen",
+    },
+    {
       etiqueta: "Análisis General",
       ruta: "/analisis-general",
       icono: "pe-7s-display1",

@@ -3,10 +3,16 @@
   subheading="Contrasta dos análisis guardados y descubre cómo cambió tu eficiencia"
   icon="pe-7s-graph2"
 >
-  <a class="btn accion-ui accion-ui-secundaria" routerLink="/historial">
-    <i class="pe-7s-notebook" aria-hidden="true"></i>
-    Ver historial
-  </a>
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn accion-ui accion-ui-secundaria" routerLink="/resumen">
+      <i class="pe-7s-note2" aria-hidden="true"></i>
+      Ir al resumen
+    </a>
+    <a class="btn accion-ui accion-ui-secundaria" routerLink="/historial">
+      <i class="pe-7s-notebook" aria-hidden="true"></i>
+      Ver historial
+    </a>
+  </div>
 </app-page-title>
 
 @if (cargando()) {
@@ -37,7 +43,7 @@
         eficiencia entre períodos.
       </p>
       <a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general">
-        <i class="pe-7s-plus" aria-hidden="true"></i>
+        <app-triple-star aria-hidden="true"></app-triple-star>
         Crear nuevo análisis
       </a>
     </div>
@@ -219,7 +225,7 @@
               <strong class="categoria {{ claseCategoria(base.categoria) }}">
                 {{ base.categoria }}
               </strong>
-              <small>Confianza {{ formatearNumero(base.probabilidad * 100, 0) }}%</small>
+              <small>Confianza del análisis: {{ formatearNumero(base.probabilidad * 100, 0) }}%</small>
             </div>
             <i class="pe-7s-angle-right" aria-hidden="true"></i>
             <div>
@@ -227,7 +233,7 @@
               <strong class="categoria {{ claseCategoria(comparado.categoria) }}">
                 {{ comparado.categoria }}
               </strong>
-              <small>Confianza {{ formatearNumero(comparado.probabilidad * 100, 0) }}%</small>
+              <small>Confianza del análisis: {{ formatearNumero(comparado.probabilidad * 100, 0) }}%</small>
             </div>
           </div>
 

@@ -34,6 +34,7 @@ export class HistorialComponent implements OnInit, OnDestroy {
   readonly tieneMas = signal(false);
   readonly pagina = signal(0);
   readonly borrando = signal(false);
+  readonly seleccionados = signal<Set<number>>(new Set());
 
   private readonly destruir$ = new Subject<void>();
   private suscripcionActual: Subscription | undefined;
@@ -45,6 +46,14 @@ export class HistorialComponent implements OnInit, OnDestroy {
 
   readonly vacio = computed(
     () => this.historial().length === 0 && !this.cargando(),
+  );
+
+  readonly cantidadSeleccionados = computed(() => this.seleccionados().size);
+
+  readonly todosSeleccionados = computed(
+    () =>
+      this.historial().length > 0 &&
+      this.historial().every((item) => this.seleccionados().has(item.id)),
   );
 
   ngOnInit(): void {
@@ -113,10 +122,63 @@ export class HistorialComponent implements OnInit, OnDestroy {
           this.historial.set([]);
           this.pagina.set(0);
           this.tieneMas.set(false);
+          this.seleccionados.set(new Set());
         },
         error: () =>
           this.errorSignal.set(
             'No se pudo borrar el historial. Intenta nuevamente.',
+          ),
+      });
+  }
+
+  alternarSeleccion(id: number): void {
+    this.seleccionados.update((previo) => {
+      const siguiente = new Set(previo);
+      if (siguiente.has(id)) {
+        siguiente.delete(id);
+      } else {
+        siguiente.add(id);
+      }
+      return siguiente;
+    });
+  }
+
+  alternarSeleccionTodos(): void {
+    this.seleccionados.update(() => {
+      if (this.todosSeleccionados()) {
+        return new Set<number>();
+      }
+      return new Set(this.historial().map((item) => item.id));
+    });
+  }
+
+  borrarSeleccionados(): void {
+    const ids = [...this.seleccionados()];
+    if (!ids.length) {
+      return;
+    }
+    const confirmar = window.confirm(
+      `¿Seguro que deseas borrar los ${ids.length} análisis seleccionados? Esta acción no se puede deshacer.`,
+    );
+    if (!confirmar) {
+      return;
+    }
+
+    this.borrando.set(true);
+    this.analisisService
+      .borrarSeleccion(this.usuarioActual(), ids)
+      .pipe(finalize(() => this.borrando.set(false)))
+      .subscribe({
+        next: () => {
+          const seleccion = this.seleccionados();
+          this.historial.update((previo) =>
+            previo.filter((item) => !seleccion.has(item.id)),
+          );
+          this.seleccionados.set(new Set());
+        },
+        error: () =>
+          this.errorSignal.set(
+            'No se pudieron borrar los análisis seleccionados. Intenta nuevamente.',
           ),
       });
   }

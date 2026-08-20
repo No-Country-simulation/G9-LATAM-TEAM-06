@@ -84,46 +84,8 @@ public class AnalisisService {
                 ? modeloResponse.advertencias()
                 : List.of("El servicio de modelos no estuvo disponible; se aplicaron reglas de respaldo.");
 
-        // Clasificar electrodomésticos si se proporcionan (mapa detallado) O usar campos manuales (General)
-        Map<String, Integer> clasificacionEquipos = new LinkedHashMap<>();
-        String electrodomesticosJson = null;
-
-        if (request.electrodomesticos() != null && !request.electrodomesticos().isEmpty()) {
-            // Modo Exhaustivo: clasificación automática por catálogo
-            Map<String, Integer> conteo = new LinkedHashMap<>();
-            conteo.put("alto", 0);
-            conteo.put("medio", 0);
-            conteo.put("bajo", 0);
-
-            for (Map.Entry<String, Integer> entry : request.electrodomesticos().entrySet()) {
-                String electro = entry.getKey().toLowerCase().trim();
-                int cantidad = entry.getValue();
-                CatalogoElectrodomesticos.Categoria categoria = CatalogoElectrodomesticos.CATEGORIA_POR_NOMBRE
-                        .getOrDefault(electro, CatalogoElectrodomesticos.Categoria.BAJO);
-                conteo.merge(categoria.etiqueta(), cantidad, Integer::sum);
-            }
-
-            // Serializar a JSON
-            try {
-                electrodomesticosJson = objectMapper.writeValueAsString(request.electrodomesticos());
-            } catch (Exception e) {
-                electrodomesticosJson = null;
-            }
-
-            clasificacionEquipos.put("alto", conteo.getOrDefault("alto", 0));
-            clasificacionEquipos.put("medio", conteo.getOrDefault("medio", 0));
-            clasificacionEquipos.put("bajo", conteo.getOrDefault("bajo", 0));
-        } else if (request.dispositivos_alto() != null || request.dispositivos_medio() != null || request.dispositivos_bajo() != null) {
-            // Modo General: usar campos manuales directamente
-            int alta = request.dispositivos_alto() != null ? request.dispositivos_alto() : 0;
-            int media = request.dispositivos_medio() != null ? request.dispositivos_medio() : 0;
-            int baja = request.dispositivos_bajo() != null ? request.dispositivos_bajo() : 0;
-
-            clasificacionEquipos.put("alto", alta);
-            clasificacionEquipos.put("medio", media);
-            clasificacionEquipos.put("bajo", baja);
-            electrodomesticosJson = serializar(clasificacionEquipos);
-        }
+        ClasificacionEquipos clasificacion = clasificarEquipos(request);
+        Map<String, Integer> clasificacionEquipos = clasificacion.clasificacionEquipos();
 
         String usuarioNormalizado = normalizarUsuario(request.usuarioId());
         boolean esInvitado = "invitado".equals(usuarioNormalizado);
@@ -163,7 +125,7 @@ public class AnalisisService {
                 .categoria(prediccion.categoria())
                 .probabilidad(prediccion.probabilidad())
                 .costo_estimado_mensual(costo_estimado_mensual)
-                .electrodomesticosDetalle(electrodomesticosJson)
+                .electrodomesticosDetalle(clasificacion.electrodomesticosJson())
                 .recomendacionesJson(serializar(recomendaciones))
                 .recomendacionesDetalleJson(serializar(recomendacionesDetalle))
                 .nivelAnalisis(nivelAnalisis)
@@ -361,6 +323,26 @@ public class AnalisisService {
         return eliminados;
     }
 
+    /**
+     * Borra únicamente los análisis indicados por ID que pertenezcan al usuario.
+     * No reinicia la numeración porque el historial restante conserva sus nombres.
+     */
+    @Transactional
+    public long borrarPorIds(String usuarioId, List<Long> ids) {
+        String usuarioNormalizado = normalizarUsuario(usuarioId);
+        if ("invitado".equals(usuarioNormalizado) || ids == null || ids.isEmpty()) {
+            return 0L;
+        }
+        List<Long> idsValidos = ids.stream()
+                .filter(id -> id != null && id > 0)
+                .distinct()
+                .toList();
+        if (idsValidos.isEmpty()) {
+            return 0L;
+        }
+        return analisisRepository.deleteByUsuarioIdAndIdIn(usuarioNormalizado, idsValidos);
+    }
+
     private List<String> obtenerRecomendacionesGuardadas(Analisis analisis, AnalisisRequest request) {
         return deserializarLista(
                 analisis.getRecomendacionesJson(),
@@ -410,6 +392,126 @@ public class AnalisisService {
         }
     }
 
+    @Transactional
+    public List<HistorialResponse> migrarAnalisis(@Valid MigracionAnalisisRequest request) {
+        String usuarioNormalizado = normalizarUsuario(request.usuarioId());
+        if ("invitado".equals(usuarioNormalizado)) {
+            throw new com.hackathon.energiai_api.exception.VerificacionCorreoException(
+                    "CORREO_NO_VERIFICADO",
+                    "Debes verificar el correo antes de migrar análisis.",
+                    org.springframework.http.HttpStatus.FORBIDDEN);
+        }
+        Usuario usuario = usuarioRepository.findByEmail(usuarioNormalizado)
+                .orElseThrow(() -> new com.hackathon.energiai_api.exception.VerificacionCorreoException(
+                        "CORREO_NO_VERIFICADO",
+                        "Debes verificar el correo antes de migrar análisis.",
+                        org.springframework.http.HttpStatus.FORBIDDEN));
+        if (!Boolean.TRUE.equals(usuario.getVerificado())) {
+            throw new com.hackathon.energiai_api.exception.VerificacionCorreoException(
+                    "CORREO_NO_VERIFICADO",
+                    "Debes verificar el correo antes de migrar análisis.",
+                    org.springframework.http.HttpStatus.FORBIDDEN);
+        }
+
+        List<HistorialResponse> migrados = new ArrayList<>();
+        for (AnalisisMigracionItem item : request.analisis()) {
+            AnalisisRequest solicitud = item.solicitud();
+            ClasificacionEquipos clasificacion = clasificarEquipos(solicitud);
+
+            List<String> recomendaciones = item.recomendaciones() != null ? item.recomendaciones() : List.of();
+            List<RecomendacionModelo> detalles = item.recomendaciones_detalle() != null
+                    ? item.recomendaciones_detalle() : List.of();
+            if (detalles.isEmpty() && !recomendaciones.isEmpty()) {
+                detalles = new ArrayList<>();
+                for (int indice = 0; indice < recomendaciones.size(); indice++) {
+                    detalles.add(new RecomendacionModelo(
+                            "legacy_" + (indice + 1), recomendaciones.get(indice), null, List.of()));
+                }
+            }
+
+            String nombreAnalisis = resolverNombreAnalisis(
+                    solicitud.nombre_o_numero_analisis(), usuario);
+
+            Analisis analisis = Analisis.builder()
+                    .usuarioId(usuarioNormalizado)
+                    .usuario(usuario)
+                    .nombreONumeroAnalisis(nombreAnalisis)
+                    .consumoKwh(solicitud.consumo_kwh())
+                    .usoHorarioPico(solicitud.uso_horario_pico())
+                    .cantidadEquipos(solicitud.cantidad_equipos())
+                    .tipoInmueble(solicitud.tipo_inmueble().trim())
+                    .horasAltoConsumo(solicitud.horas_alto_consumo())
+                    .cantidadPersonas(solicitud.cantidad_personas())
+                    .areaM2(solicitud.area_m2())
+                    .equiposAltoConsumo(solicitud.equiposAltoResueltos())
+                    .horasAireAcondicionado(solicitud.horas_aire_acondicionado())
+                    .consumoMesAnteriorKwh(solicitud.consumo_mes_anterior_kwh())
+                    .diasFacturados(solicitud.dias_facturados())
+                    .categoria(item.categoria())
+                    .probabilidad(item.probabilidad())
+                    .costo_estimado_mensual(item.costo_estimado_mensual())
+                    .electrodomesticosDetalle(clasificacion.electrodomesticosJson())
+                    .recomendacionesJson(serializar(recomendaciones))
+                    .recomendacionesDetalleJson(serializar(detalles))
+                    .nivelAnalisis(valorO(item.nivel_analisis(), determinarNivelAnalisis(solicitud)))
+                    .camposImputadosJson(serializar(
+                            item.campos_imputados() != null ? item.campos_imputados() : List.of()))
+                    .origenPrediccion(valorO(item.origen_prediccion(), "registro_migrado"))
+                    .modeloVersion(valorO(item.modelo_version(), "no_reportada"))
+                    .advertenciasJson(serializar(
+                            item.advertencias() != null ? item.advertencias() : List.of()))
+                    .build();
+
+            migrados.add(mapToHistorialResponse(analisisRepository.save(analisis)));
+        }
+        return migrados;
+    }
+
+    private ClasificacionEquipos clasificarEquipos(AnalisisRequest request) {
+        Map<String, Integer> clasificacionEquipos = new LinkedHashMap<>();
+        String electrodomesticosJson = null;
+
+        if (request.electrodomesticos() != null && !request.electrodomesticos().isEmpty()) {
+            // Modo Exhaustivo: clasificación automática por catálogo
+            Map<String, Integer> conteo = new LinkedHashMap<>();
+            conteo.put("alto", 0);
+            conteo.put("medio", 0);
+            conteo.put("bajo", 0);
+
+            for (Map.Entry<String, Integer> entry : request.electrodomesticos().entrySet()) {
+                String electro = entry.getKey().toLowerCase().trim();
+                int cantidad = entry.getValue();
+                CatalogoElectrodomesticos.Categoria categoria = CatalogoElectrodomesticos.CATEGORIA_POR_NOMBRE
+                        .getOrDefault(electro, CatalogoElectrodomesticos.Categoria.BAJO);
+                conteo.merge(categoria.etiqueta(), cantidad, Integer::sum);
+            }
+
+            try {
+                electrodomesticosJson = objectMapper.writeValueAsString(request.electrodomesticos());
+            } catch (Exception e) {
+                electrodomesticosJson = null;
+            }
+
+            clasificacionEquipos.put("alto", conteo.getOrDefault("alto", 0));
+            clasificacionEquipos.put("medio", conteo.getOrDefault("medio", 0));
+            clasificacionEquipos.put("bajo", conteo.getOrDefault("bajo", 0));
+        } else if (request.dispositivos_alto() != null
+                || request.dispositivos_medio() != null
+                || request.dispositivos_bajo() != null) {
+            // Modo General: usar campos manuales directamente
+            int alta = request.dispositivos_alto() != null ? request.dispositivos_alto() : 0;
+            int media = request.dispositivos_medio() != null ? request.dispositivos_medio() : 0;
+            int baja = request.dispositivos_bajo() != null ? request.dispositivos_bajo() : 0;
+
+            clasificacionEquipos.put("alto", alta);
+            clasificacionEquipos.put("medio", media);
+            clasificacionEquipos.put("bajo", baja);
+            electrodomesticosJson = serializar(clasificacionEquipos);
+        }
+
+        return new ClasificacionEquipos(clasificacionEquipos, electrodomesticosJson);
+    }
+
     private String normalizarUsuario(String usuarioId) {
         if (usuarioId == null || usuarioId.isBlank()) {
             return "invitado";
@@ -451,5 +553,10 @@ public class AnalisisService {
     private List<String> determinarCamposImputados(AnalisisRequest request) {
         // Los campos ausentes ya no se estiman: el modelo básico no los incluye.
         return List.of();
+    }
+
+    private record ClasificacionEquipos(
+            Map<String, Integer> clasificacionEquipos,
+            String electrodomesticosJson) {
     }
 }

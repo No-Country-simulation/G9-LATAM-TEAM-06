@@ -14,6 +14,7 @@ import { AnalisisService } from '../../core/services/analisis.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { PageTitleComponent } from '../../layout/page-title';
 import * as formato from '../../core/util/formato';
+import { TripleStarComponent } from '../../shared/triple-star.component';
 
 interface FilaComparacion {
   etiqueta: string;
@@ -37,7 +38,7 @@ const MAXIMO_REGISTROS = 100;
 
 @Component({
   selector: 'app-comparacion-periodos',
-  imports: [FormsModule, PageTitleComponent, RouterLink],
+  imports: [FormsModule, PageTitleComponent, RouterLink, TripleStarComponent],
   templateUrl: './comparacion-periodos.component.html',
   styleUrl: './comparacion-periodos.component.scss',
 })
