@@ -86,6 +86,27 @@ describe('AnalisisService', () => {
     expect(solicitud.request.params.get('usuarioId')).toBe('persona@ejemplo.com');
     solicitud.flush(null);
   });
+
+  it('borra la selección del navegador para invitados sin tocar la red', () => {
+    historialInvitado.agregar(entradaValida(), { categoria: 'Eficiente', probabilidad: .9, recomendaciones: [], costo_estimado_mensual: 187.5, nivel_analisis: 'basico', campos_imputados: [] });
+    historialInvitado.agregar(entradaValida(), { categoria: 'Moderado', probabilidad: .7, recomendaciones: [], costo_estimado_mensual: 200, nivel_analisis: 'basico', campos_imputados: [] });
+
+    servicio.borrarSeleccion('invitado', [1]).subscribe();
+
+    const restantes = historialInvitado.listar();
+    expect(restantes.map((item) => item.id)).toEqual([2]);
+    http.expectNone(() => true);
+  });
+
+  it('borra la selección en la BD para usuarios verificados', () => {
+    usuarioService.marcarVerificado('persona@ejemplo.com');
+    servicio.borrarSeleccion('persona@ejemplo.com', [3, 7]).subscribe();
+    const solicitud = http.expectOne((req) => req.method === 'DELETE');
+    expect(solicitud.request.url).toContain('/seleccion');
+    expect(solicitud.request.params.get('usuarioId')).toBe('persona@ejemplo.com');
+    expect(solicitud.request.params.get('ids')).toBe('3,7');
+    solicitud.flush(null);
+  });
 });
 
 function entradaValida(): AnalisisRequest {

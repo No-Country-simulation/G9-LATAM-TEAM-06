@@ -46,6 +46,25 @@ describe('HistorialInvitadoService', () => {
     expect(servicio.listar()).toEqual([]);
   });
 
+  it('borra solo los análisis seleccionados por id', () => {
+    const respuesta: AnalisisResponse = {
+      categoria: 'Eficiente',
+      probabilidad: 0.9,
+      recomendaciones: [],
+      costo_estimado_mensual: 150,
+      nivel_analisis: 'basico',
+      campos_imputados: [],
+    };
+    servicio.agregar(entradaValida(), respuesta);
+    servicio.agregar(entradaValida(), respuesta);
+    servicio.agregar(entradaValida(), respuesta);
+
+    servicio.borrarPorIds([1, 3]);
+
+    const restantes = servicio.listar();
+    expect(restantes.map((item) => item.id)).toEqual([2]);
+  });
+
   it('recupera los registros persistidos en el navegador', () => {
     const respuesta: AnalisisResponse = {
       categoria: 'Moderado',

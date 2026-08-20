@@ -105,6 +105,7 @@ Desktop.ini
 # Java, Maven y Gradle
 # =============================================================
 **/target/
+**/target_corrupto/
 **/build/
 **/.gradle/
 .m2/
@@ -139,6 +140,7 @@ htmlcov/
 # =============================================================
 **/node_modules/
 **/dist/
+**/dist-check/
 **/.next/
 **/.angular/
 **/coverage/

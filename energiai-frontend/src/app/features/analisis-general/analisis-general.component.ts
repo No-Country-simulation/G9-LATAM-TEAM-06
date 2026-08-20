@@ -59,14 +59,14 @@ export class AnalisisGeneralComponent {
 
   readonly formulario: FormGroup = this.fb.nonNullable.group(
     {
-      consumo_kwh: [250, [Validators.required, Validators.min(40), Validators.max(5000)]],
-      tipo_inmueble: ['Casa' as TipoInmueble, [Validators.required]],
-      cantidad_equipos: [8, [Validators.required, Validators.min(1), Validators.max(500)]],
-      horas_alto_consumo: [6, [Validators.required, Validators.min(0), Validators.max(24)]],
-      uso_horario_pico: [true],
-      dispositivos_alto: [2, [Validators.required, Validators.min(0), Validators.max(500)]],
-      dispositivos_medio: [3, [Validators.required, Validators.min(0), Validators.max(500)]],
-      dispositivos_bajo: [3, [Validators.required, Validators.min(0), Validators.max(500)]],
+      consumo_kwh: [null as number | null, [Validators.required, Validators.min(40), Validators.max(5000)]],
+      tipo_inmueble: ['' as TipoInmueble | '', [Validators.required]],
+      cantidad_equipos: [null as number | null, [Validators.required, Validators.min(1), Validators.max(500)]],
+      horas_alto_consumo: [null as number | null, [Validators.required, Validators.min(0), Validators.max(24)]],
+      uso_horario_pico: [false],
+      dispositivos_alto: [null as number | null, [Validators.required, Validators.min(0), Validators.max(500)]],
+      dispositivos_medio: [null as number | null, [Validators.required, Validators.min(0), Validators.max(500)]],
+      dispositivos_bajo: [null as number | null, [Validators.required, Validators.min(0), Validators.max(500)]],
       cantidad_personas: [null as number | null, [Validators.min(1), Validators.max(30)]],
       area_m2: [null as number | null, [Validators.min(30), Validators.max(420)]],
       horas_aire_acondicionado: [
@@ -104,7 +104,11 @@ export class AnalisisGeneralComponent {
 
   get mensajesDominio(): string[] {
     return this.problemasModelo
-      .filter((problema) => problema.mensaje !== this.mensajeSumaEquipos)
+      .filter(
+        (problema) =>
+          problema.mensaje !== this.mensajeSumaEquipos &&
+          problema.codigo !== 'obligatorio',
+      )
       .map((problema) => problema.mensaje);
   }
 

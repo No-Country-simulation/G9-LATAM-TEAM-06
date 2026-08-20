@@ -7,10 +7,11 @@ import { AnalisisService } from '../../core/services/analisis.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { PageTitleComponent } from '../../layout/page-title';
 import * as formato from '../../core/util/formato';
+import { TripleStarComponent } from '../../shared/triple-star.component';
 
 @Component({
   selector: 'app-simulador-ahorro',
-  imports: [FormsModule, PageTitleComponent, RouterLink],
+  imports: [FormsModule, PageTitleComponent, RouterLink, TripleStarComponent],
   templateUrl: './simulador-ahorro.component.html',
   styleUrl: './simulador-ahorro.component.scss',
 })

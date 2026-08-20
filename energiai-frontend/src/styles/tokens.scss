@@ -1,0 +1,465 @@
+// =============================================================
+// EnergiAI - Design Tokens
+// Única fuente de verdad para colores, tipografía, radios, sombras
+// y espaciados del frontend. NO hardcodear colores en componentes:
+// consumir siempre estos tokens.
+//
+//  - :root            -> tema claro (por defecto)
+//  - .app-theme-dark  -> tema oscuro (misma semántica, otros valores)
+// =============================================================
+
+:root {
+  // ---------- Paleta cruda (no cambia entre temas) ----------
+  --verde-50: #f0fdf4;
+  --verde-100: #dcfce7;
+  --verde-200: #bbf7d0;
+  --verde-300: #86d4a7;
+  --verde-400: #4db87b;
+  --verde-500: #22c55e;
+  --verde-600: #16a34a;
+  --verde-700: #15803d;
+  --verde-800: #166534;
+  --verde-900: #14532d;
+
+  --azul-50: #f0f9ff;
+  --azul-100: #e0f2fe;
+  --azul-200: #bae6fd;
+  --azul-500: #0ea5e9;
+  --azul-600: #0284c7;
+  --azul-700: #2563eb;
+
+  --violeta-50: #f1ebff;
+  --violeta-100: #ede9fe;
+  --violeta-600: #7c3aed;
+
+  --ambar-50: #fffbeb;
+  --ambar-100: #fef3c7;
+  --ambar-200: #fde68a;
+  --ambar-500: #f59e0b;
+  --ambar-600: #d97706;
+  --ambar-700: #b45309;
+  --ambar-800: #92400e;
+
+  --rojo-50: #fff1f0;
+  --rojo-100: #fee2e2;
+  --rojo-200: #fecaca;
+  --rojo-300: #f97066;
+  --rojo-400: #f04438;
+  --rojo-500: #ef4444;
+  --rojo-600: #dc2626;
+  --rojo-700: #b91c1c;
+  --rojo-800: #991b1b;
+
+  --teal-100: #e6f8f5;
+  --teal-400: #5fc9bd;
+  --teal-500: #38b6a8;
+  --teal-600: #0f766e;
+  --teal-700: #115e59;
+
+  --oro-100: #fff4d7;
+  --oro-400: #e3c76e;
+  --oro-600: #c87900;
+  --oro-700: #956616;
+
+  --rosado-100: #fff0f5;
+  --rosado-500: #c24170;
+
+  // ---------- Semántica: texto ----------
+  --texto: #172033;
+  --texto-suave: #64748b;
+  --texto-debil: #94a3b8;
+  --texto-encabezado: #334155;
+  --texto-muy-suave: #7b8494;
+
+  // ---------- Semántica: superficies y bordes ----------
+  --superficie: #ffffff;
+  --superficie-suave: #f8fafc;
+  --superficie-elevada: #fafbfc;
+  --fondo-pagina: #f7f9fa;
+  --borde: #e2e8f0;
+  --borde-suave: #eef2f6;
+  --borde-fuerte: #cbd5e1;
+  --borde-tabla: #edf0f5;
+
+  // ---------- Semántica: acento verde (marca) ----------
+  --acento: #078b4a;
+  --acento-hover: #066f3c;
+  --acento-fuerte: #166534;
+  --acento-vivo: #22c55e;
+  --acento-suave: #dcfce7;
+  --acento-suave-medio: #e9f8f0;
+  --acento-suave-intenso: #d7f2e3;
+  --acento-borde: #69c594;
+  --acento-borde-fuerte: #3eae73;
+  --acento-texto: #087443;
+  --acento-texto-hover: #075f38;
+
+  // ---------- Semántica: estados ----------
+  --exito-texto: #137a56;
+  --exito-fondo: #eaf8f1;
+  --exito-texto-oscuro: #147a58;
+
+  --peligro-texto: #b91c1c;
+  --peligro-texto-fuerte: #991b1b;
+  --peligro-texto-oscuro: #a44941;
+  --peligro-fondo: #fee2e2;
+  --peligro-fondo-suave: #fff1f0;
+  --peligro-fondo-oscuro: #fffbfa;
+  --peligro-borde: #fecaca;
+  --peligro-borde-fuerte: #dc2626;
+
+  --advertencia-texto: #b45309;
+  --advertencia-texto-fuerte: #92400e;
+  --advertencia-texto-oscuro: #c2410c;
+  --advertencia-fondo: #fef3c7;
+  --advertencia-fondo-suave: #fffbeb;
+  --advertencia-fondo-oscuro: #fff7ed;
+  --advertencia-borde: #fde68a;
+  --advertencia-borde-fuerte: #f59e0b;
+
+  --info-texto: #0284c7;
+  --info-fondo: #e0f2fe;
+  --info-borde: #bae6fd;
+
+  --neutro-texto: #64748b;
+  --neutro-fondo: #f1f5f9;
+  --neutro-fondo-suave: #e2e8f0;
+
+  // ---------- Semántica: etiquetas y textos secundarios ----------
+  --texto-etiqueta: #475569;
+  --texto-boton: #243044;
+
+  // ---------- Semántica: bordes suaves de estados ----------
+  --advertencia-borde-suave: #fed7aa;
+  --peligro-borde-suave: #ffd2ce;
+  --peligro-fondo-sutil: #fff7f7;
+  --acento-borde-suave: #b8d8cb;
+
+  // ---------- Semántica: botones de marca ----------
+  --acento-oscuro: #06743e;
+  --acento-oscuro-hover: #055d33;
+  --acento-boton: #078b4a;
+  --acento-boton-hover: #066f3c;
+  --neutro-boton: #37414b;
+  --neutro-boton-borde: #2c343c;
+  --neutro-boton-hover: #252d34;
+  --neutro-boton-borde-hover: #20272d;
+
+  // ---------- Marca: colores de iconos del sidebar y heroes ----------
+  --marca-verde: #16875f;
+  --marca-verde-fondo: #e7f8f0;
+  --marca-teal: #0f8f83;
+  --marca-teal-fondo: #e4f8f5;
+  --marca-azul-fondo: #eaf2ff;
+  --marca-azul-fondo-claro: #e6f6fd;
+  --marca-oro-fondo: #fff5dc;
+  --marca-verde-oscuro: #116530;
+  --marca-hero-verde-a: #123d34;
+  --marca-hero-verde-b: #176b54;
+  --marca-hero-sobrelinea: #7ee2bc;
+  --marca-hero-texto: #c3e3d8;
+  --marca-hero-dato-icono: #80e5bd;
+  --marca-hero-dato-texto: #cce5dc;
+
+  // Fondos de iconos del sidebar: tonos de marca estables para icono blanco
+  --marca-azul-icono: #2563eb;
+  --marca-violeta-icono: #7c3aed;
+  --marca-oro-icono: #c87900;
+  --marca-rosado-icono: #c24170;
+
+  // Texto inverso (sobre fondos de marca o degradados)
+  --texto-inverso: #fff;
+
+  // ---------- Botón advertencia (accion-ui-advertencia) ----------
+  --advertencia-boton-texto: #9a3c0a;
+  --advertencia-boton-fondo: #fff1e7;
+  --advertencia-boton-borde: #f39a67;
+  --advertencia-boton-texto-hover: #7f3007;
+  --advertencia-boton-fondo-hover: #ffe1cf;
+  --advertencia-boton-borde-hover: #e97838;
+
+  // ---------- Acento claro y alcance-calculo ----------
+  --acento-suave-claro: #ecfdf3;
+  --acento-borde-palido: #cfe8dc;
+  --acento-fondo-palido: #f2fbf7;
+  --acento-texto-palido: #315f4d;
+  --acento-fondo-palido-2: #dcf5e9;
+  --acento-icono: #11825b;
+  --acento-texto-oscuro: #174d3a;
+
+  // ---------- Tipografía ----------
+  --fuente-base:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --tamano-titulo-pagina: 1.65rem;
+  --tamano-titulo-panel: 1.25rem;
+  --tamano-cuerpo: 0.88rem;
+  --tamano-suave: 0.78rem;
+  --tamano-debil: 0.72rem;
+  --peso-titulo: 800;
+  --peso-panel: 750;
+  --peso-cuerpo: 650;
+  --altura-linea-cuerpo: 1.5;
+  --espaciado-sobrelinea: 0.11em;
+
+  // ---------- Radios ----------
+  --radio-sm: 8px;
+  --radio-md: 12px;
+  --radio-card: 14px;
+  --radio-panel: 16px;
+  --radio-lg: 18px;
+  --radio-pill: 999px;
+
+  // ---------- Sombras ----------
+  --sombra-card: 0 6px 18px rgba(15, 23, 42, 0.045);
+  --sombra-card-hover: 0 12px 26px rgba(15, 23, 42, 0.08);
+  --sombra-panel: 0 8px 26px rgba(24, 39, 75, 0.06);
+  --sombra-modal: 0 24px 60px rgba(15, 23, 42, 0.28);
+  --sombra-acento: 0 0.3rem 0.75rem rgba(7, 139, 74, 0.2);
+
+  // ---------- Espaciado ----------
+  --espacio-card: 22px;
+  --espacio-panel: 24px;
+}
+
+// =============================================================
+// Tema oscuro: reasigna la semántica. La paleta cruda se mantiene.
+// =============================================================
+.app-theme-dark {
+  --texto: #f1f5f9;
+  --texto-suave: #b6c2cf;
+  --texto-debil: #8f9dac;
+  --texto-encabezado: #d5dde5;
+  --texto-muy-suave: #94a3b8;
+
+  // Alias semánticos de acento usados por los componentes
+  --verde-700: var(--energiai-verde);
+  --verde-600: var(--energiai-verde-fuerte);
+  --verde-100: var(--energiai-verde-fondo);
+  --azul-600: #75d1fa;
+  --azul-100: #163648;
+
+  --superficie: #181e24;
+  --superficie-suave: #151b20;
+  --superficie-elevada: #202830;
+  --fondo-pagina: #0f1317;
+  --borde: #34404b;
+  --borde-suave: #29343e;
+  --borde-fuerte: #465360;
+  --borde-tabla: #34404b;
+
+  --acento: #43d394;
+  --acento-hover: #22b978;
+  --acento-fuerte: #8ce7bc;
+  --acento-vivo: #35b87b;
+  --acento-suave: #153b2d;
+  --acento-suave-medio: #1a4b38;
+  --acento-suave-intenso: #153c2d;
+  --acento-borde: #2d805d;
+  --acento-borde-fuerte: #43d394;
+  --acento-texto: #8ce7bc;
+  --acento-texto-hover: #c2f6dc;
+
+  --exito-texto: #8ce7bc;
+  --exito-fondo: #153b2d;
+  --exito-texto-oscuro: #79dfae;
+
+  --peligro-texto: #ffadb5;
+  --peligro-texto-fuerte: #ffc2c7;
+  --peligro-texto-oscuro: #ffc2c7;
+  --peligro-fondo: #3a2024;
+  --peligro-fondo-suave: #321b20;
+  --peligro-fondo-oscuro: #2c1d20;
+  --peligro-borde: #783d44;
+  --peligro-borde-fuerte: #f87171;
+
+  --advertencia-texto: #f6cf79;
+  --advertencia-texto-fuerte: #ffc66d;
+  --advertencia-texto-oscuro: #f6cf79;
+  --advertencia-fondo: #3d3117;
+  --advertencia-fondo-suave: #332912;
+  --advertencia-fondo-oscuro: #493518;
+  --advertencia-borde: #73591f;
+  --advertencia-borde-fuerte: #fbbf24;
+
+  --info-texto: #75d1fa;
+  --info-fondo: #163648;
+  --info-borde: #275e79;
+
+  --neutro-texto: #c1ccd6;
+  --neutro-fondo: #252e36;
+  --neutro-fondo-suave: #27313a;
+
+  // Violeta para iconos y chips en tema oscuro
+  --violeta-100: #30264d;
+  --violeta-600: #c4a8ff;
+
+  // Etiquetas y textos secundarios en tema oscuro
+  --texto-etiqueta: #c3ced8;
+  --texto-boton: #f1f5f9;
+
+  // Bordes suaves de estados en tema oscuro
+  --advertencia-borde-suave: #705727;
+  --peligro-borde-suave: #783d44;
+  --peligro-fondo-sutil: #351c21;
+  --acento-borde-suave: #3a745b;
+
+  // Botones de marca: en oscuro el botón principal usa un verde más profundo
+  --acento-oscuro: #43d394;
+  --acento-oscuro-hover: #22b978;
+  --acento-boton: #17855a;
+  --acento-boton-hover: #126e49;
+  --neutro-boton: #37414b;
+  --neutro-boton-borde: #2c343c;
+  --neutro-boton-hover: #252d34;
+  --neutro-boton-borde-hover: #20272d;
+
+  // Marca: iconos del sidebar y heroes (se mantienen estables)
+  --marca-verde: #2eb884;
+  --marca-verde-fondo: #173c2d;
+  --marca-teal: #2eb7a8;
+  --marca-teal-fondo: #17353a;
+  --marca-azul-fondo: #1b2a3e;
+  --marca-azul-fondo-claro: #16283a;
+  --marca-oro-fondo: #3a3016;
+  --marca-verde-oscuro: #0b3d28;
+
+  // Texto inverso (sobre fondos de marca o degradados)
+  --texto-inverso: #fff;
+
+  --sombra-card: 0 10px 26px rgba(0, 0, 0, 0.2);
+  --sombra-card-hover: 0 14px 30px rgba(0, 0, 0, 0.28);
+  --sombra-panel: 0 10px 26px rgba(0, 0, 0, 0.2);
+  --sombra-modal: 0 24px 60px rgba(0, 0, 0, 0.35);
+  --sombra-acento: 0 0.3rem 0.75rem rgba(0, 0, 0, 0.28);
+
+  // Alias para el layout ArchitectUI que aún referencia --energiai-*
+  --energiai-fondo: #0f1317;
+  --energiai-superficie: #181e24;
+  --energiai-superficie-elevada: #202830;
+  --energiai-superficie-suave: #151b20;
+  --energiai-borde: #34404b;
+  --energiai-borde-suave: #29343e;
+  --energiai-texto: #f1f5f9;
+  --energiai-texto-secundario: #b6c2cf;
+  --energiai-texto-suave: #8f9dac;
+  --energiai-verde: #43d394;
+  --energiai-verde-fuerte: #22b978;
+  --energiai-verde-fondo: #153b2d;
+  --energiai-azul: #67c7f2;
+
+  // Alias para el layout ArchitectUI (valores específicos del tema)
+  --energiai-fondo-app: #141619;
+  --energiai-header-fondo: #1a1d21;
+  --energiai-sidebar-fondo: #1e2226;
+  --energiai-layout-texto: #e9ecef;
+  --energiai-layout-borde: #343a40;
+  --energiai-layout-texto-suave: #adb5bd;
+  --energiai-layout-texto-debil: #6c757d;
+  --energiai-layout-item: #cbd5e1;
+  --energiai-layout-icono: #94a3b8;
+  --energiai-dropdown-header-fondo: #2b3035;
+  --energiai-dropdown-item-texto: #dee2e6;
+  --energiai-dropdown-item-activo: #495057;
+  --energiai-titulo-fondo: #1e293b;
+  --energiai-titulo-borde: #334155;
+  --energiai-titulo-degradado-a: #171d23;
+  --energiai-titulo-degradado-b: #12171b;
+  --energiai-titulo-icono-borde: #315344;
+  --energiai-titulo-icono-fondo: #1b3028;
+  --energiai-campo-fondo: #11171c;
+  --energiai-campo-placeholder: #718091;
+  --energiai-campo-borde-hover: #5b6977;
+  --energiai-campo-fondo-foco: #141b20;
+  --energiai-campo-borde-deshabilitado: #303a43;
+  --energiai-campo-fondo-deshabilitado: #20262c;
+  --energiai-campo-texto-deshabilitado: #8793a0;
+  --energiai-campo-opcion-fondo: #171d22;
+  --energiai-campo-check-borde: #607080;
+  --energiai-tabla-encabezado-borde: #45515c;
+  --energiai-tabla-encabezado-texto: #c8d3dd;
+  --energiai-alerta-info-borde: #275d75;
+  --energiai-alerta-info-fondo: #132b37;
+  --energiai-alerta-info-texto: #b9e8fb;
+  --energiai-alerta-advertencia-borde: #72591f;
+  --energiai-alerta-advertencia-fondo: #352a12;
+  --energiai-alerta-advertencia-texto: #f7dda0;
+  --energiai-alerta-peligro-fondo: #371c21;
+  --energiai-alerta-exito-borde: #286248;
+  --energiai-alerta-exito-fondo: #153527;
+  --energiai-alerta-exito-texto: #b9f0d4;
+  --energiai-dropdown-fondo: #1b2228;
+  --energiai-enlace-hover-borde: #35443e;
+  --energiai-enlace-hover-fondo: #222b29;
+  --energiai-enlace-activo-borde: #2b634b;
+  --energiai-enlace-activo-fondo-a: #1b3b2e;
+  --energiai-enlace-activo-fondo-b: #222a2d;
+  --energiai-seleccion-fondo: #256f50;
+  --energiai-scrollbar-color: #4d5b67;
+  --energiai-scrollbar-fondo: #171d22;
+
+  // Valores dark de botones de marca
+  --advertencia-boton-texto: #f4bd86;
+  --advertencia-boton-fondo: #3a291b;
+  --advertencia-boton-borde: #8b5a30;
+  --advertencia-boton-texto-hover: #ffd5ab;
+  --advertencia-boton-fondo-hover: #4a3320;
+  --advertencia-boton-borde-hover: #bd7840;
+  --accion-clara-borde: #6ad6a5;
+  --accion-clara-fondo: #e8fff3;
+  --accion-clara-texto: #075f38;
+  --accion-clara-fondo-hover: #c9f8df;
+  --accion-clara-texto-hover: #064c2e;
+
+  // Hero, tarjetas y paneles en dark
+  --hero-degradado-a: #10613b;
+  --hero-degradado-b: #159a57;
+  --tarjeta-degradado-a: #1b2228;
+  --tarjeta-degradado-b: #171d22;
+  --tarjeta-hover-borde: #446054;
+  --metrica-texto: #c3ced8;
+  --icono-verde-texto: #83e4b4;
+  --variacion-neutra-texto: #c0cbd5;
+  --alertas-consumo-fondo: #2c2618;
+  --alerta-consumo-borde: #3b4650;
+  --alerta-consumo-fondo: #1a2025;
+  --alerta-accion-borde: #2f7e5d;
+  --alerta-accion-texto: #91e9bf;
+  --grafica-linea: #3a4651;
+  --barra-fondo: #2a343d;
+  --esqueleto-a: #1a2127;
+  --esqueleto-b: #28323b;
+  --rotulo-texto: #9be8c2;
+  --peligro-borde-alta: #763940;
+  --peligro-borde-fuerte-alta: #ef5c67;
+  --peligro-icono-fondo: #54242b;
+  --peligro-icono-texto: #ff8f99;
+  --advertencia-borde-media: #f0ad2c;
+  --advertencia-icono-fondo: #4d3914;
+  --advertencia-icono-texto: #f7c65c;
+  --boton-intercambiar-texto: #86e5b7;
+  --periodo-a-borde: #286747;
+  --periodo-a-fondo: #143326;
+  --periodo-b-fondo: #142e3b;
+  --resumen-alerta-fondo: #351c21;
+  --resumen-estable-borde: #485662;
+  --zona-carga-borde: #3a745b;
+  --zona-carga-fondo-a: #17231e;
+  --zona-carga-fondo-b: #151d1a;
+  --zona-carga-activa-fondo: #183528;
+  --tabla-fila-hover-fondo: #202a30;
+  --metodologia-borde: #2d654f;
+  --metodologia-fondo: #173329;
+  --metodologia-texto: #b4e5cf;
+  --podio-borde: #856e31;
+  --podio-fondo-a: #342d1b;
+  --podio-fondo-b: #1e2326;
+  --aviso-borde: #285b72;
+  --aviso-fondo: #142d39;
+  --aviso-texto: #b9e8fb;
+  --aviso-icono-fondo: #173d4e;
+  --aviso-icono-texto: #67c7f2;
+  --aviso-texto-fuerte: #c8eaf7;
+  --presets-texto: #c4ced8;
+}
