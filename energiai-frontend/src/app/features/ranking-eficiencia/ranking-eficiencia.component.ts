@@ -7,6 +7,7 @@ import { AnalisisService } from '../../core/services/analisis.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { PageTitleComponent } from '../../layout/page-title';
 import * as formato from '../../core/util/formato';
+import { TripleStarComponent } from '../../shared/triple-star.component';
 
 interface PosicionRanking extends HistorialResponse {
   posicion: number;
@@ -15,7 +16,7 @@ interface PosicionRanking extends HistorialResponse {
 
 @Component({
   selector: 'app-ranking-eficiencia',
-  imports: [FormsModule, PageTitleComponent, RouterLink],
+  imports: [FormsModule, PageTitleComponent, RouterLink, TripleStarComponent],
   templateUrl: './ranking-eficiencia.component.html',
   styleUrl: './ranking-eficiencia.component.scss',
 })

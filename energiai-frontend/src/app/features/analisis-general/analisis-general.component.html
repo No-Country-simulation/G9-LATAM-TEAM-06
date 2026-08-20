@@ -64,6 +64,7 @@
             [max]="limitesActuales.consumo.max"
             step="1"
             inputmode="numeric"
+            placeholder="Ej: 250"
             required
           />
           <div class="form-text">
@@ -79,6 +80,7 @@
         <div class="col-md-6 col-xl-3">
           <label class="form-label" for="tipo_inmueble">Tipo de Inmueble:</label>
           <select id="tipo_inmueble" class="form-select" formControlName="tipo_inmueble" [class.is-invalid]="campoInvalido('tipo_inmueble')" [attr.aria-invalid]="campoInvalido('tipo_inmueble')">
+            <option value="" disabled selected>Selecciona el tipo de inmueble...</option>
             <option value="Casa">Casa</option>
             <option value="Apartamento">Apartamento</option>
             <option value="Comercio">Comercio</option>
@@ -106,6 +108,7 @@
             [max]="limitesActuales.equipos.max"
             step="1"
             inputmode="numeric"
+            placeholder="Ej: 8"
             required
           />
           <div class="form-text">
@@ -132,6 +135,7 @@
             max="24"
             step="1"
             inputmode="numeric"
+            placeholder="Ej: 6"
             required
           />
           <div class="form-text">Indica horas por día, entre 0 y 24.</div>
@@ -164,6 +168,7 @@
               [attr.max]="maximoEquiposAlto"
               step="1"
               inputmode="numeric"
+              placeholder="Ej: 2"
             />
             <div class="form-text">
               Aire acondicionado, calefactor, secadora, etc. Máximo seguro:
@@ -188,6 +193,7 @@
               [attr.max]="formulario.get('cantidad_equipos')?.value"
               step="1"
               inputmode="numeric"
+              placeholder="Ej: 3"
             />
             <div class="form-text">Lavadora, lavavajillas, plancha, microondas, etc.</div>
             @if (formulario.get('dispositivos_medio')?.touched) {
@@ -209,6 +215,7 @@
               [attr.max]="formulario.get('cantidad_equipos')?.value"
               step="1"
               inputmode="numeric"
+              placeholder="Ej: 3"
             />
             <div class="form-text">Nevera, TV, PC, luces LED, router, cargadores, etc.</div>
             @if (formulario.get('dispositivos_bajo')?.touched) {
@@ -272,7 +279,7 @@
         } @else {
           <i class="pe-7s-paper-plane" aria-hidden="true"></i>
         }
-        {{ cargando() ? 'Analizando en Spring Boot...' : 'Generar Análisis' }}
+        {{ cargando() ? 'Realizando análisis...' : 'Generar Análisis' }}
       </button>
     </form>
   </div>

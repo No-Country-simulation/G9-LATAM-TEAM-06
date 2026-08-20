@@ -62,6 +62,9 @@ describe('VerificarCorreoComponent', () => {
     expect(solicitud.request.body).toEqual({ email: 'persona@ejemplo.com', codigo: '123456' });
     solicitud.flush({ email: 'persona@ejemplo.com', verificado: true, mensaje: 'Correo verificado', reintentosRestantes: 3 });
 
+    const migracion = http.expectOne((req) => req.method === 'POST' && req.url.includes('/analisis-energetico/migrar'));
+    migracion.flush([]);
+
     expect(usuarioService.esVerificado()).toBeTrue();
     expect(usuarioService.usuarioActual).toBe('persona@ejemplo.com');
     expect(historialInvitado.listar()).toEqual([]);

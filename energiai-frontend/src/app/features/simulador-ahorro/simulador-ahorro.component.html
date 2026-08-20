@@ -7,7 +7,7 @@
 } @else if (errorSignal()) {
   <section class="estado error" role="alert"><i class="pe-7s-cloud"></i><h2>No pudimos iniciar la simulación</h2><p>{{ errorSignal() }}</p><button class="btn accion-ui accion-ui-principal" (click)="cargarHistorial()"><i class="pe-7s-refresh-2"></i> Intentar nuevamente</button></section>
 } @else if (!historial().length) {
-  <section class="estado"><i class="pe-7s-calculator"></i><h2>Primero necesitamos un análisis</h2><p>Usaremos su consumo y costo como punto de partida para proyectar el ahorro.</p><a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general"><i class="pe-7s-plus"></i> Crear análisis</a></section>
+  <section class="estado"><i class="pe-7s-calculator"></i><h2>Primero necesitamos un análisis</h2><p>Usaremos su consumo y costo como punto de partida para proyectar el ahorro.</p><a class="btn accion-ui accion-ui-principal" routerLink="/analisis-general"><app-triple-star aria-hidden="true"></app-triple-star> Crear análisis</a></section>
 } @else {
   <section class="aviso"><i class="pe-7s-info"></i><span>Esta simulación es informativa: no modifica ni guarda registros en tu historial.</span></section>
   <div class="simulador-grid">
